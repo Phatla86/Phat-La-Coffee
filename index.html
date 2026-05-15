@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - V45 REALTIME FLAWLESS</title>
+    <title>PHÁT LA PREMIUM - V46 OMNICHAIN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -35,7 +35,6 @@
     </script>
 
     <style>
-        /* Lấy CSS UI mượt mà từ V43 */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');
         
         :root { --primary: #f97316; --dark: #0f172a; --bg: #f8fafc; }
@@ -45,29 +44,29 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: white; padding: 16px 24px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 6px solid; }
+        .toast { background: white; padding: 16px 24px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 6px solid; }
         .toast.show { transform: translateX(0); }
         .toast.error { border-color: #ef4444; }
         .toast.success { border-color: #22c55e; }
         .toast.warning { border-color: #f59e0b; }
 
-        .table-card { transition: all 0.25s ease; border-radius: 2.5rem; position: relative; overflow: hidden; }
+        .table-card { transition: all 0.25s ease; border-radius: 2rem; position: relative; overflow: hidden; }
         .table-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%); opacity: 0; transition: opacity 0.3s; }
         .table-card:hover::before { opacity: 1; }
         .table-card.available { background: white; border: 2px solid #e2e8f0; }
         .table-card.occupied { background: var(--primary); color: white; transform: translateY(-4px); box-shadow: 0 15px 30px -10px rgba(249, 115, 22, 0.4); border: 2px solid var(--primary); }
         
-        .item-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 2rem; border: 1px solid #e2e8f0; background: white; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; height: 160px; padding: 1.5rem; }
+        .item-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 1.5rem; border: 1px solid #e2e8f0; background: white; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; height: 140px; padding: 1.25rem; }
         .item-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
         .item-card:active { transform: scale(0.96); }
 
         .active-nav { border-bottom: 4px solid var(--primary); color: var(--dark) !important; font-weight: 900; }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .thin-scroll::-webkit-scrollbar { width: 4px; }
+        .thin-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
         .thin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* HỆ THỐNG IN ẤN TỪ V43 */
+        /* HỆ THỐNG IN ẤN */
         #print-area { display: none; }
         @media print {
             body > *:not(#print-area) { display: none !important; }
@@ -77,7 +76,6 @@
             .print-line { border-top: 1px dashed black; margin: 8px 0; }
             .print-text-center { text-align: center; }
             .print-text-right { text-align: right; }
-            .print-bold { font-weight: bold; }
         }
     </style>
 </head>
@@ -93,6 +91,7 @@
             bank: "VIETCOMBANK",
             accountNo: "1046778674",
             accountName: "LA PHAT",
+            scriptUrl: "https://script.google.com/macros/s/AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82/exec", // Link Google Sheets từ V43
             totalTables: 15
         };
 
@@ -118,117 +117,123 @@
         };
     </script>
 
-    <header class="bg-white border-b px-6 py-4 flex justify-between items-center z-50 shrink-0">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gray-900 rounded-[1rem] flex items-center justify-center text-white shadow-md font-black text-xl">PL</div>
+    <header class="bg-white border-b px-4 lg:px-6 py-3 lg:py-4 flex justify-between items-center z-50 shrink-0">
+        <div class="flex items-center gap-3 lg:gap-4">
+            <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gray-900 rounded-xl flex items-center justify-center text-white shadow-md font-black text-lg lg:text-xl">PL</div>
             <div>
-                <h1 class="text-xs font-black uppercase tracking-tight text-gray-900">Phát La Premium</h1>
+                <h1 class="text-[10px] lg:text-xs font-black uppercase tracking-tight text-gray-900">Phát La Premium</h1>
                 <div class="flex items-center gap-1 mt-0.5">
                     <span id="sync-dot" class="w-2 h-2 rounded-full bg-red-500"></span>
-                    <p id="system-status" class="text-[9px] font-bold text-slate-500 uppercase">Đang chờ Firebase...</p>
+                    <p id="system-status" class="text-[8px] lg:text-[9px] font-bold text-slate-500 uppercase">Đang chờ Firebase...</p>
                 </div>
             </div>
         </div>
-        <div class="flex items-center gap-5">
+        <div class="flex items-center gap-3 lg:gap-5">
             <div class="text-right hidden sm:block">
                 <p id="live-clock" class="text-xs font-black font-mono">00:00:00</p>
-                <p class="text-[8px] font-bold text-orange-500 uppercase">V45 SUPERIOR - REALTIME UI</p>
+                <p class="text-[8px] font-bold text-orange-500 uppercase">V46 OMNICHAIN</p>
             </div>
         </div>
     </header>
 
-    <nav class="bg-white border-b flex px-2 shrink-0 z-40">
-        <button onclick="switchTab('tables')" id="nav-tables" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 active-nav transition-colors">Sơ Đồ Bàn</button>
-        <button onclick="switchTab('pos')" id="nav-pos" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Máy POS (Gọi Món)</button>
-        <button onclick="switchTab('report')" id="nav-report" class="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Sổ Doanh Thu</button>
+    <nav class="bg-white border-b flex px-1 lg:px-2 shrink-0 z-40">
+        <button onclick="switchTab('tables')" id="nav-tables" class="flex-1 py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 active-nav transition-colors">Sơ Đồ Bàn</button>
+        <button onclick="switchTab('pos')" id="nav-pos" class="flex-1 py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Gọi Món</button>
+        <button onclick="switchTab('report')" id="nav-report" class="flex-1 py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Báo Cáo</button>
     </nav>
 
     <main class="flex-1 relative bg-slate-50 overflow-hidden">
         
-        <section id="view-tables" class="absolute inset-0 p-6 md:p-8 overflow-y-auto thin-scroll">
+        <section id="view-tables" class="absolute inset-0 p-4 sm:p-6 lg:p-8 overflow-y-auto thin-scroll">
             <div class="max-w-7xl mx-auto">
-                <div class="flex justify-between items-end mb-6">
-                    <h2 class="text-sm font-black uppercase text-slate-400">Trạng thái bàn (Realtime)</h2>
-                    <span id="table-stats" class="text-[10px] font-bold bg-white px-3 py-1.5 rounded-lg border">0 Bàn đang phục vụ</span>
+                <div class="flex justify-between items-end mb-4 lg:mb-6">
+                    <h2 class="text-xs lg:text-sm font-black uppercase text-slate-400">Trạng thái bàn</h2>
+                    <span id="table-stats" class="text-[9px] lg:text-[10px] font-bold bg-white px-3 py-1.5 rounded-lg border shadow-sm">0 Bàn phục vụ</span>
                 </div>
-                <div id="grid-tables" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5"></div>
+                <div id="grid-tables" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5"></div>
             </div>
         </section>
 
         <section id="view-pos" class="absolute inset-0 hidden bg-white">
-            <div class="flex flex-col lg:flex-row w-full h-full">
-                <div class="w-full lg:w-48 bg-slate-50 p-4 flex lg:flex-col gap-3 overflow-x-auto no-scrollbar border-r border-slate-100 shrink-0" id="sidebar-categories"></div>
+            <div class="flex flex-col lg:flex-row w-full h-full overflow-hidden">
                 
-                <div class="flex-1 p-4 lg:p-6 overflow-y-auto bg-slate-100/50 thin-scroll">
-                    <div id="grid-menu" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                <div class="w-full lg:w-48 bg-slate-50 p-3 lg:p-4 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto no-scrollbar border-b lg:border-b-0 lg:border-r border-slate-200 shrink-0" id="sidebar-categories"></div>
+                
+                <div class="flex-1 p-3 lg:p-6 overflow-y-auto bg-slate-100/50 thin-scroll pb-[45vh] lg:pb-6">
+                    <div id="grid-menu" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4"></div>
                 </div>
                 
-                <div class="w-full lg:w-[420px] flex flex-col bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.02)] z-10 shrink-0 border-l border-slate-100">
-                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
+                <div class="w-full lg:w-[400px] xl:w-[420px] h-[45vh] lg:h-full absolute lg:relative bottom-0 lg:bottom-auto flex flex-col bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.06)] lg:shadow-[-10px_0_30px_rgba(0,0,0,0.02)] z-10 shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200 transition-all">
+                    <div class="p-4 lg:p-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
                         <div>
-                            <h2 id="bill-table-name" class="text-xl font-black uppercase tracking-tighter text-gray-900">VUI LÒNG CHỌN BÀN</h2>
-                            <p id="bill-time-in" class="text-[10px] font-bold text-slate-400 mt-1">--:--</p>
+                            <h2 id="bill-table-name" class="text-lg lg:text-xl font-black uppercase tracking-tighter text-gray-900">CHỌN BÀN</h2>
+                            <p id="bill-time-in" class="text-[9px] lg:text-[10px] font-bold text-slate-400 mt-0.5">--:--</p>
                         </div>
-                        <button onclick="switchTab('tables')" class="text-orange-600 bg-orange-50 hover:bg-orange-100 px-4 py-2.5 rounded-xl text-[9px] font-black uppercase transition-colors">Đổi bàn</button>
+                        <button onclick="switchTab('tables')" class="text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-2 rounded-xl text-[9px] font-black uppercase">Đổi bàn</button>
                     </div>
                     
-                    <div id="bill-items" class="flex-1 overflow-y-auto p-4 space-y-3 thin-scroll bg-slate-50/30"></div>
+                    <div id="bill-items" class="flex-1 overflow-y-auto p-3 lg:p-4 space-y-2 lg:space-y-3 thin-scroll bg-slate-50/30"></div>
 
-                    <div class="p-6 bg-white border-t border-slate-100 space-y-5">
+                    <div class="p-4 lg:p-6 bg-white border-t border-slate-100 space-y-3 lg:space-y-4 shrink-0">
                         <div class="flex justify-between items-end">
-                            <span class="text-[11px] font-black text-slate-400 uppercase">Cần thanh toán</span>
-                            <span id="bill-total-price" class="text-4xl font-black text-orange-600 tracking-tighter">0đ</span>
+                            <span class="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase">Cần thanh toán</span>
+                            <span id="bill-total-price" class="text-3xl lg:text-4xl font-black text-orange-600 tracking-tighter">0đ</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="processPrint('bep')" class="py-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-2xl font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-fire mr-1"></i> In Báo Bếp</button>
-                            <button onclick="processPrint('tam-tinh')" class="py-4 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-2xl font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-receipt mr-1"></i> In Tạm Tính</button>
+                        <div class="grid grid-cols-2 gap-2 lg:gap-3">
+                            <button onclick="processPrint('bep')" class="py-3 lg:py-4 bg-red-50 text-red-600 rounded-xl lg:rounded-2xl font-black text-[9px] lg:text-[10px] uppercase"><i class="fa-solid fa-fire mr-1"></i> In Bếp</button>
+                            <button onclick="processPrint('tam-tinh')" class="py-3 lg:py-4 bg-slate-100 text-slate-600 rounded-xl lg:rounded-2xl font-black text-[9px] lg:text-[10px] uppercase"><i class="fa-solid fa-receipt mr-1"></i> Tạm Tính</button>
                         </div>
-                        <button onclick="triggerPaymentFlow()" class="w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black text-sm uppercase shadow-xl hover:bg-black active:scale-95 transition-all flex justify-center items-center gap-2">
-                            Thu Tiền Bàn Này <i class="fa-solid fa-arrow-right"></i>
+                        <button onclick="triggerPaymentFlow()" class="w-full py-4 lg:py-6 bg-gray-900 text-white rounded-xl lg:rounded-[2rem] font-black text-xs lg:text-sm uppercase shadow-xl hover:bg-black active:scale-95 transition-all">
+                            Thu Tiền Bàn Này
                         </button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="view-report" class="absolute inset-0 p-6 md:p-8 hidden overflow-y-auto thin-scroll">
-            <div class="max-w-5xl mx-auto space-y-8">
-                <div class="flex justify-between items-center">
+        <section id="view-report" class="absolute inset-0 p-4 sm:p-6 lg:p-8 hidden overflow-y-auto thin-scroll">
+            <div class="max-w-5xl mx-auto space-y-6 lg:space-y-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-2xl font-black tracking-tighter">DOANH THU HÔM NAY</h2>
-                        <p class="text-[11px] font-bold text-slate-400 mt-1" id="report-date"></p>
+                        <h2 class="text-xl lg:text-2xl font-black tracking-tighter">DOANH THU HÔM NAY</h2>
+                        <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1" id="report-date"></p>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="exportToCSV()" class="flex-1 sm:flex-none bg-green-50 text-green-600 hover:bg-green-100 px-4 py-3 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black uppercase transition-colors shadow-sm"><i class="fa-solid fa-file-excel mr-1"></i> Xuất Excel</button>
+                        <button onclick="syncToGoogleSheets()" class="flex-1 sm:flex-none bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-3 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black uppercase transition-colors shadow-sm"><i class="fa-brands fa-google-drive mr-1"></i> Lưu Sheets</button>
                     </div>
                 </div>
-                <div id="report-dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-5"></div>
                 
-                <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
-                    <h3 class="text-[11px] font-black uppercase text-slate-400 mb-6 tracking-widest border-b pb-4">Biên lai giao dịch</h3>
-                    <div id="report-history" class="space-y-3"></div>
+                <div id="report-dashboard" class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5"></div>
+                
+                <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
+                    <h3 class="text-[10px] lg:text-[11px] font-black uppercase text-slate-400 mb-4 lg:mb-6 tracking-widest border-b pb-4">Biên lai giao dịch</h3>
+                    <div id="report-history" class="space-y-2 lg:space-y-3"></div>
                 </div>
             </div>
         </section>
     </main>
 
-    <div id="modal-checkout" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-[3rem] overflow-hidden flex flex-col shadow-2xl scale-95 opacity-0 transition-all duration-300" id="modal-checkout-content">
-            <div class="p-8 text-center border-b border-slate-50 relative">
-                <button onclick="closeModal()" class="absolute top-6 right-6 w-10 h-10 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
-                <p class="text-[11px] font-black text-slate-400 uppercase mb-2">Thu tiền <span id="checkout-table-label" class="text-orange-500"></span></p>
-                <h2 id="checkout-amount" class="text-5xl font-black text-gray-900 tracking-tighter">0đ</h2>
+    <div id="modal-checkout" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md lg:max-w-lg rounded-[2rem] lg:rounded-[3rem] overflow-hidden flex flex-col shadow-2xl scale-95 opacity-0 transition-all duration-300" id="modal-checkout-content">
+            <div class="p-6 lg:p-8 text-center border-b border-slate-50 relative">
+                <button onclick="closeModal()" class="absolute top-4 lg:top-6 right-4 lg:right-6 w-8 h-8 lg:w-10 lg:h-10 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
+                <p class="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase mb-1 lg:mb-2">Thu tiền <span id="checkout-table-label" class="text-orange-500"></span></p>
+                <h2 id="checkout-amount" class="text-4xl lg:text-5xl font-black text-gray-900 tracking-tighter">0đ</h2>
             </div>
-            <div class="p-8 space-y-6 bg-slate-50/50">
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="selectPaymentMethod('Tiền mặt')" id="btn-pay-cash" class="p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all"><i class="fa-solid fa-money-bill-wave text-3xl"></i><span class="text-[11px] font-black uppercase">Tiền mặt</span></button>
-                    <button onclick="selectPaymentMethod('Chuyển khoản')" id="btn-pay-qr" class="p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all"><i class="fa-solid fa-qrcode text-3xl"></i><span class="text-[11px] font-black uppercase">VietQR</span></button>
+            <div class="p-6 lg:p-8 space-y-4 lg:space-y-6 bg-slate-50/50">
+                <div class="grid grid-cols-2 gap-3 lg:gap-4">
+                    <button onclick="selectPaymentMethod('Tiền mặt')" id="btn-pay-cash" class="p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all"><i class="fa-solid fa-money-bill-wave text-2xl lg:text-3xl"></i><span class="text-[10px] lg:text-[11px] font-black uppercase">Tiền mặt</span></button>
+                    <button onclick="selectPaymentMethod('Chuyển khoản')" id="btn-pay-qr" class="p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all"><i class="fa-solid fa-qrcode text-2xl lg:text-3xl"></i><span class="text-[10px] lg:text-[11px] font-black uppercase">VietQR</span></button>
                 </div>
-                <div id="checkout-qr-box" class="hidden flex-col items-center p-6 bg-white rounded-3xl border-2 border-blue-100 shadow-sm">
-                    <div class="flex items-center gap-2 mb-4"><i class="fa-solid fa-building-columns text-blue-600"></i><p id="ui-bank-info" class="text-[10px] font-black text-blue-600 uppercase"></p></div>
-                    <img id="checkout-qr-image" src="" class="w-56 h-56 border-4 border-slate-50 shadow-md rounded-2xl">
-                    <div class="mt-4 text-center"><p class="text-[9px] font-bold text-slate-400 uppercase">Người nhận</p><p id="ui-account-name" class="text-sm font-black text-gray-900"></p></div>
+                <div id="checkout-qr-box" class="hidden flex-col items-center p-4 lg:p-6 bg-white rounded-2xl lg:rounded-3xl border-2 border-blue-100 shadow-sm">
+                    <div class="flex items-center gap-2 mb-3 lg:mb-4"><i class="fa-solid fa-building-columns text-blue-600"></i><p id="ui-bank-info" class="text-[9px] lg:text-[10px] font-black text-blue-600 uppercase"></p></div>
+                    <img id="checkout-qr-image" src="" class="w-48 h-48 lg:w-56 lg:h-56 border-4 border-slate-50 shadow-md rounded-2xl">
+                    <div class="mt-3 lg:mt-4 text-center"><p class="text-[8px] lg:text-[9px] font-bold text-slate-400 uppercase">Người nhận</p><p id="ui-account-name" class="text-xs lg:text-sm font-black text-gray-900"></p></div>
                 </div>
             </div>
-            <div class="p-8 bg-white border-t border-slate-50">
-                <button onclick="finalizeTransaction()" class="w-full py-6 bg-orange-600 text-white rounded-3xl font-black text-sm uppercase shadow-lg hover:bg-orange-700 active:scale-95 transition-all">
+            <div class="p-6 lg:p-8 bg-white border-t border-slate-50">
+                <button onclick="finalizeTransaction()" class="w-full py-4 lg:py-6 bg-orange-600 text-white rounded-2xl lg:rounded-3xl font-black text-xs lg:text-sm uppercase shadow-lg hover:bg-orange-700 active:scale-95 transition-all">
                     Hoàn tất & In Hóa Đơn
                 </button>
             </div>
@@ -237,44 +242,41 @@
 
     <div id="print-area">
         <div class="print-text-center">
-            <h1 id="print-shop-name" style="margin: 0 0 5px 0; font-size: 22px; font-weight: 900;"></h1>
+            <h1 id="print-shop-name" style="margin: 0 0 5px 0; font-size: 20px; font-weight: 900;"></h1>
             <p id="print-shop-address" style="font-size: 11px; margin: 0;"></p>
             <div class="print-line"></div>
-            <h2 id="print-doc-title" style="margin: 10px 0; font-size: 18px; text-transform: uppercase; font-weight: bold;">HÓA ĐƠN</h2>
-            <table style="width: 100%; margin-bottom: 10px;">
-                <tr><td style="text-align: left; font-size: 12px;" id="print-doc-time"></td><td style="text-align: right; font-size: 16px; font-weight: bold;" id="print-doc-table"></td></tr>
+            <h2 id="print-doc-title" style="margin: 8px 0; font-size: 16px; text-transform: uppercase; font-weight: bold;">HÓA ĐƠN</h2>
+            <table style="width: 100%; margin-bottom: 8px;">
+                <tr><td style="text-align: left; font-size: 11px;" id="print-doc-time"></td><td style="text-align: right; font-size: 14px; font-weight: bold;" id="print-doc-table"></td></tr>
             </table>
         </div>
         <div class="print-line"></div>
-        <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
-            <thead><tr><th style="text-align: left; padding-bottom: 5px;">Món</th><th style="text-align: center; padding-bottom: 5px; width: 40px;">SL</th><th style="text-align: right; padding-bottom: 5px; width: 70px;">Tiền</th></tr></thead>
+        <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <thead><tr><th style="text-align: left; padding-bottom: 5px;">Món</th><th style="text-align: center; padding-bottom: 5px; width: 30px;">SL</th><th style="text-align: right; padding-bottom: 5px; width: 60px;">Tiền</th></tr></thead>
             <tbody id="print-doc-items"></tbody>
         </table>
         <div class="print-line"></div>
         <div id="print-total-section">
-            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px; padding: 5px 0;"><span>TỔNG:</span> <span id="print-doc-total">0</span></div>
-            <p id="print-doc-method" style="font-size: 11px; font-style: italic; text-align: center; margin: 5px 0;"></p>
+            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; padding: 5px 0;"><span>TỔNG:</span> <span id="print-doc-total">0</span></div>
+            <p id="print-doc-method" style="font-size: 10px; font-style: italic; text-align: center; margin: 4px 0;"></p>
             <div class="print-line"></div>
         </div>
-        <div class="print-text-center" style="margin-top: 15px;">
-            <p style="font-size: 11px; font-weight: bold; margin: 0;">CẢM ƠN QUÝ KHÁCH</p>
-            <p style="font-size: 10px; margin-top: 3px;">Hẹn gặp lại tại Phát La!</p>
+        <div class="print-text-center" style="margin-top: 10px;">
+            <p style="font-size: 10px; font-weight: bold; margin: 0;">CẢM ƠN QUÝ KHÁCH</p>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // KHỐI 1: TÍCH HỢP FIREBASE (TỪ V44)
+        // KHỐI 1: TÍCH HỢP FIREBASE (REALTIME)
         // ==========================================
         function initRealtimeSync() {
             if(!window.FIREBASE_DB) return;
             const { ref, onValue } = window.firebaseRefs;
             
-            // Lắng nghe trạng thái Bàn
             onValue(ref(window.FIREBASE_DB, 'pos/tables'), (snapshot) => {
                 document.getElementById('sync-dot').className = "w-2 h-2 rounded-full bg-green-500 animate-pulse";
-                document.getElementById('system-status').innerText = "Đã kết nối Firebase";
-                
+                document.getElementById('system-status').innerText = "Đã kết nối máy chủ";
                 const data = snapshot.val();
                 if(data) {
                     appState.tables = data;
@@ -283,7 +285,6 @@
                 }
             });
 
-            // Lắng nghe Doanh thu
             onValue(ref(window.FIREBASE_DB, 'pos/transactions'), (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
@@ -297,13 +298,11 @@
             if(window.FIREBASE_DB) {
                 const { set, ref } = window.firebaseRefs;
                 set(ref(window.FIREBASE_DB, 'pos/tables'), appState.tables);
-            } else {
-                renderTableGrid(); renderCartUI(); 
-            }
+            } else { renderTableGrid(); renderCartUI(); }
         }
 
         // ==========================================
-        // KHỐI 2: UI & LOGIC XỬ LÝ (TỪ V43)
+        // KHỐI 2: UI & LOGIC CƠ BẢN
         // ==========================================
         function initializeSystemData() {
             document.getElementById('ui-bank-info').innerText = `${SYSTEM_CONFIG.bank} - ${SYSTEM_CONFIG.accountNo}`;
@@ -316,8 +315,8 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            let icon = type === 'error' ? '<i class="fa-solid fa-circle-exclamation text-red-500"></i>' : '<i class="fa-solid fa-circle-check text-green-500"></i>';
-            toast.innerHTML = `${icon} <span class="text-[11px] font-bold text-gray-800">${message}</span>`;
+            let icon = type === 'error' ? '<i class="fa-solid fa-circle-exclamation text-red-500"></i>' : (type === 'warning' ? '<i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>' : '<i class="fa-solid fa-circle-check text-green-500"></i>');
+            toast.innerHTML = `${icon} <span class="text-[10px] lg:text-[11px] font-bold text-gray-800">${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
@@ -349,13 +348,13 @@
                 if (t.status === 'occupied') occ++;
                 const displayId = t.id < 10 ? `0${t.id}` : t.id;
                 return `
-                    <div onclick="handleSelectTable(${t.id})" class="table-card ${t.status} p-8 flex flex-col items-center justify-center cursor-pointer shadow-sm">
-                        <span class="text-[9px] font-black uppercase mb-2 ${t.status === 'occupied' ? 'opacity-50 text-white' : 'opacity-40 text-slate-500'}">BÀN</span>
-                        <b class="text-4xl font-black">${displayId}</b>
-                        <div class="h-4 mt-2">${t.status === 'occupied' && t.startTime ? `<span class="text-[9px] font-bold uppercase bg-white/20 px-2 py-1 rounded text-white">${t.startTime}</span>` : ''}</div>
+                    <div onclick="handleSelectTable(${t.id})" class="table-card ${t.status} p-5 lg:p-8 flex flex-col items-center justify-center cursor-pointer shadow-sm">
+                        <span class="text-[8px] lg:text-[9px] font-black uppercase mb-1 lg:mb-2 ${t.status === 'occupied' ? 'opacity-50 text-white' : 'opacity-40 text-slate-500'}">BÀN</span>
+                        <b class="text-3xl lg:text-4xl font-black">${displayId}</b>
+                        <div class="h-4 mt-1 lg:mt-2">${t.status === 'occupied' && t.startTime ? `<span class="text-[8px] lg:text-[9px] font-bold uppercase bg-white/20 px-2 py-0.5 rounded text-white">${t.startTime}</span>` : ''}</div>
                     </div>`;
             }).join('');
-            document.getElementById('table-stats').innerText = `${occ}/${SYSTEM_CONFIG.totalTables} Bàn đang phục vụ`;
+            document.getElementById('table-stats').innerText = `${occ}/${SYSTEM_CONFIG.totalTables} Bàn phục vụ`;
         }
 
         function handleSelectTable(id) {
@@ -366,14 +365,14 @@
             }
             document.getElementById('bill-table-name').innerText = `BÀN ${id < 10 ? '0'+id : id}`;
             document.getElementById('bill-time-in').innerText = `Giờ vào: ${table.startTime}`;
-            syncStateToCloud(); // Push lên Firebase
+            syncStateToCloud();
             switchTab('pos');
         }
 
         function renderCategories() {
             const cats = ["TẤT CẢ", ...new Set(FULL_MENU.map(m => m.cat))];
             document.getElementById('sidebar-categories').innerHTML = cats.map(c => `
-                <button onclick="appState.filterCategory='${c}'; renderMenuItems()" class="px-5 py-4 rounded-2xl text-[10px] font-black uppercase transition-all shrink-0 text-left border ${appState.filterCategory === c ? 'bg-gray-900 text-white border-gray-900 shadow-lg' : 'bg-white text-slate-500 border-slate-200'}">${c}</button>
+                <button onclick="appState.filterCategory='${c}'; renderMenuItems()" class="px-4 lg:px-5 py-3 lg:py-4 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black uppercase transition-all shrink-0 text-center lg:text-left border ${appState.filterCategory === c ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white text-slate-500 border-slate-200'} whitespace-nowrap">${c}</button>
             `).join('');
         }
 
@@ -381,8 +380,8 @@
             const items = appState.filterCategory === "TẤT CẢ" ? FULL_MENU : FULL_MENU.filter(m => m.cat === appState.filterCategory);
             document.getElementById('grid-menu').innerHTML = items.map(m => `
                 <div onclick="handleAddToCart('${m.id}')" class="item-card">
-                    <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl mb-4"><i class="fa-solid ${m.icon}"></i></div>
-                    <div><p class="text-[11px] font-black uppercase text-slate-800 mb-1">${m.name}</p><p class="text-[12px] font-bold text-orange-600">${m.price.toLocaleString()}đ</p></div>
+                    <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-lg lg:text-xl mb-2 lg:mb-4"><i class="fa-solid ${m.icon}"></i></div>
+                    <div><p class="text-[9px] lg:text-[11px] font-black uppercase text-slate-800 mb-0.5 lg:mb-1 line-clamp-2">${m.name}</p><p class="text-[10px] lg:text-[12px] font-bold text-orange-600">${m.price.toLocaleString()}đ</p></div>
                 </div>
             `).join('');
         }
@@ -407,15 +406,17 @@
         function renderCartUI() {
             const container = document.getElementById('bill-items');
             const totalEl = document.getElementById('bill-total-price');
-            if (!appState.currentTableId) { container.innerHTML = ""; totalEl.innerText = "0đ"; return; }
+            if (!appState.currentTableId || !appState.tables.find(t => t.id === appState.currentTableId).cart?.length) { 
+                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-30 text-slate-400"><i class="fa-solid fa-basket-shopping text-3xl lg:text-5xl mb-2 lg:mb-4"></i><p class="text-[9px] lg:text-[10px] font-black uppercase">Chưa có món</p></div>`; 
+                totalEl.innerText = "0đ"; 
+                return; 
+            }
             
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-            if (!table.cart || table.cart.length === 0) { container.innerHTML = ""; totalEl.innerText = "0đ"; return; }
-            
             container.innerHTML = table.cart.map(x => `
-                <div class="flex justify-between items-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm fade-in">
-                    <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xs"><i class="fa-solid ${x.icon}"></i></div><span class="text-[10px] font-black uppercase text-gray-800">${x.name}</span></div>
-                    <div class="flex items-center gap-3"><span class="text-[11px] font-bold text-orange-600">${x.price.toLocaleString()}đ</span><button onclick="handleRemoveFromCart('${x.tempId}')" class="text-red-500"><i class="fa-solid fa-xmark"></i></button></div>
+                <div class="flex justify-between items-center p-3 lg:p-4 bg-white rounded-xl lg:rounded-2xl border border-slate-100 shadow-sm fade-in">
+                    <div class="flex items-center gap-2 lg:gap-3"><div class="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-[10px] lg:text-xs"><i class="fa-solid ${x.icon}"></i></div><span class="text-[9px] lg:text-[10px] font-black uppercase text-gray-800 max-w-[100px] lg:max-w-[150px] truncate">${x.name}</span></div>
+                    <div class="flex items-center gap-2 lg:gap-3"><span class="text-[10px] lg:text-[11px] font-bold text-orange-600">${x.price.toLocaleString()}</span><button onclick="handleRemoveFromCart('${x.tempId}')" class="text-red-400 hover:text-red-600 w-6 h-6 flex items-center justify-center bg-red-50 rounded-full"><i class="fa-solid fa-xmark text-[10px]"></i></button></div>
                 </div>
             `).join('');
             totalEl.innerText = table.cart.reduce((s, i) => s + i.price, 0).toLocaleString() + 'đ';
@@ -427,7 +428,7 @@
         function triggerPaymentFlow() {
             if (!appState.currentTableId) return;
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-            if (!table.cart || table.cart.length === 0) return;
+            if (!table.cart || table.cart.length === 0) return showNotification("Bàn chưa có món!", "warning");
             
             document.getElementById('checkout-table-label').innerText = table.id;
             document.getElementById('checkout-amount').innerText = table.cart.reduce((s, i) => s + i.price, 0).toLocaleString() + 'đ';
@@ -447,12 +448,12 @@
             appState.paymentMethod = method;
             const btnCash = document.getElementById('btn-pay-cash'), btnQr = document.getElementById('btn-pay-qr'), qrBox = document.getElementById('checkout-qr-box');
             if (method === 'Tiền mặt') {
-                btnCash.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-orange-500 bg-orange-50 text-orange-600";
-                btnQr.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-slate-100 text-slate-400";
+                btnCash.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-orange-500 bg-orange-50 text-orange-600";
+                btnQr.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-slate-100 text-slate-400";
                 qrBox.classList.add('hidden'); qrBox.classList.remove('flex');
             } else {
-                btnQr.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-blue-500 bg-blue-50 text-blue-600";
-                btnCash.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-slate-100 text-slate-400";
+                btnQr.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-blue-500 bg-blue-50 text-blue-600";
+                btnCash.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-slate-100 text-slate-400";
                 const total = appState.tables.find(t => t.id === appState.currentTableId).cart.reduce((s, i) => s + i.price, 0);
                 document.getElementById('checkout-qr-image').src = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-compact2.png?amount=${total}&addInfo=THANHTOAN${appState.currentTableId}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
                 qrBox.classList.remove('hidden'); qrBox.classList.add('flex', 'fade-in');
@@ -468,10 +469,10 @@
 
             const payload = {
                 date: now.toLocaleDateString('vi-VN'), time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
-                table: `Bàn ${table.id}`, total: total, method: appState.paymentMethod
+                table: `Bàn ${table.id}`, total: total, method: appState.paymentMethod, month: `${now.getMonth()+1}/${now.getFullYear()}`, year: now.getFullYear()
             };
 
-            // Push Lịch sử lên Firebase Realtime thay vì Google Sheets
+            // Lưu lên Firebase Realtime
             if(window.FIREBASE_DB) {
                 const { push, ref } = window.firebaseRefs;
                 push(ref(window.FIREBASE_DB, 'pos/transactions'), payload);
@@ -480,12 +481,12 @@
             table.status = 'available'; table.cart = []; table.startTime = null;
             syncStateToCloud();
             closeModal(); switchTab('tables');
-            showNotification(`Thanh toán thành công!`);
+            showNotification(`Đã thanh toán bàn ${table.id}!`);
         }
 
         function processPrint(printType) {
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-            const titles = { 'bep': 'PHIẾU BÁO BẾP', 'tam-tinh': 'PHIẾU TẠM TÍNH', 'hoa-don': 'HÓA ĐƠN THANH TOÁN' };
+            const titles = { 'bep': 'PHIẾU BÁO BẾP', 'tam-tinh': 'PHIẾU TẠM TÍNH', 'hoa-don': 'HÓA ĐƠN' };
             document.getElementById('print-doc-title').innerText = titles[printType];
             document.getElementById('print-doc-table').innerText = `BÀN ${table.id}`;
             const now = new Date();
@@ -497,40 +498,101 @@
             document.getElementById('print-total-section').style.display = isBep ? 'none' : 'block';
 
             document.getElementById('print-doc-items').innerHTML = Object.keys(grouped).map(name => `
-                <tr><td style="padding: 5px 0;">${name}</td><td style="text-align: center; font-weight: bold;">${grouped[name].count}</td>
+                <tr><td style="padding: 4px 0;">${name}</td><td style="text-align: center; font-weight: bold;">${grouped[name].count}</td>
                 <td style="text-align: right;">${isBep ? '' : (grouped[name].price * grouped[name].count).toLocaleString()}</td></tr>
             `).join('');
 
             if (!isBep) {
                 document.getElementById('print-doc-total').innerText = table.cart.reduce((s, i) => s + i.price, 0).toLocaleString() + 'đ';
-                document.getElementById('print-doc-method').innerText = printType === 'hoa-don' ? `(Thanh toán qua ${appState.paymentMethod})` : '(Chưa thanh toán)';
+                document.getElementById('print-doc-method').innerText = printType === 'hoa-don' ? `(${appState.paymentMethod})` : '(Chưa thu tiền)';
             }
             window.print();
         }
 
+        // ==========================================
+        // KHỐI 4: BÁO CÁO & XUẤT EXCEL/GOOGLE SHEETS
+        // ==========================================
         function renderReportUI() {
             const todayStr = new Date().toLocaleDateString('vi-VN');
-            document.getElementById('report-date').innerText = `Hôm nay: ${todayStr}`;
+            document.getElementById('report-date').innerText = `Cập nhật: ${new Date().toLocaleString('vi-VN')}`;
             const todayData = appState.transactions.filter(t => t.date === todayStr);
             const sumTotal = todayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
             const sumCash = todayData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
             const sumQR = todayData.filter(t => t.method === 'Chuyển khoản').reduce((s, t) => s + parseInt(t.total || 0), 0);
 
             document.getElementById('report-dashboard').innerHTML = `
-                <div class="bg-gray-900 p-8 rounded-[2.5rem] text-white"><p class="text-[10px] font-black uppercase text-gray-400 mb-2">TỔNG DOANH THU</p><h2 class="text-4xl font-black text-orange-500">${sumTotal.toLocaleString()}đ</h2></div>
-                <div class="bg-white p-8 rounded-[2.5rem] border"><p class="text-[10px] font-black uppercase text-slate-400">Tiền Mặt</p><h2 class="text-3xl font-black mt-2">${sumCash.toLocaleString()}đ</h2></div>
-                <div class="bg-blue-50 p-8 rounded-[2.5rem] border border-blue-100"><p class="text-[10px] font-black uppercase text-blue-400">Chuyển Khoản</p><h2 class="text-3xl font-black text-blue-700 mt-2">${sumQR.toLocaleString()}đ</h2></div>
+                <div class="bg-gray-900 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] text-white"><p class="text-[9px] lg:text-[10px] font-black uppercase text-gray-400 mb-1 lg:mb-2">DOANH THU</p><h2 class="text-3xl lg:text-4xl font-black text-orange-500">${sumTotal.toLocaleString()}đ</h2><p class="text-[9px] mt-2 text-gray-500">${todayData.length} đơn</p></div>
+                <div class="bg-white p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border"><p class="text-[9px] lg:text-[10px] font-black uppercase text-slate-400">Tiền Mặt</p><h2 class="text-2xl lg:text-3xl font-black mt-1 lg:mt-2">${sumCash.toLocaleString()}đ</h2></div>
+                <div class="bg-blue-50 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border border-blue-100"><p class="text-[9px] lg:text-[10px] font-black uppercase text-blue-400">Chuyển Khoản</p><h2 class="text-2xl lg:text-3xl font-black text-blue-700 mt-1 lg:mt-2">${sumQR.toLocaleString()}đ</h2></div>
             `;
 
             document.getElementById('report-history').innerHTML = [...todayData].reverse().slice(0, 20).map(t => `
-                <div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
-                        <div><p class="text-[11px] font-black uppercase">${t.table}</p><p class="text-[9px] text-slate-400 mt-0.5">${t.time} • ${t.method}</p></div>
+                <div class="flex justify-between items-center p-4 lg:p-5 bg-slate-50 rounded-xl lg:rounded-2xl border border-slate-100">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-white flex items-center justify-center"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
+                        <div><p class="text-[10px] lg:text-[11px] font-black uppercase">${t.table}</p><p class="text-[8px] lg:text-[9px] text-slate-400 mt-0.5">${t.time} • ${t.method}</p></div>
                     </div>
-                    <span class="text-sm font-black ${t.method === 'Tiền mặt' ? 'text-gray-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
+                    <span class="text-xs lg:text-sm font-black ${t.method === 'Tiền mặt' ? 'text-gray-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
                 </div>
             `).join('');
+        }
+
+        // TÍNH NĂNG 1: XUẤT FILE EXCEL / CSV
+        function exportToCSV() {
+            const todayStr = new Date().toLocaleDateString('vi-VN');
+            const dataToExport = appState.transactions.filter(t => t.date === todayStr);
+            
+            if(dataToExport.length === 0) return showNotification("Hôm nay chưa có doanh thu!", "warning");
+
+            // BOM \uFEFF giúp Excel đọc tiếng Việt không bị lỗi font
+            const headers = ["Ngày", "Giờ", "Bàn", "Phương thức", "Tổng tiền (VNĐ)"];
+            const rows = dataToExport.map(t => [t.date, t.time, t.table, t.method, t.total]);
+            
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Doanh_Thu_${todayStr.replace(/\//g,'-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            showNotification("Đã tải xuống file Excel thành công!");
+        }
+
+        // TÍNH NĂNG 2: ĐỒNG BỘ LÊN GOOGLE SHEETS
+        async function syncToGoogleSheets() {
+            const todayStr = new Date().toLocaleDateString('vi-VN');
+            const dataToExport = appState.transactions.filter(t => t.date === todayStr);
+            
+            if(dataToExport.length === 0) return showNotification("Không có dữ liệu để đồng bộ!", "warning");
+            
+            showNotification("Đang nén và gửi lên Google Sheets...", "warning");
+            
+            // Vì Google Apps Script thường nhận từng dòng, ta sẽ gom tổng quan ngày hôm đó để đỡ spam
+            const sumTotal = dataToExport.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            
+            const payload = {
+                date: todayStr,
+                time: new Date().toLocaleTimeString('vi-VN'),
+                table: `TỔNG KẾT NGÀY (${dataToExport.length} đơn)`,
+                total: sumTotal,
+                method: "Hệ thống tự đồng bộ",
+                month: `${new Date().getMonth()+1}/${new Date().getFullYear()}`,
+                year: new Date().getFullYear()
+            };
+
+            try {
+                // Sử dụng mode no-cors kế thừa từ V43 để tránh lỗi Cross-Origin
+                await fetch(SYSTEM_CONFIG.scriptUrl, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(payload) 
+                });
+                showNotification("Đã lưu tổng kết ngày lên Google Sheets!", "success");
+            } catch (err) {
+                showNotification("Lỗi mạng khi kết nối Google Sheets!", "error");
+            }
         }
 
         // INIT
@@ -540,7 +602,7 @@
             setTimeout(() => {
                 initRealtimeSync();
                 switchTab('tables');
-            }, 1000);
+            }, 800);
         };
     </script>
 </body>
