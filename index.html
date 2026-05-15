@@ -3,53 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - V34.2</title>
+    <title>PHÁT LA PREMIUM - V34.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
-        body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+        body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; }
         .active-tab { color: #f97316 !important; border-bottom: 3px solid #f97316; }
         .occupied { background-color: #f97316 !important; color: white !important; border-color: #ea580c !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden">
 
     <script>
-        // PHÁT DÁN LINK MỚI VỪA COPY Ở BƯỚC 1 VÀO ĐÂY
-        const GOOGLE_SHEET_URL = "DÁN_LINK_WEB_APP_MỚI_CỦA_PHÁT_VÀO_ĐÂY";
+        // DÁN LINK MỚI CỦA PHÁT VÀO ĐÂY
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbznkTS8Pj1u6Y60knNlAO95vXuLoMOvIamttaLb8wlaO6DeB9hBzf-szFnTxeYt3Jwt/exec";
         
-        // Cấu hình cửa hàng
-        const BANK_ID = "VCB"; 
-        const ACCOUNT_NO = "1046778674";
-        
+        // DANH SÁCH MÓN ĂN - LUÔN HIỆN KỂ CẢ LỖI SCRIPT
         const menu = [
             { cat: "CÀ PHÊ", name: "Cà Phê Đen", price: 35000, icon: "fa-mug-hot" },
             { cat: "CÀ PHÊ", name: "Cà Phê Sữa", price: 40000, icon: "fa-glass-water" },
             { cat: "TRÀ", name: "Trà Đào Cam Sả", price: 55000, icon: "fa-leaf" },
+            { cat: "TRÀ", name: "Trà Vải", price: 55000, icon: "fa-wine-glass" },
             { cat: "NƯỚC ÉP", name: "Ép Cam Tươi", price: 45000, icon: "fa-citrus" },
+            { cat: "ĐÁ XAY", name: "Matcha Đá Xay", price: 65000, icon: "fa-ice-cream" },
             { cat: "SIGNATURE", name: "Phát La Special", price: 85000, icon: "fa-crown" }
         ];
 
-        let tables = Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
+        let tables = JSON.parse(localStorage.getItem('pl_tables')) || Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
         let orders = []; 
-        let curTable = null, activeCart = [], curCat = "TẤT CẢ", isTakeaway = false;
+        let curTable = null, activeCart = [], curCat = "TẤT CẢ";
     </script>
 
-    <header class="bg-white px-6 py-4 flex justify-between items-center border-b shrink-0 shadow-sm">
+    <header class="bg-white px-6 py-3 flex justify-between items-center border-b shrink-0 shadow-sm z-50">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">PL</div>
             <div>
                 <h1 class="text-xs font-black uppercase">Phát La Premium</h1>
-                <p id="syncStatus" class="text-[8px] font-bold text-green-500 uppercase">Đang kết nối Cloud...</p>
+                <p id="syncStatus" class="text-[8px] font-bold text-green-500 uppercase tracking-widest">Đang trực tuyến</p>
             </div>
         </div>
-        <button onclick="syncData()" class="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-orange-100">
-            Làm mới dữ liệu
+        <button onclick="syncData()" class="text-[10px] font-black uppercase text-orange-600 bg-orange-50 px-4 py-2 rounded-xl border border-orange-100">
+            <i class="fa-solid fa-rotate"></i> Đồng bộ Cloud
         </button>
     </header>
 
-    <nav class="bg-white flex border-b shrink-0 shadow-sm">
+    <nav class="bg-white flex border-b shrink-0 z-40">
         <button onclick="showTab('tables')" id="btn-tables" class="flex-1 py-4 text-[10px] font-bold uppercase active-tab">Sơ đồ bàn</button>
         <button onclick="showTab('pos')" id="btn-pos" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Gọi món</button>
         <button onclick="showTab('report')" id="btn-report" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Doanh thu</button>
@@ -57,117 +57,127 @@
 
     <main class="flex-1 relative overflow-hidden bg-gray-50">
         <section id="tab-tables" class="absolute inset-0 p-6 overflow-y-auto">
-            <button onclick="selectTakeaway()" class="w-full mb-6 py-5 bg-orange-600 text-white rounded-2xl font-black text-xs shadow-xl uppercase">Mang về</button>
-            <div id="tableGrid" class="grid grid-cols-3 md:grid-cols-6 gap-4"></div>
+            <div id="tableGrid" class="grid grid-cols-3 md:grid-cols-6 gap-4 max-w-4xl mx-auto"></div>
         </section>
 
         <section id="tab-pos" class="absolute inset-0 hidden flex-col lg:flex-row bg-white">
-            <div id="catBar" class="p-4 bg-gray-50 flex lg:flex-col gap-2 overflow-x-auto lg:w-48 shrink-0"></div>
-            <div class="flex-1 p-6 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4" id="menuGrid"></div>
-            <div class="lg:w-96 border-l flex flex-col p-6 shadow-2xl bg-white">
-                <h3 id="labelTable" class="text-xs font-black mb-4 uppercase text-gray-400">Đơn hàng</h3>
-                <div id="cartItems" class="flex-1 overflow-y-auto space-y-2 mb-4"></div>
-                <div class="border-t pt-4">
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="text-xs font-black">TỔNG CỘNG</span>
-                        <span id="cartTotal" class="text-3xl font-black text-orange-600">0đ</span>
-                    </div>
-                    <button onclick="processPayment()" class="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase shadow-lg">Thanh toán</button>
+            <div id="catBar" class="p-2 lg:p-4 bg-gray-50 flex lg:flex-col gap-2 overflow-x-auto lg:w-48 shrink-0 no-scrollbar"></div>
+            <div class="flex-1 p-4 lg:p-6 overflow-y-auto grid grid-cols-2 md:grid-cols-4 gap-4" id="menuGrid"></div>
+            
+            <div class="lg:w-96 border-t lg:border-t-0 lg:border-l flex flex-col p-6 shadow-2xl bg-white shrink-0">
+                <div class="flex justify-between items-center mb-6">
+                    <span id="labelTable" class="bg-black text-white px-3 py-1 rounded text-[9px] font-black uppercase">BÀN</span>
+                    <span id="cartTotal" class="text-3xl font-black text-orange-600">0đ</span>
                 </div>
+                <div id="cartItems" class="flex-1 overflow-y-auto space-y-2 mb-4"></div>
+                <button onclick="processPayment()" class="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase shadow-lg">Thanh toán</button>
             </div>
         </section>
 
-        <section id="tab-report" class="absolute inset-0 p-6 hidden overflow-y-auto">
-            <div id="statBox" class="bg-gray-900 p-8 rounded-[2rem] text-center text-white mb-6"></div>
-            <div id="history" class="space-y-3 pb-20"></div>
+        <section id="tab-report" class="absolute inset-0 p-6 hidden overflow-y-auto bg-white">
+            <div id="statBox" class="bg-gray-900 p-8 rounded-[2.5rem] text-center text-white mb-8 shadow-xl"></div>
+            <div id="history" class="space-y-3 pb-24"></div>
         </section>
     </main>
 
     <script>
-        // HÀM ĐỒNG BỘ - TỰ ĐỘNG LẤY DATA
-        async function syncData() {
-            const status = document.getElementById('syncStatus');
-            try {
-                const res = await fetch(GOOGLE_SHEET_URL);
-                orders = await res.json();
-                renderStats();
-                status.innerText = "Dữ liệu đã đồng bộ";
-            } catch (e) {
-                status.innerText = "Lỗi script hoặc chưa Deploy Anyone";
-            }
-        }
-
         function showTab(t) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab'));
             const target = document.getElementById(`tab-${t}`);
             t === 'pos' ? target.classList.add('flex') : target.classList.remove('hidden');
             document.getElementById(`btn-${t}`).classList.add('active-tab');
+            if(t === 'tables') renderTables();
         }
 
         function renderTables() {
             document.getElementById('tableGrid').innerHTML = tables.map(t => `
-                <div onclick="selectTable(${t.id})" class="p-8 rounded-[2rem] border-2 flex flex-col items-center cursor-pointer transition-all ${t.status==='occupied'?'occupied':'bg-white border-gray-100'}">
+                <div onclick="selectTable(${t.id})" class="p-8 rounded-[2.5rem] border-2 flex flex-col items-center cursor-pointer transition-all ${t.status==='occupied'?'occupied':'bg-white border-gray-100'}">
                     <b class="text-sm font-black">${t.id}</b>
+                    <span class="text-[8px] font-bold opacity-40 uppercase">${t.status==='occupied'?'Có khách':'Trống'}</span>
                 </div>`).join('');
         }
 
         function selectTable(id) {
-            curTable = id; isTakeaway = false;
+            curTable = id;
             document.getElementById('labelTable').innerText = `BÀN ${id}`;
-            showTab('pos');
-        }
-
-        function selectTakeaway() {
-            curTable = null; isTakeaway = true;
-            document.getElementById('labelTable').innerText = `MANG VỀ`;
+            const t = tables.find(x => x.id === id);
+            activeCart = t.cart || [];
+            updateCartUI();
             showTab('pos');
         }
 
         function addToCart(name, price) {
             activeCart.push({name, price});
+            updateCartUI();
+            const t = tables.find(x => x.id === curTable);
+            t.status = 'occupied'; t.cart = activeCart;
+            localStorage.setItem('pl_tables', JSON.stringify(tables));
+        }
+
+        function updateCartUI() {
             const total = activeCart.reduce((s,c)=>s+c.price, 0);
             document.getElementById('cartTotal').innerText = total.toLocaleString() + 'đ';
-            document.getElementById('cartItems').innerHTML = activeCart.map(i => `<div class="p-3 bg-gray-50 rounded-xl text-[10px] font-black uppercase">${i.name}</div>`).join('');
-            if(!isTakeaway) {
-                tables.find(x => x.id === curTable).status = 'occupied';
-                renderTables();
-            }
+            document.getElementById('cartItems').innerHTML = activeCart.map((i, idx) => `
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                    <span class="text-[10px] font-black uppercase">${i.name}</span>
+                    <button onclick="activeCart.splice(${idx},1);updateCartUI();" class="text-red-400 px-2">✕</button>
+                </div>`).join('');
         }
 
         async function processPayment() {
             if(!activeCart.length) return;
             const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            const data = { date: new Date().toLocaleDateString('vi-VN'), total: total, table: curTable || 'Mang về' };
+            const data = { 
+                date: new Date().toLocaleDateString('vi-VN'), 
+                time: new Date().toLocaleTimeString('vi-VN'),
+                total: total, table: `Bàn ${curTable}`,
+                method: "Tiền mặt", month: (new Date().getMonth()+1)+"/2026", year: "2026"
+            };
             
-            // Gửi lên Cloud
-            await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+            fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
             
-            if(!isTakeaway) tables.find(x => x.id === curTable).status = 'available';
-            activeCart = [];
-            document.getElementById('cartTotal').innerText = '0đ';
-            document.getElementById('cartItems').innerHTML = '';
-            syncData();
-            showTab('tables');
-            renderTables();
+            const t = tables.find(x => x.id === curTable);
+            t.status = 'available'; t.cart = [];
+            localStorage.setItem('pl_tables', JSON.stringify(tables));
+            activeCart = []; updateCartUI();
+            syncData(); showTab('tables');
+        }
+
+        async function syncData() {
+            try {
+                const res = await fetch(GOOGLE_SHEET_URL);
+                orders = await res.json();
+                renderStats();
+                document.getElementById('syncStatus').innerText = "Đã đồng bộ Cloud";
+            } catch (e) {
+                document.getElementById('syncStatus').innerText = "Chế độ ngoại tuyến";
+            }
         }
 
         function renderStats() {
             const today = new Date().toLocaleDateString('vi-VN');
-            const dayTotal = orders.filter(o => o.date === today).reduce((s,o)=>s+parseInt(o.total), 0);
-            document.getElementById('statBox').innerHTML = `<p class="text-[10px] font-bold opacity-50 uppercase mb-2">Doanh thu hôm nay</p><h2 class="text-4xl font-black text-orange-500">${dayTotal.toLocaleString()}đ</h2>`;
-            document.getElementById('history').innerHTML = [...orders].reverse().slice(0,10).map(o => `<div class="bg-white p-4 rounded-2xl flex justify-between items-center border border-gray-100"><b class="text-[10px] uppercase">${o.table}</b><span class="text-orange-600 font-black">+${parseInt(o.total).toLocaleString()}</span></div>`).join('');
+            const dayTotal = orders.filter(o => o.date === today).reduce((s,o)=>s+parseInt(o.total || 0), 0);
+            document.getElementById('statBox').innerHTML = `<p class="text-[10px] font-bold opacity-40 uppercase mb-2">Doanh thu hôm nay</p><h2 class="text-4xl font-black text-orange-500">${dayTotal.toLocaleString()}đ</h2>`;
+            document.getElementById('history').innerHTML = [...orders].reverse().slice(0,10).map(o => `
+                <div class="bg-white p-5 rounded-2xl flex justify-between items-center border border-gray-100 shadow-sm">
+                    <div><b class="text-[11px] uppercase">${o.table}</b><p class="text-[8px] font-bold text-gray-400 uppercase">${o.time}</p></div>
+                    <span class="text-orange-600 font-black">+${parseInt(o.total || 0).toLocaleString()}</span>
+                </div>`).join('');
         }
 
         function renderMenu() {
             document.getElementById('menuGrid').innerHTML = menu.map(m => `
-                <div onclick="addToCart('${m.name}', ${m.price})" class="bg-white p-6 rounded-[2rem] border-2 border-gray-50 flex flex-col justify-between h-36 cursor-pointer">
-                    <i class="fa-solid ${m.icon} text-orange-500"></i>
-                    <p class="text-[10px] font-black uppercase">${m.name}</p>
+                <div onclick="addToCart('${m.name}', ${m.price})" class="bg-white p-6 rounded-[2.5rem] border-2 border-gray-50 flex flex-col justify-between h-40 cursor-pointer hover:border-orange-200 transition-all active:scale-95">
+                    <i class="fa-solid ${m.icon} text-orange-500 text-xl"></i>
+                    <div>
+                        <p class="text-[10px] font-black uppercase text-gray-800 leading-tight">${m.name}</p>
+                        <p class="text-[10px] font-bold text-orange-400 mt-1">${m.price.toLocaleString()}đ</p>
+                    </div>
                 </div>`).join('');
         }
 
-        window.onload = () => { renderTables(); renderMenu(); syncData(); setInterval(syncData, 20000); };
+        window.onload = () => { renderTables(); renderMenu(); syncData(); setInterval(syncData, 30000); };
     </script>
 </body>
 </html>
