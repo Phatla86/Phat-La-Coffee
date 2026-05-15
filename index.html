@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - V29 FIXED</title>
+    <title>PHÁT LA PREMIUM V31 - CLOUD SYNC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,32 +12,20 @@
         .active-tab { color: #f97316 !important; border-bottom: 3px solid #f97316; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Fix lỗi chồng chéo trên Desktop */
         @media (min-width: 1024px) {
-            #tab-pos { 
-                display: none; /* Mặc định ẩn, sẽ hiện bằng JS */
-                grid-template-columns: 200px 1fr 380px; 
-                position: absolute; 
-                inset: 0; 
-                height: 100%;
-            }
+            #tab-pos { display: none; grid-template-columns: 200px 1fr 380px; position: absolute; inset: 0; }
             #tab-pos.active-flex { display: grid !important; }
-            .cart-panel { height: 100%; border-left: 1px solid #e2e8f0; }
         }
-        
-        /* Mobile adjustment */
         @media (max-width: 1023px) {
             #tab-pos.active-flex { display: flex !important; flex-direction: column; }
         }
-        
-        .table-card:active { transform: scale(0.95); }
-        .menu-card:active { transform: scale(0.98); background-color: #fff7ed; }
     </style>
 </head>
 <body class="flex flex-col text-gray-800">
 
     <script>
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxj7f7bG5Nq9YAjFjBy9kQE4wOW37oQPw4o021K1Axsjq3izYb9wF0Bd0VENcqCdDi-/exec";
+        // LINK APPS SCRIPT MỚI NHẤT ĐÃ ĐƯỢC CẬP NHẬT
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbw4dEDUGoQEyRrJSOEOhpHtXplZf33QFC4QGJoZlRNHomJd6xTf1nFhm_maOPeBcwC3/exec";
         const BANK_ID = "VCB"; 
         const ACCOUNT_NO = "1046778674";
     </script>
@@ -46,80 +34,61 @@
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-orange-600 rounded-lg flex items-center justify-center text-white font-black shadow-lg">PL</div>
             <div>
-                <h1 class="text-[11px] lg:text-sm font-black uppercase tracking-tighter">Phát La Premium</h1>
-                <p class="text-[8px] font-bold text-orange-500 uppercase tracking-widest leading-none">Coffee System</p>
+                <h1 class="text-[11px] lg:text-sm font-black uppercase tracking-tighter">Phát La Premium V31</h1>
+                <p class="text-[8px] font-bold text-orange-500 uppercase tracking-widest leading-none">Cloud Sync Mode</p>
             </div>
         </div>
-        <div id="syncStatus" class="flex items-center gap-2 text-[9px] font-black uppercase text-green-500 bg-green-50 px-3 py-1 rounded-full">
-            <i class="fa-solid fa-circle-check"></i> Đã kết nối
-        </div>
+        <button onclick="syncData()" id="syncBtn" class="flex items-center gap-2 text-[9px] font-black uppercase text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100">
+            <i class="fa-solid fa-cloud"></i> <span id="syncText">Đã đồng bộ</span>
+        </button>
     </header>
 
     <nav class="bg-white flex border-b shrink-0 z-40">
-        <button onclick="showTab('tables')" id="btn-tables" class="flex-1 py-4 text-[10px] font-bold uppercase active-tab tracking-widest">Sơ đồ bàn</button>
-        <button onclick="showTab('pos')" id="btn-pos" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400 tracking-widest">Gọi món</button>
-        <button onclick="showTab('report')" id="btn-report" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400 tracking-widest">Doanh thu</button>
+        <button onclick="showTab('tables')" id="btn-tables" class="flex-1 py-4 text-[10px] font-bold uppercase active-tab">Sơ đồ bàn</button>
+        <button onclick="showTab('pos')" id="btn-pos" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Gọi món</button>
+        <button onclick="showTab('report')" id="btn-report" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Doanh thu</button>
     </nav>
 
     <main class="flex-1 relative bg-gray-50/50 overflow-hidden">
         
-        <section id="tab-tables" class="absolute inset-0 p-6 overflow-y-auto z-10">
+        <section id="tab-tables" class="absolute inset-0 p-6 overflow-y-auto">
             <div class="max-w-4xl mx-auto">
-                <button onclick="selectTakeaway()" class="w-full mb-6 py-5 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-orange-700 flex items-center justify-center gap-3 transition-all">
+                <button onclick="selectTakeaway()" class="w-full mb-6 py-5 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3">
                     <i class="fa-solid fa-walking"></i> ĐƠN MANG VỀ
                 </button>
-                <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="tableGrid"></div>
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-4" id="tableGrid"></div>
             </div>
         </section>
 
-        <section id="tab-pos" class="absolute inset-0 hidden z-20 bg-white overflow-hidden">
+        <section id="tab-pos" class="absolute inset-0 hidden bg-white overflow-hidden">
             <div class="bg-gray-50 border-r flex flex-col lg:w-[200px] shrink-0">
-                <div class="p-4 font-black text-[10px] uppercase text-gray-400 tracking-widest hidden lg:block">Danh mục</div>
                 <div id="catBar" class="p-2 lg:p-4 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar"></div>
             </div>
-
             <div class="flex-1 flex flex-col overflow-hidden bg-white">
                 <div class="flex-1 overflow-y-auto p-4 md:p-6">
-                    <div id="menuGrid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                    <div id="menuGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                 </div>
             </div>
-            
-            <div class="cart-panel w-full lg:w-[380px] bg-white flex flex-col border-t lg:border-t-0 shadow-2xl lg:shadow-none shrink-0 overflow-hidden">
+            <div class="w-full lg:w-[380px] bg-white flex flex-col border-t lg:border-t-0 shadow-2xl lg:shadow-none shrink-0 overflow-hidden">
                 <div class="p-6 border-b flex justify-between items-center bg-gray-50/30">
                     <span id="labelTable" class="bg-black text-white px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest">BÀN</span>
                     <span id="cartTotal" class="text-3xl font-black text-orange-600 tracking-tighter">0đ</span>
                 </div>
-                
-                <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-2">
-                    <div class="text-center py-20 text-gray-200 uppercase font-black text-[9px] tracking-widest">Chưa có món</div>
-                </div>
-
+                <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
                 <div class="p-6 border-t bg-white space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="alert('Đã báo pha chế!')" class="py-3 bg-blue-50 text-blue-600 rounded-xl font-bold text-[9px] uppercase border border-blue-100">Báo bếp</button>
-                        <button onclick="showTab('tables')" class="py-3 bg-gray-50 text-gray-500 rounded-xl font-bold text-[9px] uppercase border border-gray-100">Đổi bàn</button>
-                    </div>
-                    <button onclick="generateQR()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg shadow-orange-100">Thanh toán QR</button>
-                    <button onclick="processPayment('Tiền mặt')" class="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-[11px] uppercase">Tiền mặt</button>
+                    <button onclick="generateQR()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg">Thanh toán QR</button>
+                    <button onclick="processPayment('Tiền mặt')" class="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-[11px] uppercase">Thanh toán Tiền mặt</button>
                 </div>
             </div>
         </section>
 
-        <section id="tab-report" class="absolute inset-0 p-6 hidden z-30 bg-white overflow-y-auto">
+        <section id="tab-report" class="absolute inset-0 p-6 hidden bg-white overflow-y-auto">
             <div class="max-w-3xl mx-auto space-y-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-orange-50 p-6 rounded-[2rem] text-center border border-orange-100">
-                        <p class="text-[9px] font-black text-orange-400 uppercase tracking-widest mb-1">Hôm nay</p>
-                        <h3 id="statDay" class="text-xl font-black text-orange-600">0đ</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="statCards">
                     </div>
-                    <div class="bg-gray-900 p-6 rounded-[2rem] text-center text-white">
-                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Tháng này</p>
-                        <h3 id="statMonth" class="text-xl font-black text-white">0đ</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-[2rem] text-center border border-gray-100">
-                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Năm 2026</p>
-                        <h3 id="statYear" class="text-xl font-black text-gray-900">0đ</h3>
-                    </div>
+                <div class="flex justify-between items-center px-2">
+                    <h2 class="text-xs font-black uppercase tracking-widest text-gray-400">Lịch sử từ Google Sheet</h2>
+                    <button onclick="syncData()" class="text-orange-500 text-[10px] font-black uppercase"><i class="fa-solid fa-arrows-rotate"></i> Làm mới</button>
                 </div>
                 <div id="orderHistory" class="space-y-3 pb-20"></div>
             </div>
@@ -130,7 +99,7 @@
         <div class="bg-white w-full max-w-sm rounded-[40px] p-8 text-center">
             <img id="qrImage" src="" class="w-64 h-64 mx-auto border-8 border-gray-50 rounded-[2.5rem] mb-6">
             <p id="qrAmount" class="text-2xl font-black text-orange-600 mb-6">0đ</p>
-            <button onclick="processPayment('Chuyển khoản')" class="w-full py-5 bg-green-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">Xác nhận đã nhận tiền</button>
+            <button onclick="processPayment('Chuyển khoản')" class="w-full py-5 bg-green-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">Xác nhận nhận tiền</button>
             <button onclick="closeQR()" class="mt-4 text-gray-300 text-[10px] font-black uppercase">Đóng</button>
         </div>
     </div>
@@ -140,55 +109,45 @@
             { cat: "CÀ PHÊ", name: "Cà Phê Đen", price: 35000, icon: "fa-mug-hot" },
             { cat: "CÀ PHÊ", name: "Cà Phê Sữa", price: 40000, icon: "fa-glass-water" },
             { cat: "CÀ PHÊ", name: "Bạc Xỉu", price: 45000, icon: "fa-glass-water" },
-            { cat: "TRÀ", name: "Trà Đào Cam Sả", price: 55000, icon: "fa-leaf" },
-            { cat: "ĐÁ XAY", name: "Matcha Đá Xay", price: 65000, icon: "fa-ice-cream" },
+            { cat: "TRÀ", name: "Trà Đào", price: 55000, icon: "fa-leaf" },
             { cat: "SIGNATURE", name: "Phát La Special", price: 85000, icon: "fa-crown" }
         ];
 
-        let tables = JSON.parse(localStorage.getItem('pl_v29_tables')) || Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
-        let orders = JSON.parse(localStorage.getItem('pl_v29_orders')) || [];
-        let curTable = null, activeCart = [], isTakeaway = false, curCat = "TẤT CẢ";
+        let orders = []; 
+        let curTable = null, activeCart = [], curCat = "TẤT CẢ";
+
+        async function syncData() {
+            const syncText = document.getElementById('syncText');
+            syncText.innerText = 'Đang tải...';
+            try {
+                const response = await fetch(GOOGLE_SHEET_URL);
+                orders = await response.json();
+                renderStats();
+                syncText.innerText = 'Đã đồng bộ';
+            } catch (e) {
+                syncText.innerText = 'Lỗi kết nối';
+            }
+        }
 
         function showTab(t) {
-            document.querySelectorAll('section').forEach(s => {
-                s.classList.add('hidden');
-                s.classList.remove('active-flex');
-            });
+            document.querySelectorAll('section').forEach(s => { s.classList.add('hidden'); s.classList.remove('active-flex'); });
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab'));
-            
             const target = document.getElementById(`tab-${t}`);
-            if (t === 'pos') {
-                target.classList.add('active-flex');
-            } else {
-                target.classList.remove('hidden');
-            }
-            
+            t === 'pos' ? target.classList.add('active-flex') : target.classList.remove('hidden');
             document.getElementById(`btn-${t}`).classList.add('active-tab');
-            if(t==='tables') renderTables();
-            if(t==='report') renderStats();
+            if(t==='report') syncData();
         }
 
         function renderTables() {
-            document.getElementById('tableGrid').innerHTML = tables.map(t => `
-                <div onclick="selectTable(${t.id})" class="table-card p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-1 cursor-pointer ${t.status==='available'?'bg-white border-gray-100':'bg-black text-white border-black shadow-lg'}">
-                    <b class="text-xs font-black">${t.id}</b>
-                    <span class="text-[7px] font-bold opacity-40 uppercase tracking-tighter">${t.status==='available'?'Trống':'Đang ngồi'}</span>
+            document.getElementById('tableGrid').innerHTML = Array.from({length: 12}, (_, i) => `
+                <div onclick="selectTable(${i+1})" class="bg-white p-6 rounded-[2rem] border-2 border-gray-100 flex flex-col items-center cursor-pointer hover:border-orange-500">
+                    <b class="text-xs font-black">${i+1}</b>
                 </div>
             `).join('');
         }
 
-        function selectTable(id) {
-            curTable = id; isTakeaway = false;
-            document.getElementById('labelTable').innerText = `BÀN ${id}`;
-            activeCart = [...tables.find(t => t.id === id).cart];
-            updateCartUI(); showTab('pos');
-        }
-
-        function selectTakeaway() {
-            curTable = null; isTakeaway = true; activeCart = [];
-            document.getElementById('labelTable').innerText = `MANG VỀ`;
-            updateCartUI(); showTab('pos');
-        }
+        function selectTable(id) { curTable = id; showTab('pos'); document.getElementById('labelTable').innerText = `BÀN ${id}`; activeCart = []; updateCartUI(); }
+        function selectTakeaway() { curTable = null; showTab('pos'); document.getElementById('labelTable').innerText = `MANG VỀ`; activeCart = []; updateCartUI(); }
 
         function renderCats() {
             const cats = ["TẤT CẢ", ...new Set(menu.map(m => m.cat))];
@@ -196,13 +155,12 @@
                 <button onclick="setCat('${c}')" class="px-5 py-2 lg:w-full lg:text-left rounded-full lg:rounded-xl border-2 text-[9px] font-black shrink-0 transition-all ${curCat===c?'bg-orange-600 border-orange-600 text-white':'bg-white text-gray-400 border-gray-100'}">${c}</button>
             `).join('');
         }
-
         function setCat(c) { curCat = c; renderCats(); renderMenu(); }
 
         function renderMenu() {
             const list = curCat === "TẤT CẢ" ? menu : menu.filter(m => m.cat === curCat);
             document.getElementById('menuGrid').innerHTML = list.map(m => `
-                <div onclick="addToCart('${m.name}', ${m.price})" class="menu-card bg-white p-5 rounded-[2rem] border-2 border-gray-50 shadow-sm transition-all flex flex-col justify-between h-36 lg:h-40 cursor-pointer hover:border-orange-200">
+                <div onclick="addToCart('${m.name}', ${m.price})" class="bg-white p-5 rounded-[2rem] border-2 border-gray-50 shadow-sm flex flex-col justify-between h-36 cursor-pointer hover:border-orange-200">
                     <div class="text-orange-500 text-xs"><i class="fa-solid ${m.icon}"></i></div>
                     <div>
                         <p class="text-[10px] font-black uppercase text-gray-900 leading-tight">${m.name}</p>
@@ -212,39 +170,64 @@
             `).join('');
         }
 
-        function addToCart(name, price) {
-            activeCart.push({name, price}); updateCartUI();
-            if(!isTakeaway) {
-                const t = tables.find(x => x.id === curTable);
-                t.status = 'occupied'; t.cart = activeCart;
-                localStorage.setItem('pl_v29_tables', JSON.stringify(tables));
-            }
-        }
+        function addToCart(name, price) { activeCart.push({name, price}); updateCartUI(); }
 
         function updateCartUI() {
             const total = activeCart.reduce((s,c)=>s+c.price, 0);
             document.getElementById('cartTotal').innerText = total.toLocaleString() + 'đ';
-            const cartDiv = document.getElementById('cartItems');
-            if(activeCart.length === 0) {
-                cartDiv.innerHTML = `<div class="text-center py-20 text-gray-200 uppercase font-black text-[9px] tracking-widest">Chưa có món</div>`;
-            } else {
-                cartDiv.innerHTML = activeCart.map((item, idx) => `
+            document.getElementById('cartItems').innerHTML = activeCart.length === 0 ? 
+                `<div class="text-center py-10 text-gray-300 text-[9px] font-black uppercase tracking-widest">Trống</div>` :
+                activeCart.map((item, idx) => `
                     <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <span class="text-[9px] font-black uppercase text-gray-600">${item.name}</span>
-                        <button onclick="removeItem(${idx})" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-circle-xmark"></i></button>
+                        <span class="text-[9px] font-black uppercase">${item.name}</span>
+                        <button onclick="activeCart.splice(${idx},1);updateCartUI()" class="text-red-400"><i class="fa-solid fa-circle-xmark"></i></button>
                     </div>
                 `).join('');
-            }
         }
 
-        function removeItem(idx) {
-            activeCart.splice(idx, 1); updateCartUI();
-            if(!isTakeaway) {
-                const t = tables.find(x => x.id === curTable);
-                t.cart = activeCart;
-                if(activeCart.length === 0) t.status = 'available';
-                localStorage.setItem('pl_v29_tables', JSON.stringify(tables));
-            }
+        async function processPayment(method) {
+            if(!activeCart.length) return;
+            const total = activeCart.reduce((s,c)=>s+c.price, 0);
+            const now = new Date();
+            const data = { 
+                date: now.toLocaleDateString('vi-VN'),
+                time: now.toLocaleTimeString('vi-VN'), 
+                table: curTable ? `Bàn ${curTable}` : 'Mang về', 
+                total: total, 
+                method: method,
+                month: (now.getMonth() + 1) + "/" + now.getFullYear(),
+                year: now.getFullYear().toString()
+            };
+
+            document.getElementById('syncText').innerText = 'Đang đẩy dữ liệu...';
+            await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+            
+            closeQR(); activeCart = []; updateCartUI(); 
+            showTab('tables');
+            setTimeout(syncData, 1000); 
+        }
+
+        function renderStats() {
+            const now = new Date();
+            const today = now.toLocaleDateString('vi-VN');
+            const dayTotal = orders.filter(o => o.date === today).reduce((s,o)=>s+parseInt(o.total || 0), 0);
+            
+            document.getElementById('statCards').innerHTML = `
+                <div class="bg-gray-900 p-8 rounded-[2.5rem] text-center text-white col-span-full shadow-2xl">
+                    <p class="text-[9px] font-black opacity-40 uppercase tracking-widest mb-2">Doanh thu hôm nay</p>
+                    <h3 class="text-4xl font-black text-orange-500 tracking-tighter">${dayTotal.toLocaleString()}đ</h3>
+                </div>
+            `;
+
+            document.getElementById('orderHistory').innerHTML = [...orders].reverse().slice(0,20).map(o => `
+                <div class="flex justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                    <div>
+                        <p class="text-[10px] font-black uppercase text-gray-800">${o.table}</p>
+                        <p class="text-[8px] font-bold text-gray-400">${o.time} - ${o.method}</p>
+                    </div>
+                    <b class="text-orange-600 self-center text-sm">+${parseInt(o.total || 0).toLocaleString()}</b>
+                </div>
+            `).join('');
         }
 
         function generateQR() {
@@ -255,58 +238,10 @@
             document.getElementById('qrAmount').innerText = total.toLocaleString() + 'đ';
             document.getElementById('qrModal').classList.remove('hidden');
         }
-
         function closeQR() { document.getElementById('qrModal').classList.add('hidden'); }
 
-        async function processPayment(method) {
-            if(!activeCart.length) return;
-            const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            const now = new Date();
-            const data = { 
-                date: now.toLocaleDateString('vi-VN'),
-                time: now.toLocaleTimeString('vi-VN'), 
-                table: isTakeaway ? 'Mang về' : `Bàn ${curTable}`, 
-                total: total, 
-                method: method,
-                month: (now.getMonth() + 1) + "/" + now.getFullYear(),
-                year: now.getFullYear().toString()
-            };
-
-            try {
-                await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-                orders.unshift(data);
-                localStorage.setItem('pl_v29_orders', JSON.stringify(orders));
-                if(!isTakeaway) {
-                    const t = tables.find(x => x.id === curTable);
-                    t.status = 'available'; t.cart = [];
-                    localStorage.setItem('pl_v29_tables', JSON.stringify(tables));
-                }
-                closeQR(); activeCart = []; updateCartUI(); showTab('tables');
-            } catch (e) { alert("Lỗi kết nối!"); }
-        }
-
-        function renderStats() {
-            const now = new Date();
-            const todayStr = now.toLocaleDateString('vi-VN');
-            const monthStr = (now.getMonth() + 1) + "/" + now.getFullYear();
-            const yearStr = now.getFullYear().toString();
-
-            document.getElementById('statDay').innerText = orders.filter(o => o.date === todayStr).reduce((s,o)=>s+o.total, 0).toLocaleString() + 'đ';
-            document.getElementById('statMonth').innerText = orders.filter(o => o.month === monthStr).reduce((s,o)=>s+o.total, 0).toLocaleString() + 'đ';
-            document.getElementById('statYear').innerText = orders.filter(o => o.year === yearStr).reduce((s,o)=>s+o.total, 0).toLocaleString() + 'đ';
-
-            document.getElementById('orderHistory').innerHTML = orders.slice(0, 20).map(o => `
-                <div class="flex justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <div>
-                        <p class="text-[10px] font-black uppercase text-gray-800">${o.table}</p>
-                        <p class="text-[8px] font-bold text-gray-400 mt-1">${o.time} - ${o.method}</p>
-                    </div>
-                    <b class="text-orange-600 self-center text-sm">+${o.total.toLocaleString()}</b>
-                </div>
-            `).join('');
-        }
-
-        window.onload = () => { renderCats(); renderMenu(); showTab('tables'); };
+        window.onload = () => { renderTables(); renderCats(); renderMenu(); syncData(); };
+        setInterval(syncData, 30000); // Tự động đồng bộ sau mỗi 30s
     </script>
 </body>
 </html>
