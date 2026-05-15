@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - V46 OMNICHAIN</title>
+    <title>PHÁT LA PREMIUM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -92,7 +92,7 @@
             accountNo: "1046778674",
             accountName: "LA PHAT",
             scriptUrl: "https://script.google.com/macros/s/AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82/exec", // Link Google Sheets từ V43
-            totalTables: 15
+            totalTables: 30
         };
 
         const FULL_MENU = [
@@ -455,7 +455,7 @@
                 btnQr.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-blue-500 bg-blue-50 text-blue-600";
                 btnCash.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-slate-100 text-slate-400";
                 const total = appState.tables.find(t => t.id === appState.currentTableId).cart.reduce((s, i) => s + i.price, 0);
-                document.getElementById('checkout-qr-image').src = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-compact2.png?amount=${total}&addInfo=THANHTOAN${appState.currentTableId}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
+                document.getElementById('checkout-qr-image').src = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-qr_only.png?amount=${total}&addInfo=THANH TOAN BAN ${appState.currentTableId}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
                 qrBox.classList.remove('hidden'); qrBox.classList.add('flex', 'fade-in');
             }
         }
