@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA POS | SHEET SYNC V17</title>
+    <title>PHÁT LA POS | FULL BILLING V16</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,8 +11,8 @@
         body { font-family: 'Montserrat', sans-serif; background-color: #f8f8f8; -webkit-tap-highlight-color: transparent; }
         .active-tab { color: #f97316 !important; border-bottom: 3px solid #f97316; }
         .item-card:active { transform: scale(0.95); background: #fff7ed; }
-        #cartDrawer { transition: transform 0.3s ease-out; }
-        .drawer-open { transform: translateY(0) !important; }
+        #billModal { backdrop-filter: blur(4px); }
+        .print-bill { font-family: 'Courier New', Courier, monospace; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -29,7 +29,6 @@
     </nav>
 
     <main class="flex-1 relative overflow-hidden">
-        
         <section id="tab-tables" class="absolute inset-0 p-4 overflow-y-auto">
             <button onclick="selectTakeaway()" class="w-full mb-4 py-4 bg-orange-500 text-white rounded-2xl font-bold text-[10px] uppercase shadow-lg">ĐƠN MANG VỀ</button>
             <div class="grid grid-cols-3 gap-3" id="tableGrid"></div>
@@ -43,46 +42,47 @@
             
             <div class="bg-white p-4 border-t shadow-lg shrink-0">
                 <div class="flex justify-between items-center mb-3">
-                    <span id="labelTable" class="text-[9px] font-bold bg-black text-white px-2 py-0.5 rounded">BÀN</span>
+                    <span id="labelTable" class="text-[9px] font-bold bg-black text-white px-2 py-0.5 rounded uppercase">Bàn</span>
                     <span id="cartTotal" class="text-lg font-bold text-orange-600">0đ</span>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="toggleCart()" class="bg-gray-100 p-4 rounded-xl text-gray-600"><i class="fa-solid fa-list-ul"></i></button>
-                    <button onclick="confirmPayment()" class="flex-1 py-4 bg-orange-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest">THANH TOÁN NGAY</button>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="orderToChef()" class="py-3 bg-gray-800 text-white rounded-xl font-bold text-[8px] uppercase">Báo pha chế</button>
+                    <button onclick="showBill()" class="py-3 bg-gray-100 text-gray-600 rounded-xl font-bold text-[8px] uppercase">Xem Bill</button>
+                    <button onclick="confirmPayment()" class="py-3 bg-orange-500 text-white rounded-xl font-bold text-[8px] uppercase">Thanh toán</button>
                 </div>
             </div>
         </section>
 
-        <section id="tab-report" class="absolute inset-0 p-6 hidden overflow-y-auto bg-white text-center">
+        <section id="tab-report" class="absolute inset-0 p-6 hidden overflow-y-auto bg-white text-center text-xs">
             <h2 id="statToday" class="text-3xl font-black mb-1">0đ</h2>
-            <p class="text-[9px] text-gray-400 uppercase tracking-widest mb-6">Doanh thu hôm nay</p>
-            
-            <button onclick="exportToSheet()" class="w-full mb-8 py-3 bg-green-600 text-white rounded-xl font-bold text-[10px] uppercase shadow-md flex items-center justify-center gap-2">
-                <i class="fa-solid fa-file-excel"></i> Kết toán & Xuất file Trang tính
-            </button>
-
+            <p class="text-[9px] text-gray-400 uppercase tracking-widest mb-10">Doanh thu hôm nay</p>
             <div id="orderHistory" class="space-y-2 text-left"></div>
         </section>
     </main>
 
-    <div id="cartDrawer" class="fixed inset-x-0 bottom-0 h-[60vh] bg-white rounded-t-[30px] shadow-2xl z-50 transform translate-y-full flex flex-col border-t">
-        <div class="p-6 border-b flex justify-between">
-            <b class="text-xs uppercase">Chi tiết món đã chọn</b>
-            <button onclick="toggleCart()" class="text-gray-300">Đóng</button>
+    <div id="billModal" class="fixed inset-0 bg-black/40 z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+            <div class="p-6 overflow-y-auto print-bill text-[11px] leading-relaxed" id="billContent">
+                </div>
+            <div class="p-4 bg-gray-50 flex gap-2">
+                <button onclick="closeBill()" class="flex-1 py-3 text-[10px] font-bold uppercase text-gray-400">Đóng</button>
+                <button onclick="window.print()" class="flex-1 py-3 bg-black text-white rounded-xl text-[10px] font-bold uppercase">In Bill</button>
+            </div>
         </div>
-        <div id="cartList" class="flex-1 overflow-y-auto p-6"></div>
     </div>
 
     <script>
         const menu = [
-            { cat: "CÀ PHÊ", name: "Đen Đá", price: 35000, icon: "fa-mug-hot" },
-            { cat: "CÀ PHÊ", name: "Sữa Đá", price: 40000, icon: "fa-glass-water" },
+            { cat: "ESPRESSO", name: "Espresso", price: 45000, icon: "fa-mug-hot" },
+            { cat: "ESPRESSO", name: "Latte", price: 55000, icon: "fa-mug-hot" },
             { cat: "TRÀ", name: "Trà Đào", price: 50000, icon: "fa-leaf" },
-            { cat: "ĐÁ XAY", name: "Matcha", price: 75000, icon: "fa-ice-cream" }
+            { cat: "ĐÁ XAY", name: "Matcha", price: 75000, icon: "fa-ice-cream" },
+            { cat: "ĐẶC BIỆT", name: "Cafe Sữa", price: 45000, icon: "fa-glass-water" },
+            { cat: "SIGNATURE", name: "Salted Caramel", price: 70000, icon: "fa-star" }
         ];
 
-        let tables = JSON.parse(localStorage.getItem('pl_v17_tables')) || Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
-        let orders = JSON.parse(localStorage.getItem('pl_v17_orders')) || [];
+        let tables = JSON.parse(localStorage.getItem('pl_v16_tables')) || Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
+        let orders = JSON.parse(localStorage.getItem('pl_v16_orders')) || [];
         let curTable = null, activeCart = [], isTakeaway = false, curCat = "TẤT CẢ";
 
         function showTab(t) {
@@ -98,6 +98,7 @@
             document.getElementById('tableGrid').innerHTML = tables.map(t => `
                 <div onclick="selectTable(${t.id})" class="p-4 rounded-2xl border text-center active:scale-95 transition-all ${t.status==='available'?'bg-white':'bg-black text-white'}">
                     <b class="text-[10px]">BÀN ${t.id}</b>
+                    <p class="text-[7px] mt-1 opacity-50">${t.status==='available'?'Trống':'Đang ngồi'}</p>
                 </div>
             `).join('');
         }
@@ -118,7 +119,7 @@
         function renderCats() {
             const cats = ["TẤT CẢ", ...new Set(menu.map(m => m.cat))];
             document.getElementById('catBar').innerHTML = cats.map(c => `
-                <button onclick="setCat('${c}')" class="px-4 py-2 rounded-lg border text-[9px] font-bold ${curCat===c?'bg-black text-white':'bg-white text-gray-400'}">${c}</button>
+                <button onclick="setCat('${c}')" class="px-4 py-2 rounded-lg border text-[9px] font-bold shrink-0 ${curCat===c?'bg-black text-white':'bg-white text-gray-400'}">${c}</button>
             `).join('');
         }
 
@@ -127,10 +128,10 @@
         function renderMenu() {
             const list = curCat === "TẤT CẢ" ? menu : menu.filter(m => m.cat === curCat);
             document.getElementById('menuGrid').innerHTML = list.map(m => `
-                <div onclick="addToCart('${m.name}', ${m.price})" class="item-card bg-white p-3 rounded-xl border h-24 flex flex-col justify-between">
+                <div onclick="addToCart('${m.name}', ${m.price})" class="item-card bg-white p-3 rounded-xl border h-24 flex flex-col justify-between shadow-sm">
                     <i class="fa-solid ${m.icon} text-orange-500 text-[10px]"></i>
-                    <p class="text-[9px] font-bold uppercase leading-none">${m.name}</p>
-                    <p class="text-[10px] font-bold text-gray-300">${m.price.toLocaleString()}đ</p>
+                    <p class="text-[9px] font-bold uppercase leading-tight">${m.name}</p>
+                    <p class="text-[9px] font-bold text-gray-300">${m.price.toLocaleString()}đ</p>
                 </div>
             `).join('');
         }
@@ -141,76 +142,75 @@
             if(!isTakeaway) {
                 const t = tables.find(x => x.id === curTable);
                 t.status = 'occupied'; t.cart = activeCart;
-                localStorage.setItem('pl_v17_tables', JSON.stringify(tables));
+                localStorage.setItem('pl_v16_tables', JSON.stringify(tables));
             }
         }
 
         function updateCartUI() {
             let total = activeCart.reduce((s,c)=>s+c.price, 0);
-            document.getElementById('cartList').innerHTML = activeCart.map((c, i) => `
-                <div class="flex justify-between py-3 border-b text-[10px]">
-                    <b>${c.name}</b>
-                    <div class="flex gap-4"><span>${c.price.toLocaleString()}</span><button onclick="remove(${i})" class="text-red-400">✕</button></div>
-                </div>
-            `).join('');
             document.getElementById('cartTotal').innerText = total.toLocaleString() + 'đ';
         }
 
-        function remove(i) {
-            activeCart.splice(i, 1);
-            if(activeCart.length === 0 && !isTakeaway) tables.find(x => x.id === curTable).status = 'available';
-            updateCartUI();
+        function orderToChef() {
+            if(!activeCart.length) return;
+            alert("🔔 ĐÃ GỬI ĐƠN XUỐNG PHA CHẾ!");
         }
 
-        function toggleCart() { document.getElementById('cartDrawer').classList.toggle('drawer-open'); }
+        function showBill() {
+            if(!activeCart.length) return;
+            let total = activeCart.reduce((s,c)=>s+c.price, 0);
+            let content = `
+                <div class="text-center mb-4">
+                    <h3 class="text-sm font-bold uppercase">Phát La Coffee</h3>
+                    <p>Đ/C: Đường lớn, TP.HCM</p>
+                    <p>-------------------------</p>
+                </div>
+                <div class="mb-4">
+                    <p>Bàn: ${isTakeaway ? 'Mang về' : curTable}</p>
+                    <p>Ngày: ${new Date().toLocaleDateString()}</p>
+                    <p>Giờ: ${new Date().toLocaleTimeString()}</p>
+                </div>
+                <table class="w-full text-left mb-4">
+                    ${activeCart.map(c => `<tr><td>${c.name}</td><td class="text-right">${c.price.toLocaleString()}</td></tr>`).join('')}
+                </table>
+                <div class="border-t pt-2 text-right">
+                    <p class="font-bold">TỔNG TIỀN: ${total.toLocaleString()}đ</p>
+                </div>
+                <div class="text-center mt-6">
+                    <p>Cảm ơn quý khách!</p>
+                    <p>Hẹn gặp lại!</p>
+                </div>
+            `;
+            document.getElementById('billContent').innerHTML = content;
+            document.getElementById('billModal').classList.remove('hidden');
+        }
+
+        function closeBill() { document.getElementById('billModal').classList.add('hidden'); }
 
         function confirmPayment() {
             if(!activeCart.length) return;
-            const orderData = { 
-                table: isTakeaway ? 'MANG VỀ' : `BÀN ${curTable}`,
-                total: activeCart.reduce((s,c)=>s+c.price, 0), 
-                time: new Date().toLocaleTimeString('vi-VN'), 
-                date: new Date().toLocaleDateString('vi-VN') 
-            };
-            orders.unshift(orderData);
-            localStorage.setItem('pl_v17_orders', JSON.stringify(orders));
+            if(!confirm("Xác nhận thanh toán và đóng bàn?")) return;
+            
+            orders.unshift({ total: activeCart.reduce((s,c)=>s+c.price, 0), time: new Date().toLocaleTimeString('vi-VN'), date: new Date().toLocaleDateString() });
+            localStorage.setItem('pl_v16_orders', JSON.stringify(orders));
+            
             if(!isTakeaway) {
                 const t = tables.find(x => x.id === curTable);
                 t.status = 'available'; t.cart = [];
-                localStorage.setItem('pl_v17_tables', JSON.stringify(tables));
+                localStorage.setItem('pl_v16_tables', JSON.stringify(tables));
             }
-            alert("Đã thanh toán!");
+            
             activeCart = []; updateCartUI();
             showTab('tables');
         }
 
         function renderStats() {
-            const today = new Date().toLocaleDateString('vi-VN');
+            const today = new Date().toLocaleDateString();
             const daily = orders.filter(o => o.date === today).reduce((s,o)=>s+o.total, 0);
             document.getElementById('statToday').innerText = daily.toLocaleString() + 'đ';
-            document.getElementById('orderHistory').innerHTML = orders.slice(0, 10).map(o => `
-                <div class="flex justify-between p-3 bg-gray-50 rounded-lg text-[9px]">
-                    <span>${o.time} (${o.table})</span>
-                    <b>+${o.total.toLocaleString()}</b>
-                </div>
+            document.getElementById('orderHistory').innerHTML = orders.slice(0, 5).map(o => `
+                <div class="flex justify-between p-3 bg-gray-50 rounded-lg"><span>${o.time}</span><b>+${o.total.toLocaleString()}</b></div>
             `).join('');
-        }
-
-        // TẠO FILE GOOGLE TRANG TÍNH (CSV)
-        function exportToSheet() {
-            if(orders.length === 0) { alert("Chưa có dữ liệu để xuất!"); return; }
-            let csv = "\uFEFFNgày,Giờ,Vị trí,Tổng tiền\n";
-            orders.forEach(o => {
-                csv += `${o.date},${o.time},${o.table},${o.total}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `ThongKe_PhatLa_${new Date().toLocaleDateString()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            alert("Đã tải file thống kê! Phát có thể tải tệp này lên Google Trang tính nhé.");
         }
 
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
