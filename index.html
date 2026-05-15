@@ -8,82 +8,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
-        body { font-family: 'Montserrat', sans-serif; background-color: #f8f8f8; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Montserrat', sans-serif; background-color: #f8f8f8; }
         .active-tab { color: #f97316 !important; border-bottom: 3px solid #f97316; }
-        .item-card:active { transform: scale(0.95); background: #fff7ed; }
-        #cartDrawer { transition: transform 0.3s ease-out; z-index: 100; }
-        .drawer-open { transform: translateY(0) !important; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
+    <script>const GOOGLE_SHEET_URL = "DÁN_LINK_CỦA_PHÁT_VÀO_ĐÂY";</script>
 
-    <script>
-        // DÁN LINK GOOGLE APPS SCRIPT CỦA PHÁT VÀO ĐÂY
-        const GOOGLE_SHEET_URL = "DÁN_LINK_CỦA_PHÁT_VÀO_ĐÂY";
-    </script>
-
-    <header class="bg-white px-5 py-3 flex justify-between items-center border-b shrink-0">
-        <h1 class="text-xs font-black uppercase tracking-widest text-orange-500">Phát La Coffee</h1>
-        <div id="clock" class="text-[9px] font-bold text-gray-300"></div>
+    <header class="bg-white px-5 py-3 border-b shrink-0 flex justify-between items-center">
+        <h1 class="text-xs font-black uppercase tracking-tighter">Urban Coffee</h1>
+        <div id="status" class="text-[8px] font-bold text-green-500 uppercase">Hệ thống sẵn sàng</div>
     </header>
 
     <nav class="bg-white flex border-b shrink-0 shadow-sm">
         <button onclick="showTab('tables')" id="btn-tables" class="flex-1 py-4 text-[10px] font-bold uppercase active-tab">Sơ đồ bàn</button>
         <button onclick="showTab('pos')" id="btn-pos" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Gọi món</button>
-        <button onclick="showTab('report')" id="btn-report" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Báo cáo</button>
     </nav>
 
     <main class="flex-1 relative overflow-hidden">
         <section id="tab-tables" class="absolute inset-0 p-4 overflow-y-auto">
-            <button onclick="selectTakeaway()" class="w-full mb-4 py-4 bg-orange-500 text-white rounded-2xl font-bold text-[10px] uppercase shadow-lg">Đơn mang về</button>
             <div class="grid grid-cols-3 gap-3" id="tableGrid"></div>
         </section>
-
         <section id="tab-pos" class="absolute inset-0 flex flex-col hidden bg-gray-50">
-            <div class="p-2 flex gap-2 overflow-x-auto no-scrollbar" id="catBar"></div>
-            <div class="flex-1 overflow-y-auto p-2">
-                <div class="grid grid-cols-2 gap-2" id="menuGrid"></div>
+            <div id="menuGrid" class="flex-1 overflow-y-auto p-2 grid grid-cols-2 gap-2"></div>
+            <div class="bg-white p-4 border-t shadow-lg">
+                <div class="flex justify-between mb-3"><span id="labelTable" class="text-[9px] font-bold uppercase bg-black text-white px-2">BÀN</span><span id="cartTotal" class="text-lg font-bold text-orange-600">0đ</span></div>
+                <button onclick="confirmPayment()" id="payBtn" class="w-full py-4 bg-orange-500 text-white rounded-xl font-bold text-[10px] uppercase">Thanh toán & Lưu doanh thu</button>
             </div>
-            <div class="bg-white p-4 border-t shadow-[0_-10px_20px_rgba(0,0,0,0.05)] shrink-0">
-                <div class="flex justify-between items-center mb-3">
-                    <span id="labelTable" class="text-[9px] font-bold bg-black text-white px-2 py-0.5 rounded">BÀN</span>
-                    <span id="cartTotal" class="text-lg font-bold text-orange-600">0đ</span>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="toggleCart()" class="bg-gray-100 p-4 rounded-xl text-gray-600"><i class="fa-solid fa-list-ul"></i></button>
-                    <button id="payBtn" onclick="confirmPayment()" class="flex-1 py-4 bg-orange-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md">Thanh toán</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-report" class="absolute inset-0 p-6 hidden overflow-y-auto bg-white text-center">
-            <h2 id="statToday" class="text-3xl font-black mb-1">0đ</h2>
-            <p class="text-[9px] text-gray-400 uppercase mb-10">Doanh thu hôm nay</p>
-            <div id="orderHistory" class="space-y-2 text-left"></div>
         </section>
     </main>
 
-    <div id="cartDrawer" class="fixed inset-x-0 bottom-0 h-[60vh] bg-white rounded-t-[30px] shadow-2xl transform translate-y-full flex flex-col border-t">
-        <div class="p-6 border-b flex justify-between">
-            <b class="text-xs uppercase">Chi tiết đơn</b>
-            <button onclick="toggleCart()" class="text-gray-300">Đóng</button>
-        </div>
-        <div id="cartList" class="flex-1 overflow-y-auto p-6 space-y-3"></div>
-    </div>
-
     <script>
         const menu = [
-            { cat: "CÀ PHÊ", name: "Espresso", price: 45000, icon: "fa-mug-hot" },
-            { cat: "CÀ PHÊ", name: "Americano", price: 50000, icon: "fa-mug-hot" },
-            { cat: "TRÀ", name: "Trà Đào", price: 50000, icon: "fa-leaf" },
-            { cat: "ĐÁ XAY", name: "Matcha Frappe", price: 75000, icon: "fa-ice-cream" },
-            { cat: "ĐẶC BIỆT", name: "Cafe Sữa Đá", price: 45000, icon: "fa-glass-water" },
-            { cat: "SIGNATURE", name: "Affogato", price: 80000, icon: "fa-star" }
+            { name: "Espresso", price: 45000, icon: "fa-mug-hot" },
+            { name: "Americano", price: 50000, icon: "fa-mug-hot" },
+            { name: "Latte", price: 55000, icon: "fa-mug-hot" },
+            { name: "Trà Đào", price: 50000, icon: "fa-leaf" },
+            { name: "Matcha Frappe", price: 75000, icon: "fa-ice-cream" },
+            { name: "Cà Phê Sữa Đá", price: 45000, icon: "fa-glass-water" },
+            { name: "Affogato", price: 80000, icon: "fa-star" }
         ];
-
-        let tables = JSON.parse(localStorage.getItem('pl_v20_tables')) || Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
-        let orders = JSON.parse(localStorage.getItem('pl_v20_orders')) || [];
-        let curTable = null, activeCart = [], isTakeaway = false, curCat = "TẤT CẢ";
+        let tables = Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
+        let curTable = null, activeCart = [];
 
         function showTab(t) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -91,113 +57,49 @@
             document.getElementById(`tab-${t}`).classList.remove('hidden');
             document.getElementById(`btn-${t}`).classList.add('active-tab');
             if(t==='tables') renderTables();
-            if(t==='report') renderStats();
         }
 
         function renderTables() {
-            document.getElementById('tableGrid').innerHTML = tables.map(t => `
-                <div onclick="selectTable(${t.id})" class="p-4 rounded-2xl border text-center active:scale-95 transition-all ${t.status==='available'?'bg-white border-gray-100':'bg-black text-white'}">
-                    <b class="text-[10px]">BÀN ${t.id}</b>
-                </div>
-            `).join('');
+            document.getElementById('tableGrid').innerHTML = tables.map(t => `<div onclick="selectTable(${t.id})" class="p-4 rounded-2xl border text-center ${t.status==='available'?'bg-white':'bg-black text-white'}"><b class="text-[10px]">BÀN ${t.id}</b></div>`).join('');
         }
 
         function selectTable(id) {
-            curTable = id; isTakeaway = false;
-            document.getElementById('labelTable').innerText = `BÀN ${id}`;
+            curTable = id; document.getElementById('labelTable').innerText = `BÀN ${id}`;
             activeCart = [...tables.find(t => t.id === id).cart];
             updateCartUI(); showTab('pos');
         }
 
-        function selectTakeaway() {
-            curTable = null; isTakeaway = true; activeCart = [];
-            document.getElementById('labelTable').innerText = `MANG VỀ`;
-            updateCartUI(); showTab('pos');
-        }
-
-        function renderCats() {
-            const cats = ["TẤT CẢ", ...new Set(menu.map(m => m.cat))];
-            document.getElementById('catBar').innerHTML = cats.map(c => `
-                <button onclick="setCat('${c}')" class="px-4 py-2 rounded-lg border text-[9px] font-bold shrink-0 ${curCat===c?'bg-black text-white':'bg-white text-gray-400'}">${c}</button>
-            `).join('');
-        }
-
-        function setCat(c) { curCat = c; renderCats(); renderMenu(); }
-
         function renderMenu() {
-            const list = curCat === "TẤT CẢ" ? menu : menu.filter(m => m.cat === curCat);
-            document.getElementById('menuGrid').innerHTML = list.map(m => `
-                <div onclick="addToCart('${m.name}', ${m.price})" class="item-card bg-white p-3 rounded-xl border h-24 flex flex-col justify-between shadow-sm">
-                    <i class="fa-solid ${m.icon} text-orange-500 text-[10px]"></i>
-                    <p class="text-[9px] font-bold uppercase leading-tight">${m.name}</p>
-                    <p class="text-[10px] font-bold text-gray-300">${m.price.toLocaleString()}đ</p>
-                </div>
-            `).join('');
+            document.getElementById('menuGrid').innerHTML = menu.map(m => `<div onclick="addToCart('${m.name}', ${m.price})" class="bg-white p-3 rounded-xl border h-24 flex flex-col justify-between shadow-sm active:scale-95 transition-all"><i class="fa-solid ${m.icon} text-orange-500 text-[10px]"></i><p class="text-[9px] font-bold uppercase leading-tight">${m.name}</p><p class="text-[10px] font-bold text-gray-300">${m.price.toLocaleString()}đ</p></div>`).join('');
         }
 
         function addToCart(name, price) {
             activeCart.push({name, price});
+            tables.find(x => x.id === curTable).status = 'occupied';
+            tables.find(x => x.id === curTable).cart = activeCart;
             updateCartUI();
-            if(!isTakeaway) {
-                const t = tables.find(x => x.id === curTable);
-                t.status = 'occupied'; t.cart = activeCart;
-                localStorage.setItem('pl_v20_tables', JSON.stringify(tables));
-            }
         }
 
         function updateCartUI() {
             let total = activeCart.reduce((s,c)=>s+c.price, 0);
-            document.getElementById('cartList').innerHTML = activeCart.map((c, i) => `
-                <div class="flex justify-between py-2 border-b text-[10px]">
-                    <b>${c.name}</b>
-                    <div class="flex gap-4"><span>${c.price.toLocaleString()}</span><button onclick="remove(${i})" class="text-red-400 px-2">✕</button></div>
-                </div>
-            `).join('');
             document.getElementById('cartTotal').innerText = total.toLocaleString() + 'đ';
         }
-
-        function remove(i) {
-            activeCart.splice(i, 1);
-            if(activeCart.length === 0 && !isTakeaway) tables.find(x => x.id === curTable).status = 'available';
-            updateCartUI();
-        }
-
-        function toggleCart() { document.getElementById('cartDrawer').classList.toggle('drawer-open'); }
 
         async function confirmPayment() {
             if(!activeCart.length) return;
             const btn = document.getElementById('payBtn');
-            const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            const data = { date: new Date().toLocaleDateString('vi-VN'), time: new Date().toLocaleTimeString('vi-VN'), table: isTakeaway ? "Mang về" : `Bàn ${curTable}`, total: total };
-
-            btn.innerText = "ĐANG LƯU..."; btn.disabled = true;
+            const data = { date: new Date().toLocaleDateString('vi-VN'), time: new Date().toLocaleTimeString('vi-VN'), table: `Bàn ${curTable}`, total: activeCart.reduce((s,c)=>s+c.price, 0) };
+            btn.innerText = "ĐANG ĐỒNG BỘ..."; btn.disabled = true;
             try {
-                if(GOOGLE_SHEET_URL.startsWith("http")) {
-                    await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-                }
-                orders.unshift(data);
-                localStorage.setItem('pl_v20_orders', JSON.stringify(orders));
-                if(!isTakeaway) {
-                    const t = tables.find(x => x.id === curTable);
-                    t.status = 'available'; t.cart = [];
-                    localStorage.setItem('pl_v20_tables', JSON.stringify(tables));
-                }
-                alert("Xong! Doanh thu đã đẩy lên Google Sheets.");
-                activeCart = []; updateCartUI();
-                if(document.getElementById('cartDrawer').classList.contains('drawer-open')) toggleCart();
-                showTab('tables');
-            } catch (e) { alert("Lỗi kết nối."); } finally { btn.innerText = "THANH TOÁN"; btn.disabled = false; }
+                if(GOOGLE_SHEET_URL.startsWith("http")) await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+                const t = tables.find(x => x.id === curTable);
+                t.status = 'available'; t.cart = [];
+                alert("Thanh toán thành công & Đã lưu doanh thu!");
+                activeCart = []; updateCartUI(); showTab('tables');
+            } catch (e) { alert("Lỗi mạng!"); } finally { btn.innerText = "THANH TOÁN"; btn.disabled = false; }
         }
 
-        function renderStats() {
-            const today = new Date().toLocaleDateString('vi-VN');
-            const daily = orders.filter(o => o.date === today).reduce((s,o)=>s+o.total, 0);
-            document.getElementById('statToday').innerText = daily.toLocaleString() + 'đ';
-            document.getElementById('orderHistory').innerHTML = orders.slice(0, 10).map(o => `<div class="flex justify-between p-3 bg-gray-50 rounded-lg text-[9px]"><span>${o.time} (${o.table})</span><b>+${o.total.toLocaleString()}</b></div>`).join('');
-        }
-
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-        window.onload = () => { renderCats(); renderMenu(); showTab('tables'); };
+        window.onload = () => { renderMenu(); showTab('tables'); };
     </script>
 </body>
 </html>
