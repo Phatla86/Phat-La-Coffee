@@ -3,44 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM V31 - CLOUD SYNC</title>
+    <title>PHÁT LA V32 - SMART POS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
         body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; overflow: hidden; height: 100vh; }
         .active-tab { color: #f97316 !important; border-bottom: 3px solid #f97316; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
+        .occupied { background-color: #f97316 !important; color: white !important; border-color: #ea580c !important; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); }
         @media (min-width: 1024px) {
             #tab-pos { display: none; grid-template-columns: 200px 1fr 380px; position: absolute; inset: 0; }
             #tab-pos.active-flex { display: grid !important; }
-        }
-        @media (max-width: 1023px) {
-            #tab-pos.active-flex { display: flex !important; flex-direction: column; }
         }
     </style>
 </head>
 <body class="flex flex-col text-gray-800">
 
     <script>
-        // LINK APPS SCRIPT MỚI NHẤT ĐÃ ĐƯỢC CẬP NHẬT
         const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbw4dEDUGoQEyRrJSOEOhpHtXplZf33QFC4QGJoZlRNHomJd6xTf1nFhm_maOPeBcwC3/exec";
         const BANK_ID = "VCB"; 
         const ACCOUNT_NO = "1046778674";
+        
+        // Menu thực đơn
+        const menu = [
+            { cat: "CÀ PHÊ", name: "Cà Phê Đen", price: 35000, icon: "fa-mug-hot" },
+            { cat: "CÀ PHÊ", name: "Cà Phê Sữa", price: 40000, icon: "fa-glass-water" },
+            { cat: "TRÀ", name: "Trà Đào Cam Sả", price: 55000, icon: "fa-leaf" },
+            { cat: "SIGNATURE", name: "Phát La Special", price: 85000, icon: "fa-crown" }
+        ];
+
+        // Khởi tạo trạng thái bàn từ bộ nhớ
+        let tables = JSON.parse(localStorage.getItem('pl_v32_tables')) || Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
+        let curTable = null, activeCart = [], curCat = "TẤT CẢ", isTakeaway = false;
     </script>
 
-    <header class="bg-white px-6 py-3 flex justify-between items-center border-b shrink-0 z-50 shadow-sm">
+    <header class="bg-white px-6 py-3 flex justify-between items-center border-b shrink-0 z-50">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-orange-600 rounded-lg flex items-center justify-center text-white font-black shadow-lg">PL</div>
-            <div>
-                <h1 class="text-[11px] lg:text-sm font-black uppercase tracking-tighter">Phát La Premium V31</h1>
-                <p class="text-[8px] font-bold text-orange-500 uppercase tracking-widest leading-none">Cloud Sync Mode</p>
-            </div>
+            <h1 class="text-[11px] lg:text-sm font-black uppercase tracking-tighter">Phát La Premium V32</h1>
         </div>
-        <button onclick="syncData()" id="syncBtn" class="flex items-center gap-2 text-[9px] font-black uppercase text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100">
-            <i class="fa-solid fa-cloud"></i> <span id="syncText">Đã đồng bộ</span>
-        </button>
+        <div class="flex items-center gap-2 text-[9px] font-black uppercase text-green-500 bg-green-50 px-3 py-1 rounded-full">
+            <i class="fa-solid fa-circle-check"></i> Cloud Ready
+        </div>
     </header>
 
     <nav class="bg-white flex border-b shrink-0 z-40">
@@ -53,8 +57,8 @@
         
         <section id="tab-tables" class="absolute inset-0 p-6 overflow-y-auto">
             <div class="max-w-4xl mx-auto">
-                <button onclick="selectTakeaway()" class="w-full mb-6 py-5 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-walking"></i> ĐƠN MANG VỀ
+                <button onclick="selectTakeaway()" class="w-full mb-6 py-5 bg-orange-600 text-white rounded-2xl font-black text-xs uppercase shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
+                    <i class="fa-solid fa-bag-shopping"></i> ĐƠN MANG VỀ
                 </button>
                 <div class="grid grid-cols-3 md:grid-cols-6 gap-4" id="tableGrid"></div>
             </div>
@@ -64,18 +68,33 @@
             <div class="bg-gray-50 border-r flex flex-col lg:w-[200px] shrink-0">
                 <div id="catBar" class="p-2 lg:p-4 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar"></div>
             </div>
+            
             <div class="flex-1 flex flex-col overflow-hidden bg-white">
                 <div class="flex-1 overflow-y-auto p-4 md:p-6">
                     <div id="menuGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                 </div>
             </div>
-            <div class="w-full lg:w-[380px] bg-white flex flex-col border-t lg:border-t-0 shadow-2xl lg:shadow-none shrink-0 overflow-hidden">
+            
+            <div class="w-full lg:w-[380px] bg-white flex flex-col border-t lg:border-t-0 shadow-2xl shrink-0 overflow-hidden">
                 <div class="p-6 border-b flex justify-between items-center bg-gray-50/30">
-                    <span id="labelTable" class="bg-black text-white px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest">BÀN</span>
+                    <div class="flex flex-col">
+                        <span id="labelTable" class="bg-black text-white px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest w-fit mb-1">BÀN</span>
+                        <button onclick="moveTable()" class="text-[8px] font-bold text-blue-500 uppercase"><i class="fa-solid fa-right-left"></i> Chuyển bàn</button>
+                    </div>
                     <span id="cartTotal" class="text-3xl font-black text-orange-600 tracking-tighter">0đ</span>
                 </div>
+                
                 <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+
                 <div class="p-6 border-t bg-white space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="sendToKitchen()" class="py-3 bg-blue-50 text-blue-600 rounded-xl font-bold text-[9px] uppercase border border-blue-100 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-fire-burner"></i> Báo pha chế
+                        </button>
+                        <button onclick="previewBill()" class="py-3 bg-gray-50 text-gray-500 rounded-xl font-bold text-[9px] uppercase border border-gray-100 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-receipt"></i> Xem Bill
+                        </button>
+                    </div>
                     <button onclick="generateQR()" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black text-[11px] uppercase shadow-lg">Thanh toán QR</button>
                     <button onclick="processPayment('Tiền mặt')" class="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-[11px] uppercase">Thanh toán Tiền mặt</button>
                 </div>
@@ -83,71 +102,147 @@
         </section>
 
         <section id="tab-report" class="absolute inset-0 p-6 hidden bg-white overflow-y-auto">
-            <div class="max-w-3xl mx-auto space-y-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="statCards">
-                    </div>
-                <div class="flex justify-between items-center px-2">
-                    <h2 class="text-xs font-black uppercase tracking-widest text-gray-400">Lịch sử từ Google Sheet</h2>
-                    <button onclick="syncData()" class="text-orange-500 text-[10px] font-black uppercase"><i class="fa-solid fa-arrows-rotate"></i> Làm mới</button>
-                </div>
-                <div id="orderHistory" class="space-y-3 pb-20"></div>
+            <div id="reportContent" class="max-w-3xl mx-auto space-y-8 text-center py-20 text-gray-300 font-black uppercase text-xs">
+                Đang tải dữ liệu từ Cloud...
             </div>
         </section>
     </main>
 
-    <div id="qrModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden p-6 z-[300]">
-        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 text-center">
-            <img id="qrImage" src="" class="w-64 h-64 mx-auto border-8 border-gray-50 rounded-[2.5rem] mb-6">
-            <p id="qrAmount" class="text-2xl font-black text-orange-600 mb-6">0đ</p>
-            <button onclick="processPayment('Chuyển khoản')" class="w-full py-5 bg-green-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl">Xác nhận nhận tiền</button>
-            <button onclick="closeQR()" class="mt-4 text-gray-300 text-[10px] font-black uppercase">Đóng</button>
+    <div id="billModal" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden p-6 z-[300]">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-8 shadow-2xl relative">
+            <div class="text-center border-b pb-4 mb-4">
+                <h2 class="font-black uppercase text-sm">PHÁT LA PREMIUM</h2>
+                <p id="billTitle" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest"></p>
+            </div>
+            <div id="billList" class="space-y-2 mb-6"></div>
+            <div class="border-t pt-4 flex justify-between items-center font-black">
+                <span class="text-xs uppercase">Tổng cộng:</span>
+                <span id="billTotal" class="text-lg text-orange-600">0đ</span>
+            </div>
+            <button onclick="document.getElementById('billModal').classList.add('hidden')" class="w-full mt-8 py-3 bg-gray-100 rounded-xl font-black text-[9px] uppercase">Đóng</button>
         </div>
     </div>
 
     <script>
-        const menu = [
-            { cat: "CÀ PHÊ", name: "Cà Phê Đen", price: 35000, icon: "fa-mug-hot" },
-            { cat: "CÀ PHÊ", name: "Cà Phê Sữa", price: 40000, icon: "fa-glass-water" },
-            { cat: "CÀ PHÊ", name: "Bạc Xỉu", price: 45000, icon: "fa-glass-water" },
-            { cat: "TRÀ", name: "Trà Đào", price: 55000, icon: "fa-leaf" },
-            { cat: "SIGNATURE", name: "Phát La Special", price: 85000, icon: "fa-crown" }
-        ];
-
-        let orders = []; 
-        let curTable = null, activeCart = [], curCat = "TẤT CẢ";
-
-        async function syncData() {
-            const syncText = document.getElementById('syncText');
-            syncText.innerText = 'Đang tải...';
-            try {
-                const response = await fetch(GOOGLE_SHEET_URL);
-                orders = await response.json();
-                renderStats();
-                syncText.innerText = 'Đã đồng bộ';
-            } catch (e) {
-                syncText.innerText = 'Lỗi kết nối';
-            }
-        }
-
         function showTab(t) {
             document.querySelectorAll('section').forEach(s => { s.classList.add('hidden'); s.classList.remove('active-flex'); });
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab'));
             const target = document.getElementById(`tab-${t}`);
             t === 'pos' ? target.classList.add('active-flex') : target.classList.remove('hidden');
             document.getElementById(`btn-${t}`).classList.add('active-tab');
-            if(t==='report') syncData();
+            if(t==='tables') renderTables();
         }
 
         function renderTables() {
-            document.getElementById('tableGrid').innerHTML = Array.from({length: 12}, (_, i) => `
-                <div onclick="selectTable(${i+1})" class="bg-white p-6 rounded-[2rem] border-2 border-gray-100 flex flex-col items-center cursor-pointer hover:border-orange-500">
-                    <b class="text-xs font-black">${i+1}</b>
+            document.getElementById('tableGrid').innerHTML = tables.map(t => `
+                <div onclick="selectTable(${t.id})" class="p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-1 cursor-pointer ${t.status==='occupied' ? 'occupied' : 'bg-white border-gray-100'}">
+                    <b class="text-xs font-black">${t.id}</b>
+                    <span class="text-[7px] font-bold uppercase opacity-60">${t.status==='occupied'?'Có khách':'Trống'}</span>
                 </div>
             `).join('');
         }
 
-        function selectTable(id) { curTable = id; showTab('pos'); document.getElementById('labelTable').innerText = `BÀN ${id}`; activeCart = []; updateCartUI(); }
-        function selectTakeaway() { curTable = null; showTab('pos'); document.getElementById('labelTable').innerText = `MANG VỀ`; activeCart = []; updateCartUI(); }
+        function selectTable(id) {
+            curTable = id; isTakeaway = false;
+            document.getElementById('labelTable').innerText = `BÀN ${id}`;
+            const t = tables.find(x => x.id === id);
+            activeCart = t.cart || [];
+            updateCartUI(); showTab('pos');
+        }
+
+        function selectTakeaway() {
+            curTable = null; isTakeaway = true; activeCart = [];
+            document.getElementById('labelTable').innerText = `MANG VỀ`;
+            updateCartUI(); showTab('pos');
+        }
+
+        function addToCart(name, price) {
+            activeCart.push({name, price}); updateCartUI();
+            if(!isTakeaway) {
+                const t = tables.find(x => x.id === curTable);
+                t.status = 'occupied'; t.cart = activeCart;
+                localStorage.setItem('pl_v32_tables', JSON.stringify(tables));
+            }
+        }
+
+        function updateCartUI() {
+            const total = activeCart.reduce((s,c)=>s+c.price, 0);
+            document.getElementById('cartTotal').innerText = total.toLocaleString() + 'đ';
+            document.getElementById('cartItems').innerHTML = activeCart.map((item, idx) => `
+                <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <span class="text-[9px] font-black uppercase">${item.name}</span>
+                    <button onclick="removeItem(${idx})" class="text-red-400"><i class="fa-solid fa-circle-xmark"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function removeItem(idx) {
+            activeCart.splice(idx, 1); updateCartUI();
+            if(!isTakeaway) {
+                const t = tables.find(x => x.id === curTable);
+                t.cart = activeCart;
+                if(activeCart.length === 0) t.status = 'available';
+                localStorage.setItem('pl_v32_tables', JSON.stringify(tables));
+            }
+        }
+
+        function sendToKitchen() {
+            if(!activeCart.length) return;
+            alert(`Đã gửi thông báo cho pha chế: ${activeCart.length} món!`);
+        }
+
+        function previewBill() {
+            if(!activeCart.length) return;
+            document.getElementById('billTitle').innerText = isTakeaway ? "Hóa đơn mang về" : `Bàn số ${curTable}`;
+            document.getElementById('billList').innerHTML = activeCart.map(i => `
+                <div class="flex justify-between text-[10px] font-bold border-b border-dashed pb-1">
+                    <span>${i.name}</span>
+                    <span>${i.price.toLocaleString()}</span>
+                </div>
+            `).join('');
+            document.getElementById('billTotal').innerText = activeCart.reduce((s,c)=>s+c.price, 0).toLocaleString() + 'đ';
+            document.getElementById('billModal').classList.remove('hidden');
+        }
+
+        function moveTable() {
+            if(!curTable || !activeCart.length) return;
+            const newTable = prompt("Nhập số bàn muốn chuyển đến:");
+            if(!newTable || isNaN(newTable)) return;
+            
+            const targetTable = tables.find(t => t.id == newTable);
+            if(targetTable) {
+                const oldTable = tables.find(t => t.id === curTable);
+                targetTable.status = 'occupied';
+                targetTable.cart = [...oldTable.cart];
+                oldTable.status = 'available';
+                oldTable.cart = [];
+                localStorage.setItem('pl_v32_tables', JSON.stringify(tables));
+                selectTable(parseInt(newTable));
+                alert(`Đã chuyển từ bàn ${curTable} sang bàn ${newTable}`);
+            }
+        }
+
+        async function processPayment(method) {
+            if(!activeCart.length) return;
+            const total = activeCart.reduce((s,c)=>s+c.price, 0);
+            const data = { 
+                date: new Date().toLocaleDateString('vi-VN'),
+                time: new Date().toLocaleTimeString('vi-VN'), 
+                table: curTable ? `Bàn ${curTable}` : 'Mang về', 
+                total: total, method: method,
+                month: (new Date().getMonth() + 1) + "/" + new Date().getFullYear(),
+                year: new Date().getFullYear().toString()
+            };
+            
+            await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+            
+            if(!isTakeaway) {
+                const t = tables.find(x => x.id === curTable);
+                t.status = 'available'; t.cart = [];
+                localStorage.setItem('pl_v32_tables', JSON.stringify(tables));
+            }
+            activeCart = []; updateCartUI(); showTab('tables');
+        }
 
         function renderCats() {
             const cats = ["TẤT CẢ", ...new Set(menu.map(m => m.cat))];
@@ -156,92 +251,17 @@
             `).join('');
         }
         function setCat(c) { curCat = c; renderCats(); renderMenu(); }
-
         function renderMenu() {
             const list = curCat === "TẤT CẢ" ? menu : menu.filter(m => m.cat === curCat);
             document.getElementById('menuGrid').innerHTML = list.map(m => `
-                <div onclick="addToCart('${m.name}', ${m.price})" class="bg-white p-5 rounded-[2rem] border-2 border-gray-50 shadow-sm flex flex-col justify-between h-36 cursor-pointer hover:border-orange-200">
+                <div onclick="addToCart('${m.name}', ${m.price})" class="bg-white p-5 rounded-[2rem] border-2 border-gray-50 flex flex-col justify-between h-36 cursor-pointer hover:border-orange-200">
                     <div class="text-orange-500 text-xs"><i class="fa-solid ${m.icon}"></i></div>
-                    <div>
-                        <p class="text-[10px] font-black uppercase text-gray-900 leading-tight">${m.name}</p>
-                        <p class="text-[10px] font-bold text-gray-300 mt-1">${m.price.toLocaleString()}đ</p>
-                    </div>
+                    <div><p class="text-[10px] font-black uppercase text-gray-900 leading-tight">${m.name}</p><p class="text-[10px] font-bold text-gray-300 mt-1">${m.price.toLocaleString()}đ</p></div>
                 </div>
             `).join('');
         }
 
-        function addToCart(name, price) { activeCart.push({name, price}); updateCartUI(); }
-
-        function updateCartUI() {
-            const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            document.getElementById('cartTotal').innerText = total.toLocaleString() + 'đ';
-            document.getElementById('cartItems').innerHTML = activeCart.length === 0 ? 
-                `<div class="text-center py-10 text-gray-300 text-[9px] font-black uppercase tracking-widest">Trống</div>` :
-                activeCart.map((item, idx) => `
-                    <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <span class="text-[9px] font-black uppercase">${item.name}</span>
-                        <button onclick="activeCart.splice(${idx},1);updateCartUI()" class="text-red-400"><i class="fa-solid fa-circle-xmark"></i></button>
-                    </div>
-                `).join('');
-        }
-
-        async function processPayment(method) {
-            if(!activeCart.length) return;
-            const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            const now = new Date();
-            const data = { 
-                date: now.toLocaleDateString('vi-VN'),
-                time: now.toLocaleTimeString('vi-VN'), 
-                table: curTable ? `Bàn ${curTable}` : 'Mang về', 
-                total: total, 
-                method: method,
-                month: (now.getMonth() + 1) + "/" + now.getFullYear(),
-                year: now.getFullYear().toString()
-            };
-
-            document.getElementById('syncText').innerText = 'Đang đẩy dữ liệu...';
-            await fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            
-            closeQR(); activeCart = []; updateCartUI(); 
-            showTab('tables');
-            setTimeout(syncData, 1000); 
-        }
-
-        function renderStats() {
-            const now = new Date();
-            const today = now.toLocaleDateString('vi-VN');
-            const dayTotal = orders.filter(o => o.date === today).reduce((s,o)=>s+parseInt(o.total || 0), 0);
-            
-            document.getElementById('statCards').innerHTML = `
-                <div class="bg-gray-900 p-8 rounded-[2.5rem] text-center text-white col-span-full shadow-2xl">
-                    <p class="text-[9px] font-black opacity-40 uppercase tracking-widest mb-2">Doanh thu hôm nay</p>
-                    <h3 class="text-4xl font-black text-orange-500 tracking-tighter">${dayTotal.toLocaleString()}đ</h3>
-                </div>
-            `;
-
-            document.getElementById('orderHistory').innerHTML = [...orders].reverse().slice(0,20).map(o => `
-                <div class="flex justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <div>
-                        <p class="text-[10px] font-black uppercase text-gray-800">${o.table}</p>
-                        <p class="text-[8px] font-bold text-gray-400">${o.time} - ${o.method}</p>
-                    </div>
-                    <b class="text-orange-600 self-center text-sm">+${parseInt(o.total || 0).toLocaleString()}</b>
-                </div>
-            `).join('');
-        }
-
-        function generateQR() {
-            const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            if(total <= 0) return;
-            const desc = encodeURIComponent(`PL PREMIUM BAN ${curTable || 'MV'}`);
-            document.getElementById('qrImage').src = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${total}&addInfo=${desc}`;
-            document.getElementById('qrAmount').innerText = total.toLocaleString() + 'đ';
-            document.getElementById('qrModal').classList.remove('hidden');
-        }
-        function closeQR() { document.getElementById('qrModal').classList.add('hidden'); }
-
-        window.onload = () => { renderTables(); renderCats(); renderMenu(); syncData(); };
-        setInterval(syncData, 30000); // Tự động đồng bộ sau mỗi 30s
+        window.onload = () => { renderTables(); renderCats(); renderMenu(); };
     </script>
 </body>
 </html>
