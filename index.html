@@ -176,7 +176,7 @@
         function generateQR() {
             const total = activeCart.reduce((s,c)=>s+c.price, 0);
             if(total <= 0) return;
-            const desc = encodeURIComponent(`Urban Coffee Ban ${curTable || 'Mang ve'}`);
+            const desc = encodeURIComponent(`Phat La Premium Coffee Ban ${curTable || 'Mang ve'}`);
             document.getElementById('qrImage').src = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${total}&addInfo=${desc}`;
             document.getElementById('qrAmount').innerText = total.toLocaleString() + 'đ';
             document.getElementById('qrModal').classList.remove('hidden');
