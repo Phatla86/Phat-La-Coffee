@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - V42 STABILITY</title>
+    <title>PHÁT LA PREMIUM - V43 FLAWLESS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -18,7 +18,7 @@
         
         /* Toast Notifications */
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: white; padding: 16px 24px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); display: flex; items-center; gap: 12px; transform: translateX(120%); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 6px solid; }
+        .toast { background: white; padding: 16px 24px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); display: flex; align-items: center; gap: 12px; transform: translateX(120%); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 6px solid; }
         .toast.show { transform: translateX(0); }
         .toast.error { border-color: #ef4444; }
         .toast.success { border-color: #22c55e; }
@@ -42,14 +42,48 @@
         .thin-scroll::-webkit-scrollbar { width: 4px; }
         .thin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* Print Mode */
+        /* =========================================
+           HỆ THỐNG IN ẤN (SỬA LỖI TRẮNG TRANG TUYỆT ĐỐI)
+           ========================================= */
+        #print-area { display: none; } /* Ẩn vùng in trên màn hình làm việc */
+
         @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 80mm; padding: 0; margin: 0; color: black; font-family: monospace; }
+            /* 1. Ép ẩn TẤT CẢ giao diện web khi bấm in */
+            body > *:not(#print-area) { 
+                display: none !important; 
+            }
+            
+            /* 2. Cấu hình trang giấy in (Khổ K80) */
+            @page {
+                margin: 0;
+                size: 80mm auto; /* Khổ giấy in nhiệt tiêu chuẩn */
+            }
+
+            /* 3. Hiển thị lại vùng in ấn */
+            #print-area { 
+                display: block !important; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 80mm; /* Fix cứng chiều rộng 80mm */
+                padding: 10px; /* Căn lề giấy */
+                margin: 0 auto; 
+                color: black; 
+                font-family: monospace; /* Font chuyên dụng cho máy in nhiệt */
+                background: white;
+            }
+
+            /* 4. Reset màu nền thẻ body để tránh bị đen trang */
+            body { 
+                background-color: white !important; 
+            }
+
+            /* CSS trang trí bill in */
             .print-line { border-top: 1px dashed black; margin: 8px 0; }
+            .print-text-center { text-align: center; }
+            .print-text-right { text-align: right; }
+            .print-bold { font-weight: bold; }
         }
-        #print-area { display: none; }
     </style>
 </head>
 <body>
@@ -67,7 +101,7 @@
             accountNo: "1046778674",
             accountName: "PHAT LA",
             scriptUrl: "https://script.google.com/macros/s/AKfycbwljq8an6b1FNSbAEAKqFYfsxVsm50VlD8xJGNgTH3khLBOPnu38fKAaHKiTIL96zM/exec",
-            totalTables: 15 // Tăng lên 15 bàn cho dư dả
+            totalTables: 15
         };
 
         const FULL_MENU = [
@@ -105,7 +139,7 @@
             { id: 's8', cat: "ĐẶC BIỆT", name: "Affogato", price: 80000, icon: "fa-ice-cream" }
         ];
 
-        // Khởi tạo state an toàn, chống lỗi parse JSON
+        // Khởi tạo state an toàn
         let appState = {
             tables: [],
             currentTableId: null,
@@ -116,7 +150,7 @@
         };
 
         try {
-            const localData = localStorage.getItem('pl_v42_storage');
+            const localData = localStorage.getItem('pl_v43_storage');
             if (localData) {
                 appState.tables = JSON.parse(localData);
             } else {
@@ -131,9 +165,6 @@
             }));
         }
 
-        // ==========================================
-        // KHỐI 2: GIAO DIỆN CHÍNH (HTML STRUCTURE)
-        // ==========================================
     </script>
 
     <header class="bg-white border-b px-6 py-4 flex justify-between items-center z-50 shrink-0">
@@ -150,7 +181,7 @@
         <div class="flex items-center gap-5">
             <div class="text-right hidden sm:block">
                 <p id="live-clock" class="text-xs font-black font-mono">00:00:00</p>
-                <p class="text-[8px] font-bold text-orange-500 uppercase">Phiên bản V42 PRO</p>
+                <p class="text-[8px] font-bold text-orange-500 uppercase">Phiên bản V43 FLAWLESS</p>
             </div>
             <button onclick="forceSync()" class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:text-orange-600 active:scale-95 transition-all">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -201,8 +232,8 @@
                             <span id="bill-total-price" class="text-4xl font-black text-orange-600 tracking-tighter">0đ</span>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <button onclick="processPrint('bep')" class="py-4 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-2xl font-black text-[10px] uppercase transition-colors">In Báo Bếp</button>
-                            <button onclick="processPrint('tam-tinh')" class="py-4 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-2xl font-black text-[10px] uppercase transition-colors">In Tạm Tính</button>
+                            <button onclick="processPrint('bep')" class="py-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-2xl font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-fire mr-1"></i> In Báo Bếp</button>
+                            <button onclick="processPrint('tam-tinh')" class="py-4 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-2xl font-black text-[10px] uppercase transition-colors"><i class="fa-solid fa-receipt mr-1"></i> In Tạm Tính</button>
                         </div>
                         <button onclick="triggerPaymentFlow()" class="w-full py-6 bg-gray-900 text-white rounded-[2rem] font-black text-sm uppercase shadow-xl hover:bg-black active:scale-95 transition-all flex justify-center items-center gap-2">
                             Tiến hành Thu Tiền <i class="fa-solid fa-arrow-right"></i>
@@ -256,47 +287,66 @@
                 <div id="checkout-qr-box" class="hidden flex-col items-center p-6 bg-white rounded-3xl border-2 border-blue-100 shadow-sm">
                     <div class="flex items-center gap-2 mb-4">
                         <i class="fa-solid fa-building-columns text-blue-600"></i>
-                        <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider">${SYSTEM_CONFIG.bank} - ${SYSTEM_CONFIG.accountNo}</p>
+                        <p id="ui-bank-info" class="text-[10px] font-black text-blue-600 uppercase tracking-wider"></p>
                     </div>
                     <img id="checkout-qr-image" src="" class="w-56 h-56 border-4 border-slate-50 shadow-md rounded-2xl">
                     <div class="mt-4 text-center">
                         <p class="text-[9px] font-bold text-slate-400 uppercase">Tên người nhận</p>
-                        <p class="text-sm font-black text-gray-900">${SYSTEM_CONFIG.accountName}</p>
+                        <p id="ui-account-name" class="text-sm font-black text-gray-900"></p>
                     </div>
                 </div>
             </div>
 
             <div class="p-8 bg-white border-t border-slate-50">
                 <button onclick="finalizeTransaction()" class="w-full py-6 bg-orange-600 text-white rounded-3xl font-black text-sm uppercase shadow-lg hover:bg-orange-700 active:scale-95 transition-all flex justify-center items-center gap-3">
-                    <i class="fa-solid fa-check-circle text-lg"></i> Hoàn tất & Đóng bàn
+                    <i class="fa-solid fa-check-circle text-lg"></i> Hoàn tất & In Hóa Đơn
                 </button>
             </div>
         </div>
     </div>
 
     <div id="print-area">
-        <center>
-            <h1 style="margin: 0 0 5px 0; font-size: 24px; font-weight: 900;">${SYSTEM_CONFIG.shopName}</h1>
-            <p style="font-size: 11px; margin: 0;">${SYSTEM_CONFIG.address}</p>
+        <div class="print-text-center">
+            <h1 id="print-shop-name" style="margin: 0 0 5px 0; font-size: 22px; font-weight: 900;"></h1>
+            <p id="print-shop-address" style="font-size: 11px; margin: 0;"></p>
             <div class="print-line"></div>
-            <h2 id="print-doc-title" style="margin: 10px 0; font-size: 18px; text-transform: uppercase;">HÓA ĐƠN</h2>
-            <p id="print-doc-table" style="font-size: 16px; font-weight: bold; margin: 5px 0;"></p>
-            <p id="print-doc-time" style="font-size: 11px; margin: 0;"></p>
-        </center>
+            <h2 id="print-doc-title" style="margin: 10px 0; font-size: 18px; text-transform: uppercase; font-weight: bold;">HÓA ĐƠN</h2>
+            
+            <table style="width: 100%; margin-bottom: 10px;">
+                <tr>
+                    <td style="text-align: left; font-size: 12px;" id="print-doc-time"></td>
+                    <td style="text-align: right; font-size: 16px; font-weight: bold;" id="print-doc-table"></td>
+                </tr>
+            </table>
+        </div>
+        
         <div class="print-line"></div>
+        
         <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding-bottom: 5px;">Tên món</th>
+                    <th style="text-align: center; padding-bottom: 5px; width: 40px;">SL</th>
+                    <th style="text-align: right; padding-bottom: 5px; width: 70px;">T.Tiền</th>
+                </tr>
+            </thead>
             <tbody id="print-doc-items"></tbody>
         </table>
+        
         <div class="print-line"></div>
-        <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px; padding: 10px 0;">
-            <span>TỔNG:</span> <span id="print-doc-total">0</span>
+        
+        <div id="print-total-section">
+            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 18px; padding: 5px 0;">
+                <span>TỔNG:</span> <span id="print-doc-total">0</span>
+            </div>
+            <p id="print-doc-method" style="font-size: 11px; font-style: italic; text-align: center; margin: 5px 0;"></p>
+            <div class="print-line"></div>
         </div>
-        <p id="print-doc-method" style="font-size: 11px; font-style: italic; text-align: center; margin: 5px 0;"></p>
-        <div class="print-line"></div>
-        <center>
-            <p style="font-size: 11px; margin-top: 15px; font-weight: bold;">CẢM ƠN QUÝ KHÁCH</p>
-            <p style="font-size: 9px; margin-top: 5px;">Hẹn gặp lại Phát La!</p>
-        </center>
+
+        <div class="print-text-center" style="margin-top: 15px;">
+            <p style="font-size: 11px; font-weight: bold; margin: 0;">CẢM ƠN QUÝ KHÁCH</p>
+            <p style="font-size: 10px; margin-top: 3px;">Hẹn gặp lại tại Phát La!</p>
+        </div>
     </div>
 
     <script>
@@ -304,53 +354,53 @@
         // KHỐI 3: LOGIC HỆ THỐNG CỐT LÕI (CORE LOGIC)
         // ==========================================
 
+        // --- Hàm gán dữ liệu Hệ thống vào HTML (Giải quyết triệt để lỗi text rác) ---
+        function initializeSystemData() {
+            // Gán data cho QR Code
+            document.getElementById('ui-bank-info').innerText = `${SYSTEM_CONFIG.bank} - ${SYSTEM_CONFIG.accountNo}`;
+            document.getElementById('ui-account-name').innerText = SYSTEM_CONFIG.accountName;
+            
+            // Gán data cho Khu vực In Ấn
+            document.getElementById('print-shop-name').innerText = SYSTEM_CONFIG.shopName;
+            document.getElementById('print-shop-address').innerText = SYSTEM_CONFIG.address;
+        }
+
         // --- Hệ thống Thông Báo (Toast) ---
         function showNotification(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            
             let icon = type === 'error' ? '<i class="fa-solid fa-circle-exclamation text-red-500"></i>' : 
                        type === 'warning' ? '<i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>' : 
                        '<i class="fa-solid fa-circle-check text-green-500"></i>';
-
             toast.innerHTML = `${icon} <span class="text-[11px] font-bold text-gray-800">${message}</span>`;
             container.appendChild(toast);
-            
-            // Trigger animation
             setTimeout(() => toast.classList.add('show'), 10);
-            
-            // Tự động xóa sau 3s
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 400);
             }, 3000);
         }
 
-        // --- Fix triệt để logic chuyển Tab ---
+        // --- Chuyển Tab Mượt Mà ---
         function switchTab(targetId) {
-            // Bước 1: Ẩn TẤT CẢ các section và xóa class flex
             const sections = ['view-tables', 'view-pos', 'view-report'];
             sections.forEach(id => {
                 const el = document.getElementById(id);
                 el.classList.add('hidden');
-                el.classList.remove('block', 'flex'); // Gỡ flex để tránh xung đột
+                el.classList.remove('block', 'flex');
             });
 
-            // Bước 2: Reset UI Navbar
             document.querySelectorAll('nav button').forEach(b => {
                 b.classList.remove('active-nav');
                 b.classList.add('text-slate-400');
             });
 
-            // Bước 3: Kích hoạt Tab đích theo đúng định dạng
             const targetEl = document.getElementById(`view-${targetId}`);
-            targetEl.classList.remove('hidden'); // Gỡ hidden trước
+            targetEl.classList.remove('hidden');
 
             if (targetId === 'pos') {
-                targetEl.classList.add('block'); // Container ngoài cùng là block
-                // Thêm class animate để mượt
-                targetEl.classList.add('fade-in'); 
+                targetEl.classList.add('block', 'fade-in'); 
             } else {
                 targetEl.classList.add('block', 'fade-in');
             }
@@ -360,7 +410,6 @@
 
             appState.activeTab = targetId;
 
-            // Kích hoạt render tương ứng
             if (targetId === 'tables') renderTableGrid();
             if (targetId === 'pos') {
                 renderCategories();
@@ -372,18 +421,14 @@
 
         // --- Logic Lưu trữ Dữ liệu ---
         function persistData() {
-            try {
-                localStorage.setItem('pl_v42_storage', JSON.stringify(appState.tables));
-            } catch (e) {
-                showNotification("Lỗi bộ nhớ trình duyệt!", "error");
-            }
+            try { localStorage.setItem('pl_v43_storage', JSON.stringify(appState.tables)); } 
+            catch (e) { showNotification("Lỗi bộ nhớ trình duyệt!", "error"); }
         }
 
         // --- Render Sơ Đồ Bàn ---
         function renderTableGrid() {
             const grid = document.getElementById('grid-tables');
             let occupiedCount = 0;
-
             grid.innerHTML = appState.tables.map(t => {
                 if (t.status === 'occupied') occupiedCount++;
                 const displayId = t.id < 10 ? `0${t.id}` : t.id;
@@ -397,35 +442,26 @@
                     </div>
                 `;
             }).join('');
-
             document.getElementById('table-stats').innerText = `${occupiedCount}/${SYSTEM_CONFIG.totalTables} Bàn đang phục vụ`;
         }
 
-        // --- Chọn Bàn chống lỗi ---
         function handleSelectTable(id) {
             const table = appState.tables.find(t => t.id === id);
-            if (!table) return showNotification("Không tìm thấy dữ liệu bàn!", "error");
-
+            if (!table) return;
             appState.currentTableId = id;
-
             if (table.status === 'available' || !table.startTime) {
                 table.startTime = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
             }
-
-            // Update UI Tab POS
             document.getElementById('bill-table-name').innerText = `BÀN ${id < 10 ? '0'+id : id}`;
-            document.getElementById('bill-time-in').innerText = `Thời gian mở: ${table.startTime}`;
-            
+            document.getElementById('bill-time-in').innerText = `Giờ vào: ${table.startTime}`;
             persistData();
             switchTab('pos');
             showNotification(`Đã chọn Bàn ${id}`);
         }
 
-        // --- Render Danh Mục ---
         function renderCategories() {
             const container = document.getElementById('sidebar-categories');
             const cats = ["TẤT CẢ", ...new Set(FULL_MENU.map(m => m.cat))];
-            
             container.innerHTML = cats.map(c => {
                 const isActive = appState.filterCategory === c;
                 return `
@@ -438,17 +474,13 @@
 
         function changeCategory(cat) {
             appState.filterCategory = cat;
-            renderCategories(); // re-render để update nút active
+            renderCategories(); 
             renderMenuItems();
         }
 
-        // --- Render Món Ăn ---
         function renderMenuItems() {
             const container = document.getElementById('grid-menu');
-            const items = appState.filterCategory === "TẤT CẢ" 
-                ? FULL_MENU 
-                : FULL_MENU.filter(m => m.cat === appState.filterCategory);
-
+            const items = appState.filterCategory === "TẤT CẢ" ? FULL_MENU : FULL_MENU.filter(m => m.cat === appState.filterCategory);
             container.innerHTML = items.map(m => `
                 <div onclick="handleAddToCart('${m.id}')" class="item-card">
                     <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl mb-4">
@@ -462,79 +494,53 @@
             `).join('');
         }
 
-        // --- Thêm món chống lỗi chưa chọn bàn ---
         function handleAddToCart(productId) {
             if (!appState.currentTableId) {
-                showNotification("Lỗi: Vui lòng chọn bàn trước khi gọi món!", "error");
-                switchTab('tables'); // Ép quay về chọn bàn
-                return;
+                showNotification("Vui lòng chọn bàn trước!", "error");
+                switchTab('tables'); return;
             }
-
             const product = FULL_MENU.find(p => p.id === productId);
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-            
             table.status = 'occupied';
-            // Tạo ID tạm cực kỳ an toàn
             const uniqueTempId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
             table.cart.push({...product, tempId: uniqueTempId});
-            
             persistData();
             renderCartUI();
         }
 
-        // --- Xóa món ---
         function handleRemoveFromCart(tempId) {
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             if(!table) return;
-
             table.cart = table.cart.filter(x => x.tempId !== tempId);
-            
-            if (table.cart.length === 0) {
-                table.status = 'available';
-                table.startTime = null;
-            }
-            
+            if (table.cart.length === 0) { table.status = 'available'; table.startTime = null; }
             persistData();
             renderCartUI();
         }
 
-        // --- Render Giỏ Hàng (Bill) ---
         function renderCartUI() {
             const container = document.getElementById('bill-items');
             const totalEl = document.getElementById('bill-total-price');
-            
             if (!appState.currentTableId) {
                 container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-20"><i class="fa-solid fa-utensils text-5xl mb-4"></i><p class="text-[10px] font-black uppercase">Chưa chọn bàn</p></div>`;
-                totalEl.innerText = "0đ";
-                return;
+                totalEl.innerText = "0đ"; return;
             }
-
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-
             if (table.cart.length === 0) {
                 container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-30 text-slate-400"><i class="fa-solid fa-basket-shopping text-5xl mb-4"></i><p class="text-[10px] font-black uppercase">Bàn trống</p></div>`;
-                totalEl.innerText = "0đ";
-                return;
+                totalEl.innerText = "0đ"; return;
             }
-
-            // Gộp món cho gọn mắt
             container.innerHTML = table.cart.map(x => `
                 <div class="flex justify-between items-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm fade-in">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xs">
-                            <i class="fa-solid ${x.icon}"></i>
-                        </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xs"><i class="fa-solid ${x.icon}"></i></div>
                         <span class="text-[10px] font-black uppercase text-gray-800">${x.name}</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-[11px] font-bold text-orange-600">${x.price.toLocaleString()}đ</span>
-                        <button onclick="handleRemoveFromCart('${x.tempId}')" class="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
-                            <i class="fa-solid fa-xmark text-xs"></i>
-                        </button>
+                        <button onclick="handleRemoveFromCart('${x.tempId}')" class="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button>
                     </div>
                 </div>
             `).join('');
-
             const total = table.cart.reduce((sum, item) => sum + item.price, 0);
             totalEl.innerText = total.toLocaleString() + 'đ';
         }
@@ -545,35 +551,26 @@
 
         function triggerPaymentFlow() {
             if (!appState.currentTableId) return showNotification("Chưa chọn bàn!", "warning");
-            
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             if (table.cart.length === 0) return showNotification("Bàn chưa gọi món!", "warning");
-
             const total = table.cart.reduce((sum, item) => sum + item.price, 0);
-            
             document.getElementById('checkout-table-label').innerText = table.id;
             document.getElementById('checkout-amount').innerText = total.toLocaleString() + 'đ';
-            
             const modal = document.getElementById('modal-checkout');
             const content = document.getElementById('modal-checkout-content');
-            
             modal.classList.remove('hidden');
-            // Animation
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
             }, 10);
-
-            selectPaymentMethod('Tiền mặt'); // Mặc định
+            selectPaymentMethod('Tiền mặt'); 
         }
 
         function closeModal() {
             const modal = document.getElementById('modal-checkout');
             const content = document.getElementById('modal-checkout-content');
-            
             content.classList.remove('scale-100', 'opacity-100');
             content.classList.add('scale-95', 'opacity-0');
-            
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
@@ -586,19 +583,14 @@
             if (method === 'Tiền mặt') {
                 btnCash.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-orange-500 bg-orange-50 text-orange-600";
                 btnQr.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-slate-100 text-slate-400 hover:border-slate-300";
-                qrBox.classList.add('hidden');
-                qrBox.classList.remove('flex');
+                qrBox.classList.add('hidden'); qrBox.classList.remove('flex');
             } else {
                 btnQr.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-blue-500 bg-blue-50 text-blue-600";
                 btnCash.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-slate-100 text-slate-400 hover:border-slate-300";
-                
-                // Gen QR an toàn
                 const total = appState.tables.find(t => t.id === appState.currentTableId).cart.reduce((sum, item) => sum + item.price, 0);
                 const qrUrl = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-compact2.png?amount=${total}&addInfo=THANH%20TOAN%20BAN%20${appState.currentTableId}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
                 document.getElementById('checkout-qr-image').src = qrUrl;
-                
-                qrBox.classList.remove('hidden');
-                qrBox.classList.add('flex', 'fade-in');
+                qrBox.classList.remove('hidden'); qrBox.classList.add('flex', 'fade-in');
             }
         }
 
@@ -607,85 +599,86 @@
             const total = table.cart.reduce((sum, item) => sum + item.price, 0);
             const now = new Date();
 
-            // 1. In hóa đơn cứng
+            // 1. In Hóa Đơn Thanh Toán
             processPrint('hoa-don');
 
-            // 2. Gói dữ liệu gửi Cloud
+            // 2. Chuẩn bị Data
             const payload = {
-                date: now.toLocaleDateString('vi-VN'),
-                time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
-                table: `Bàn ${table.id < 10 ? '0'+table.id : table.id}`,
-                total: total,
-                method: appState.paymentMethod,
-                month: `${now.getMonth()+1}/${now.getFullYear()}`,
-                year: now.getFullYear()
+                date: now.toLocaleDateString('vi-VN'), time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
+                table: `Bàn ${table.id < 10 ? '0'+table.id : table.id}`, total: total, method: appState.paymentMethod,
+                month: `${now.getMonth()+1}/${now.getFullYear()}`, year: now.getFullYear()
             };
 
-            // 3. Reset bàn (Clear dữ liệu)
-            table.status = 'available';
-            table.cart = [];
-            table.startTime = null;
-            persistData();
-            
-            // 4. Đóng modal & chuyển tab
-            closeModal();
-            switchTab('tables');
-            showNotification(`Đã thanh toán Bàn ${table.id} thành công!`);
+            // 3. Reset bàn
+            table.status = 'available'; table.cart = []; table.startTime = null;
+            persistData(); closeModal(); switchTab('tables');
+            showNotification(`Thanh toán Bàn ${table.id} thành công!`);
 
-            // 5. Bắn lên Google Sheets (Chạy ngầm)
+            // 4. Đồng bộ Google Sheets
             document.getElementById('system-status').innerText = "Đang đồng bộ Cloud...";
             try {
-                await fetch(SYSTEM_CONFIG.scriptUrl, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify(payload) 
-                });
+                await fetch(SYSTEM_CONFIG.scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
                 document.getElementById('system-status').innerText = "Hệ thống bảo mật & an toàn";
             } catch (err) {
-                console.error(err);
-                document.getElementById('system-status').innerText = "Lỗi mạng - Đang lưu Offline";
-                showNotification("Mạng yếu, đơn đã lưu offline", "warning");
+                document.getElementById('system-status').innerText = "Đã lưu offline";
             }
-            
-            forceSync(); // Tải lại data doanh thu
+            forceSync(); 
         }
 
         // ==========================================
-        // KHỐI 5: IN ẤN & BÁO CÁO
+        // KHỐI 5: XỬ LÝ IN ẤN (CỐT LÕI CỦA BẢN FIX)
         // ==========================================
 
         function processPrint(printType) {
-            if (!appState.currentTableId) return showNotification("Chưa chọn bàn để in!", "error");
+            if (!appState.currentTableId) return showNotification("Chưa chọn bàn!", "error");
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             if (table.cart.length === 0) return showNotification("Bàn chưa có món!", "warning");
 
             const total = table.cart.reduce((sum, item) => sum + item.price, 0);
             
-            // Setup nội dung bill
+            // Xử lý tiêu đề in
             const titles = { 'bep': 'PHIẾU BÁO BẾP', 'tam-tinh': 'PHIẾU TẠM TÍNH', 'hoa-don': 'HÓA ĐƠN THANH TOÁN' };
             document.getElementById('print-doc-title').innerText = titles[printType];
-            document.getElementById('print-doc-table').innerText = `BÀN: ${table.id}`;
-            document.getElementById('print-doc-time').innerText = `TG: ${new Date().toLocaleString('vi-VN')}`;
-            document.getElementById('print-doc-total').innerText = total.toLocaleString() + 'đ';
-            document.getElementById('print-doc-method').innerText = printType === 'hoa-don' ? `Thanh toán: ${appState.paymentMethod}` : '';
+            
+            // Thông tin cơ bản
+            document.getElementById('print-doc-table').innerText = `BÀN ${table.id}`;
+            
+            // Lấy giờ hiện tại chính xác
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate()}/${now.getMonth()+1}`;
+            document.getElementById('print-doc-time').innerText = `TG: ${timeString}`;
 
-            // Nhóm món ăn trùng nhau
+            // Nhóm số lượng món ăn
             const grouped = {};
             table.cart.forEach(item => {
                 if(!grouped[item.name]) grouped[item.name] = { count: 0, price: item.price };
                 grouped[item.name].count++;
             });
 
+            // Nếu in báo bếp, ẩn cột tiền và tổng tiền
+            const isBep = printType === 'bep';
+            document.getElementById('print-total-section').style.display = isBep ? 'none' : 'block';
+
             document.getElementById('print-doc-items').innerHTML = Object.keys(grouped).map(name => `
                 <tr>
                     <td style="padding: 5px 0;">${name}</td>
-                    <td align="center" style="width:30px;">x${grouped[name].count}</td>
-                    <td align="right">${(grouped[name].price * grouped[name].count).toLocaleString()}</td>
+                    <td style="text-align: center; font-weight: bold;">${grouped[name].count}</td>
+                    <td style="text-align: right;">${isBep ? '' : (grouped[name].price * grouped[name].count).toLocaleString()}</td>
                 </tr>
             `).join('');
 
+            if (!isBep) {
+                document.getElementById('print-doc-total').innerText = total.toLocaleString() + 'đ';
+                document.getElementById('print-doc-method').innerText = printType === 'hoa-don' ? `(Đã thanh toán qua ${appState.paymentMethod})` : '(Chưa thanh toán)';
+            }
+
+            // Gọi lệnh in của trình duyệt
             window.print();
         }
+
+        // ==========================================
+        // KHỐI 6: ĐỒNG BỘ DOANH THU
+        // ==========================================
 
         async function forceSync() {
             try {
@@ -693,11 +686,8 @@
                 if(response.ok) {
                     appState.transactions = await response.json();
                     renderReportUI();
-                    showNotification("Đã cập nhật dữ liệu doanh thu mới nhất!");
                 }
-            } catch (error) {
-                console.log("Lỗi tải báo cáo:", error);
-            }
+            } catch (error) {}
         }
 
         function renderReportUI() {
@@ -705,38 +695,30 @@
             document.getElementById('report-date').innerText = `Cập nhật: ${new Date().toLocaleString('vi-VN')}`;
 
             const todayData = appState.transactions.filter(t => t.date === todayStr);
-            
             const sumTotal = todayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
             const sumCash = todayData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
             const sumQR = todayData.filter(t => t.method === 'Chuyển khoản').reduce((s, t) => s + parseInt(t.total || 0), 0);
 
             document.getElementById('report-dashboard').innerHTML = `
                 <div class="bg-gray-900 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden">
-                    <div class="absolute -right-6 -top-6 text-gray-800 text-9xl opacity-20"><i class="fa-solid fa-chart-line"></i></div>
-                    <p class="text-[10px] font-black uppercase text-gray-400 mb-2 relative z-10">TỔNG DOANH THU</p>
-                    <h2 class="text-4xl font-black text-orange-500 relative z-10">${sumTotal.toLocaleString()}đ</h2>
-                    <p class="text-[9px] font-bold mt-4 text-gray-500 relative z-10">${todayData.length} đơn hàng hoàn tất</p>
+                    <p class="text-[10px] font-black uppercase text-gray-400 mb-2">TỔNG DOANH THU</p>
+                    <h2 class="text-4xl font-black text-orange-500">${sumTotal.toLocaleString()}đ</h2>
+                    <p class="text-[9px] font-bold mt-4 text-gray-500">${todayData.length} đơn hàng hoàn tất</p>
                 </div>
                 <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-center">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i class="fa-solid fa-money-bill-wave text-green-500"></i>
-                        <p class="text-[10px] font-black uppercase text-slate-400">Tiền Mặt</p>
-                    </div>
-                    <h2 class="text-3xl font-black text-gray-900">${sumCash.toLocaleString()}đ</h2>
+                    <p class="text-[10px] font-black uppercase text-slate-400">Tiền Mặt</p>
+                    <h2 class="text-3xl font-black text-gray-900 mt-2">${sumCash.toLocaleString()}đ</h2>
                 </div>
                 <div class="bg-blue-50 p-8 rounded-[2.5rem] border border-blue-100 shadow-sm flex flex-col justify-center">
-                    <div class="flex items-center gap-3 mb-2">
-                        <i class="fa-solid fa-qrcode text-blue-600"></i>
-                        <p class="text-[10px] font-black uppercase text-blue-400">Chuyển Khoản</p>
-                    </div>
-                    <h2 class="text-3xl font-black text-blue-700">${sumQR.toLocaleString()}đ</h2>
+                    <p class="text-[10px] font-black uppercase text-blue-400">Chuyển Khoản</p>
+                    <h2 class="text-3xl font-black text-blue-700 mt-2">${sumQR.toLocaleString()}đ</h2>
                 </div>
             `;
 
             document.getElementById('report-history').innerHTML = [...todayData].reverse().slice(0, 15).map(t => `
-                <div class="flex justify-between items-center p-5 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl border border-slate-100">
+                <div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-sm">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
                             <i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i>
                         </div>
                         <div>
@@ -744,24 +726,21 @@
                             <p class="text-[9px] font-bold text-slate-400 mt-0.5">${t.time} • ${t.method}</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <span class="text-sm font-black ${t.method === 'Tiền mặt' ? 'text-gray-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
-                    </div>
+                    <span class="text-sm font-black ${t.method === 'Tiền mặt' ? 'text-gray-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
                 </div>
             `).join('');
         }
 
         // ==========================================
-        // KHỞI ĐỘNG HỆ THỐNG
+        // KHỞI ĐỘNG HỆ THỐNG V43
         // ==========================================
-        setInterval(() => {
-            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN');
-        }, 1000);
+        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
 
         window.onload = () => {
-            switchTab('tables'); // Khởi tạo tab mặc định chuẩn xác
-            forceSync(); // Kéo data lần đầu
-            showNotification("Hệ thống V42 khởi động thành công!", "success");
+            initializeSystemData(); // <== Chạy hàm bơm dữ liệu khắc phục lỗi chữ
+            switchTab('tables'); 
+            forceSync(); 
+            showNotification("Hệ thống V43 Flawless khởi động!", "success");
         };
 
     </script>
