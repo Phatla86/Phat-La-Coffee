@@ -3,224 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM V35</title>
+    <title>PHÁT LA PREMIUM - V41 MEGA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
-        body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .active-tab { color: #f97316 !important; border-bottom: 4px solid #f97316; }
-        .occupied { background-color: #f97316 !important; color: white !important; border-color: #ea580c !important; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');
+        :root { --primary: #f97316; --dark: #0f172a; }
+        body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; color: var(--dark); margin: 0; height: 100vh; overflow: hidden; }
+
+        /* Hiệu ứng mượt mà cho UI */
+        .tab-content { transition: opacity 0.25s ease-in-out; }
+        .table-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 2.5rem; }
+        .table-card.available { background: white; border: 2px solid #e2e8f0; }
+        .table-card.occupied { background: var(--primary); color: white; transform: translateY(-5px); box-shadow: 0 12px 24px -10px rgba(249, 115, 22, 0.5); }
+        
+        .item-card { transition: all 0.2s; border-radius: 2rem; border: 1px solid #f1f5f9; background: white; cursor: pointer; position: relative; overflow: hidden; }
+        .item-card:hover { border-color: var(--primary); transform: scale(1.02); }
+        .item-card:active { transform: scale(0.95); }
+
+        .active-nav { border-bottom: 4px solid var(--primary); color: var(--dark) !important; font-weight: 900; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* CSS IN ẤN CHUẨN MÁY NHIỆT */
+        @media print {
+            header, nav, main, #payment-modal, .no-print { display: none !important; }
+            #print-area { display: block !important; width: 80mm; padding: 2mm; background: white; color: black; font-family: 'Courier New', Courier, monospace; }
+            .line { border-top: 1px dashed black; margin: 10px 0; }
+        }
+        #print-area { display: none; }
     </style>
 </head>
-<body>
+<body class="flex flex-col">
 
     <script>
-        // CẤU HÌNH HỆ THỐNG
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwTp1V0tas3y0096lM_9ObCtUgIegRAdhqyL9dZG4CZ2x1Z_xwK0gBsOH9W3KonxDE/exec";
-        
-        // THỰC ĐƠN CỐ ĐỊNH (Để không bị trắng màn hình)
-        const menu = [
-            { cat: "CÀ PHÊ", name: "Cà Phê Đen", price: 35000, icon: "fa-mug-hot" },
-            { cat: "CÀ PHÊ", name: "Cà Phê Sữa", price: 40000, icon: "fa-glass-water" },
-            { cat: "TRÀ", name: "Trà Đào Cam Sả", price: 55000, icon: "fa-leaf" },
-            { cat: "TRÀ", name: "Trà Vải", price: 55000, icon: "fa-wine-glass" },
-            { cat: "NƯỚC ÉP", name: "Ép Cam Tươi", price: 45000, icon: "fa-citrus" },
-            { cat: "ĐÁ XAY", name: "Matcha Đá Xay", price: 65000, icon: "fa-ice-cream" },
-            { cat: "SIGNATURE", name: "Phát La Special", price: 85000, icon: "fa-crown" }
+        // === CẤU HÌNH HỆ THỐNG PHÁT LA ===
+        const CONFIG = {
+            shopName: "PHÁT LA PREMIUM",
+            address: "Mặt Tiền Đường Lớn, TP.HCM",
+            bank: "VIETCOMBANK",
+            accountNo: "1046778674",
+            accountName: "PHAT LA",
+            // Giữ nguyên URL Script của Phát để đồng bộ Google Sheet
+            scriptUrl: "https://script.google.com/macros/s/AKfycbwljq8an6b1FNSbAEAKqFYfsxVsm50VlD8xJGNgTH3khLBOPnu38fKAaHKiTIL96zM/exec"
+        };
+
+        // === FULL MENU CẬP NHẬT TỪ ẢNH MỚI ===
+        const MENU = [
+            // CÀ PHÊ
+            { id: 1, cat: "CÀ PHÊ", name: "Espresso", price: 45000, icon: "fa-mug-hot" },
+            { id: 2, cat: "CÀ PHÊ", name: "Americano", price: 50000, icon: "fa-mug-saucer" },
+            { id: 3, cat: "CÀ PHÊ", name: "Latte", price: 55000, icon: "fa-glass-water" },
+            { id: 4, cat: "CÀ PHÊ", name: "Cappuccino", price: 55000, icon: "fa-mug-hot" },
+            { id: 5, cat: "CÀ PHÊ", name: "Flat White", price: 60000, icon: "fa-coffee" },
+            { id: 6, cat: "CÀ PHÊ", name: "Cold Brew", price: 65000, icon: "fa-snowflake" },
+            { id: 7, cat: "CÀ PHÊ", name: "Mocha", price: 65000, icon: "fa-chocolate-bar" },
+
+            // ĐÁ XAY
+            { id: 8, cat: "ĐÁ XAY", name: "Caramel Frappe", price: 70000, icon: "fa-ice-cream" },
+            { id: 9, cat: "ĐÁ XAY", name: "Chocolate Frappe", price: 70000, icon: "fa-cookie" },
+            { id: 10, cat: "ĐÁ XAY", name: "Matcha Frappe", price: 75000, icon: "fa-leaf" },
+            { id: 11, cat: "ĐÁ XAY", name: "Oreo Frappe", price: 75000, icon: "fa-circle-dot" },
+            { id: 12, cat: "ĐÁ XAY", name: "Cookie Frappe", price: 75000, icon: "fa-cookie-bite" },
+
+            // TRÀ
+            { id: 13, cat: "TRÀ", name: "Trà Đào", price: 50000, icon: "fa-peach" },
+            { id: 14, cat: "TRÀ", name: "Trà Vải", price: 50000, icon: "fa-seedling" },
+            { id: 15, cat: "TRÀ", name: "Trà Chanh", price: 45000, icon: "fa-lemon" },
+            { id: 16, cat: "TRÀ", name: "Trà Xanh", price: 45000, icon: "fa-leaf" },
+            { id: 17, cat: "TRÀ", name: "Trà Oolong", price: 55000, icon: "fa-mortar-pestle" },
+
+            // SIGNATURE
+            { id: 18, cat: "ĐẶC BIỆT", name: "Cà Phê Sữa Đá", price: 45000, icon: "fa-mug-hot" },
+            { id: 19, cat: "ĐẶC BIỆT", name: "Bạc Xỉu", price: 50000, icon: "fa-glass-water" },
+            { id: 20, cat: "ĐẶC BIỆT", name: "Cà Phê Trứng", price: 60000, icon: "fa-egg" },
+            { id: 21, cat: "ĐẶC BIỆT", name: "Cà Phê Dừa", price: 65000, icon: "fa-coconut" },
+            { id: 22, cat: "ĐẶC BIỆT", name: "Salted Caramel", price: 70000, icon: "fa-water" },
+            { id: 23, cat: "ĐẶC BIỆT", name: "Hazelnut Latte", price: 70000, icon: "fa-nut" },
+            { id: 24, cat: "ĐẶC BIỆT", name: "Vanilla Cold Brew", price: 75000, icon: "fa-ice-cream" },
+            { id: 25, cat: "ĐẶC BIỆT", name: "Affogato", price: 80000, icon: "fa-ice-cream" }
         ];
 
-        // Khởi tạo trạng thái bàn từ bộ nhớ máy
-        let tables = JSON.parse(localStorage.getItem('pl_tables_v35')) || 
-                     Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [] }));
+        let tables = JSON.parse(localStorage.getItem('pl_v41_data')) || 
+                     Array.from({length: 12}, (_, i) => ({ id: i+1, status: 'available', cart: [], startTime: null }));
         
-        let orders = []; 
-        let curTable = null, activeCart = [], curCat = "TẤT CẢ";
+        let currentTableId = null;
+        let history = [];
+        let filterCat = "TẤT CẢ";
+        let payType = "Tiền mặt";
     </script>
 
-    <header class="bg-white px-6 py-4 flex justify-between items-center border-b shrink-0 z-50">
+    <header class="bg-white border-b px-6 py-4 flex justify-between items-center z-50 shadow-sm">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">PL</div>
+            <div class="w-12 h-12 bg-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg text-xl font-black">PL</div>
             <div>
                 <h1 class="text-xs font-black uppercase">Phát La Premium</h1>
-                <p id="syncStatus" class="text-[8px] font-bold text-green-500 uppercase tracking-widest">Hệ thống sẵn sàng</p>
+                <p id="cloud-status" class="text-[8px] font-bold text-green-500 uppercase italic">Đã đồng bộ Cloud</p>
             </div>
         </div>
-        <button onclick="syncData()" class="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-orange-100 active:scale-95 transition-all">
-            <i class="fa-solid fa-arrows-rotate"></i> Đồng bộ
-        </button>
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <p id="clock" class="text-[11px] font-black italic">00:00:00</p>
+                <p class="text-[7px] font-bold text-slate-400 uppercase">POS V41 MEGA</p>
+            </div>
+            <button onclick="syncData()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 hover:text-orange-500 transition-colors">
+                <i class="fa-solid fa-rotate"></i>
+            </button>
+        </div>
     </header>
 
-    <nav class="bg-white flex border-b shrink-0 z-40">
-        <button onclick="showTab('tables')" id="btn-tables" class="flex-1 py-4 text-[10px] font-bold uppercase active-tab">Sơ đồ bàn</button>
-        <button onclick="showTab('pos')" id="btn-pos" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Gọi món</button>
-        <button onclick="showTab('report')" id="btn-report" class="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400">Doanh thu</button>
+    <nav class="bg-white border-b flex px-2 shrink-0 z-40">
+        <button onclick="changeTab('tables')" id="btn-tables" class="flex-1 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400 active-nav">Sơ Đồ Bàn</button>
+        <button onclick="changeTab('pos')" id="btn-pos" class="flex-1 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400">Gọi Món</button>
+        <button onclick="changeTab('report')" id="btn-report" class="flex-1 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400">Doanh Thu</button>
     </nav>
 
-    <main class="flex-1 relative overflow-hidden bg-gray-50">
-        <section id="tab-tables" class="absolute inset-0 p-6 overflow-y-auto">
-            <div id="tableGrid" class="grid grid-cols-3 md:grid-cols-6 gap-4 max-w-4xl mx-auto"></div>
+    <main class="flex-1 relative bg-slate-50 overflow-hidden">
+        
+        <section id="tab-tables" class="absolute inset-0 p-6 overflow-y-auto tab-content">
+            <div id="table-grid" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5 max-w-6xl mx-auto"></div>
         </section>
 
-        <section id="tab-pos" class="absolute inset-0 hidden flex-col lg:flex-row bg-white">
-            <div id="catBar" class="p-2 lg:p-4 bg-gray-50 flex lg:flex-col gap-2 overflow-x-auto lg:w-48 shrink-0 no-scrollbar"></div>
-            <div class="flex-1 p-4 lg:p-6 overflow-y-auto grid grid-cols-2 md:grid-cols-4 gap-4" id="menuGrid"></div>
+        <section id="tab-pos" class="absolute inset-0 hidden flex flex-col lg:flex-row bg-white tab-content">
+            <div id="cat-sidebar" class="w-full lg:w-44 bg-slate-50 p-3 flex lg:flex-col gap-2 overflow-x-auto no-scrollbar border-r"></div>
             
-            <div class="lg:w-96 border-t lg:border-l flex flex-col p-6 shadow-2xl bg-white shrink-0">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex flex-col">
-                        <span id="labelTable" class="bg-black text-white px-3 py-1 rounded text-[9px] font-black uppercase w-fit">BÀN</span>
-                        <button onclick="showTab('tables')" class="text-[8px] font-bold text-blue-500 mt-2 uppercase">Đổi bàn</button>
+            <div class="flex-1 p-4 lg:p-6 overflow-y-auto bg-slate-100/50">
+                <div id="menu-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+            </div>
+            
+            <div class="w-full lg:w-[450px] flex flex-col bg-white shadow-2xl z-10 border-l">
+                <div class="p-6 border-b flex justify-between items-center bg-white">
+                    <div>
+                        <h2 id="pos-title" class="text-xl font-black uppercase tracking-tighter">Bàn Đợi...</h2>
+                        <p id="pos-time" class="text-[9px] font-bold text-slate-400">Chưa bắt đầu</p>
                     </div>
-                    <span id="cartTotal" class="text-3xl font-black text-orange-600">0đ</span>
+                    <button onclick="changeTab('tables')" class="text-orange-600 bg-orange-50 px-4 py-2 rounded-xl text-[9px] font-black uppercase">Đổi bàn</button>
                 </div>
-                <div id="cartItems" class="flex-1 overflow-y-auto space-y-2 mb-4 no-scrollbar"></div>
-                <button onclick="processPayment()" class="w-full py-5 bg-gray-900 text-white rounded-[2rem] font-black text-[11px] uppercase shadow-lg active:scale-95 transition-all">Thanh toán</button>
+                
+                <div id="cart-list" class="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar"></div>
+
+                <div class="p-6 bg-white border-t-2 border-slate-50 space-y-4">
+                    <div class="flex justify-between items-end">
+                        <span class="text-[10px] font-black text-slate-400 uppercase">Tổng thanh toán</span>
+                        <span id="cart-total" class="text-4xl font-black text-orange-600 tracking-tighter">0đ</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="handlePrint('bep')" class="py-4 bg-blue-100 text-blue-600 rounded-2xl font-black text-[10px] uppercase shadow-sm">Báo Bếp</button>
+                        <button onclick="handlePrint('tam-tinh')" class="py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase shadow-sm">Tạm Tính</button>
+                    </div>
+                    <button onclick="openPayment()" class="w-full py-6 bg-orange-600 text-white rounded-[2rem] font-black text-sm uppercase shadow-xl hover:bg-orange-700 transition-all active:scale-95">
+                        Thanh Toán Ngay <i class="fa-solid fa-chevron-right ml-2"></i>
+                    </button>
+                </div>
             </div>
         </section>
 
-        <section id="tab-report" class="absolute inset-0 p-6 hidden overflow-y-auto bg-white">
-            <div id="statBox" class="bg-gray-900 p-8 rounded-[2.5rem] text-center text-white mb-8 shadow-xl"></div>
-            <h3 class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest px-2">Lịch sử hôm nay</h3>
-            <div id="history" class="space-y-3 pb-24"></div>
+        <section id="tab-report" class="absolute inset-0 p-6 hidden overflow-y-auto tab-content">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div id="stat-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+                    <h3 class="text-xs font-black uppercase text-slate-400 mb-6 tracking-widest">Lịch sử giao dịch hôm nay</h3>
+                    <div id="history-list" class="space-y-3"></div>
+                </div>
+            </div>
         </section>
     </main>
 
+    <div id="payment-modal" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[3rem] overflow-hidden flex flex-col shadow-2xl animate-modal">
+            <div class="p-8 text-center border-b border-slate-50">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Số tiền thực thu</p>
+                <h2 id="modal-total" class="text-5xl font-black text-orange-600 tracking-tighter">0đ</h2>
+            </div>
+
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="setPayType('Tiền mặt')" id="pay-cash" class="p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-orange-500 bg-orange-50">
+                        <i class="fa-solid fa-money-bill-wave text-2xl text-orange-600"></i>
+                        <span class="text-[10px] font-black uppercase">Tiền mặt</span>
+                    </button>
+                    <button onclick="setPayType('Chuyển khoản')" id="pay-qr" class="p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-slate-100">
+                        <i class="fa-solid fa-qrcode text-2xl text-blue-600"></i>
+                        <span class="text-[10px] font-black uppercase">Quét QR</span>
+                    </button>
+                </div>
+
+                <div id="qr-area" class="hidden flex flex-col items-center p-6 bg-blue-50/50 rounded-3xl border border-blue-100">
+                    <p class="text-[9px] font-black text-blue-600 uppercase mb-4 italic underline">Vietcombank - 1046778674</p>
+                    <img id="qr-img" src="" class="w-48 h-48 border-4 border-white shadow-xl rounded-2xl">
+                    <p class="text-[9px] font-bold text-slate-400 mt-4 uppercase">Chủ TK: PHAT LA</p>
+                </div>
+            </div>
+
+            <div class="p-8 pt-0 flex gap-3">
+                <button onclick="closePayment()" class="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase">Hủy bỏ</button>
+                <button onclick="completeOrder()" class="flex-[2] py-5 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all">Xác nhận đơn</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="print-area">
+        <center>
+            <h1 style="margin:0; font-size: 22px; font-weight: 900;">${CONFIG.shopName}</h1>
+            <p style="font-size: 10px; margin: 5px 0;">${CONFIG.address}</p>
+            <div class="line"></div>
+            <h2 id="p-title" style="margin: 10px 0; font-size: 16px;">HÓA ĐƠN</h2>
+            <p id="p-table" style="font-size: 14px; font-weight: bold;"></p>
+            <p id="p-time" style="font-size: 9px;"></p>
+        </center>
+        <div class="line"></div>
+        <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <tbody id="p-items"></tbody>
+        </table>
+        <div class="line"></div>
+        <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; padding: 10px 0;">
+            <span>TỔNG CỘNG:</span> <span id="p-total">0đ</span>
+        </div>
+        <p id="p-method" style="font-size: 10px; font-style: italic; text-align: center;"></p>
+        <div class="line"></div>
+        <center><p style="font-size: 10px; margin-top: 15px;">Cảm ơn Phát La. Chào tạm biệt!</p></center>
+    </div>
+
     <script>
-        // CHỨC NĂNG HIỂN THỊ
-        function showTab(t) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab'));
-            const target = document.getElementById(`tab-${t}`);
-            t === 'pos' ? target.classList.add('flex') : target.classList.remove('hidden');
-            document.getElementById(`btn-${t}`).classList.add('active-tab');
-            if(t === 'tables') renderTables();
-            if(t === 'report') renderStats();
+        /* === LOGIC XỬ LÝ CHÍNH === */
+
+        function changeTab(id) {
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav', 'text-slate-400'));
+            const target = document.getElementById(`tab-${id}`);
+            id === 'pos' ? target.classList.add('flex') : target.classList.remove('hidden');
+            document.getElementById(`btn-${id}`).classList.add('active-nav');
+            
+            if(id === 'tables') renderTables();
+            if(id === 'pos') renderMenu();
+            if(id === 'report') syncData();
         }
 
         function renderTables() {
-            const grid = document.getElementById('tableGrid');
-            grid.innerHTML = tables.map(t => `
-                <div onclick="selectTable(${t.id})" class="p-8 rounded-[2.5rem] border-2 flex flex-col items-center cursor-pointer transition-all active:scale-90 ${t.status==='occupied'?'occupied':'bg-white border-gray-100'}">
-                    <b class="text-sm font-black">${t.id}</b>
-                    <span class="text-[8px] font-bold uppercase opacity-50">${t.status==='occupied'?'Có khách':'Trống'}</span>
-                </div>`).join('');
+            document.getElementById('table-grid').innerHTML = tables.map(t => `
+                <div onclick="selectTable(${t.id})" class="table-card ${t.status} p-10 flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-90">
+                    <span class="text-[8px] font-black opacity-30 uppercase mb-1">Bàn</span>
+                    <b class="text-3xl font-black">${t.id < 10 ? '0'+t.id : t.id}</b>
+                    ${t.status === 'occupied' ? `<span class="text-[9px] font-bold mt-2 opacity-80">${t.startTime}</span>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function selectTable(id) {
+            currentTableId = id;
+            const t = tables.find(x => x.id === id);
+            if(!t.startTime) t.startTime = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('pos-title').innerText = `BÀN ${id < 10 ? '0'+id : id}`;
+            document.getElementById('pos-time').innerText = `Thời gian vào: ${t.startTime}`;
+            renderCart();
+            changeTab('pos');
         }
 
         function renderMenu() {
-            const cats = ["TẤT CẢ", ...new Set(menu.map(m => m.cat))];
-            document.getElementById('catBar').innerHTML = cats.map(c => `
-                <button onclick="setCat('${c}')" class="px-5 py-2 lg:w-full lg:text-left rounded-full lg:rounded-xl border-2 text-[9px] font-black shrink-0 transition-all ${curCat===c?'bg-orange-600 border-orange-600 text-white':'bg-white text-gray-400 border-gray-100'}">${c}</button>
+            const cats = ["TẤT CẢ", ...new Set(MENU.map(m => m.cat))];
+            document.getElementById('cat-sidebar').innerHTML = cats.map(c => `
+                <button onclick="filterCat='${c}';renderMenu()" class="px-5 py-4 rounded-2xl text-[9px] font-black uppercase transition-all shrink-0 ${filterCat === c ? 'bg-orange-600 text-white shadow-lg' : 'bg-white text-slate-400'}">
+                    ${c}
+                </button>
             `).join('');
 
-            const filteredMenu = curCat === "TẤT CẢ" ? menu : menu.filter(m => m.cat === curCat);
-            document.getElementById('menuGrid').innerHTML = filteredMenu.map(m => `
-                <div onclick="addToCart('${m.name}', ${m.price})" class="bg-white p-6 rounded-[2.2rem] border-2 border-gray-50 flex flex-col justify-between h-40 cursor-pointer shadow-sm hover:border-orange-200 active:scale-95 transition-all">
-                    <i class="fa-solid ${m.icon} text-orange-500 text-xl"></i>
+            const items = filterCat === "TẤT CẢ" ? MENU : MENU.filter(m => m.cat === filterCat);
+            document.getElementById('menu-grid').innerHTML = items.map(m => `
+                <div onclick="addToCart(${m.id})" class="item-card p-6 flex flex-col justify-between h-44 shadow-sm border border-slate-100">
+                    <div class="w-10 h-10 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center text-sm"><i class="fa-solid ${m.icon}"></i></div>
                     <div>
-                        <p class="text-[10px] font-black uppercase text-gray-800 leading-tight">${m.name}</p>
-                        <p class="text-[10px] font-bold text-orange-400 mt-1">${m.price.toLocaleString()}đ</p>
+                        <p class="text-[10px] font-black uppercase text-slate-800 leading-tight mb-1">${m.name}</p>
+                        <p class="text-[11px] font-bold text-orange-600">${m.price.toLocaleString()}đ</p>
                     </div>
-                </div>`).join('');
+                </div>
+            `).join('');
         }
 
-        function setCat(c) { curCat = c; renderMenu(); }
-
-        function selectTable(id) {
-            curTable = id;
-            document.getElementById('labelTable').innerText = `BÀN ${id}`;
-            const t = tables.find(x => x.id === id);
-            activeCart = t.cart || [];
-            updateCartUI();
-            showTab('pos');
+        function addToCart(id) {
+            const product = MENU.find(p => p.id === id);
+            const table = tables.find(t => t.id === currentTableId);
+            table.status = 'occupied';
+            table.cart.push({...product, tempId: Date.now()});
+            saveData();
+            renderCart();
         }
 
-        function addToCart(name, price) {
-            activeCart.push({name, price});
-            updateCartUI();
-            const t = tables.find(x => x.id === curTable);
-            t.status = 'occupied'; t.cart = activeCart;
-            localStorage.setItem('pl_tables_v35', JSON.stringify(tables));
+        function removeFromCart(tempId) {
+            const table = tables.find(t => t.id === currentTableId);
+            table.cart = table.cart.filter(x => x.tempId !== tempId);
+            if(table.cart.length === 0) { table.status = 'available'; table.startTime = null; }
+            saveData();
+            renderCart();
         }
 
-        function updateCartUI() {
-            const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            document.getElementById('cartTotal').innerText = total.toLocaleString() + 'đ';
-            document.getElementById('cartItems').innerHTML = activeCart.map((i, idx) => `
-                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <span class="text-[10px] font-black uppercase">${i.name}</span>
-                    <button onclick="activeCart.splice(${idx},1);updateCartUI();saveTables();" class="text-red-400 px-2 text-lg">✕</button>
-                </div>`).join('');
+        function renderCart() {
+            const table = tables.find(t => t.id === currentTableId);
+            const list = document.getElementById('cart-list');
+            if(!table.cart.length) {
+                list.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-10 mt-20"><i class="fa-solid fa-mug-hot text-6xl mb-4"></i><p class="text-xs font-black uppercase">Chưa có món</p></div>`;
+                document.getElementById('cart-total').innerText = "0đ";
+                return;
+            }
+            list.innerHTML = table.cart.map(x => `
+                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100 animate-modal">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid ${x.icon} text-orange-500 text-[10px]"></i>
+                        <span class="text-[10px] font-black uppercase">${x.name}</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-[10px] font-bold text-slate-400">${x.price.toLocaleString()}đ</span>
+                        <button onclick="removeFromCart(${x.tempId})" class="text-red-400 hover:text-red-600 p-2 text-xs">✕</button>
+                    </div>
+                </div>
+            `).join('');
+            const total = table.cart.reduce((s,i) => s + i.price, 0);
+            document.getElementById('cart-total').innerText = total.toLocaleString() + 'đ';
         }
 
-        function saveTables() {
-            const t = tables.find(x => x.id === curTable);
-            if(activeCart.length === 0) t.status = 'available';
-            t.cart = activeCart;
-            localStorage.setItem('pl_tables_v35', JSON.stringify(tables));
+        /* === XỬ LÝ THANH TOÁN === */
+
+        function openPayment() {
+            const total = tables.find(t => t.id === currentTableId).cart.reduce((s,i) => s + i.price, 0);
+            if(total === 0) return;
+            document.getElementById('modal-total').innerText = total.toLocaleString() + 'đ';
+            document.getElementById('payment-modal').classList.remove('hidden');
+            setPayType('Tiền mặt');
         }
 
-        async function processPayment() {
-            if(!activeCart.length) return;
-            const total = activeCart.reduce((s,c)=>s+c.price, 0);
-            const now = new Date();
-            const data = { 
-                date: now.toLocaleDateString('vi-VN'),
-                time: now.toLocaleTimeString('vi-VN'),
-                total: total, table: `Bàn ${curTable}`,
-                method: "Tiền mặt", 
-                month: (now.getMonth()+1)+"/"+now.getFullYear(), 
-                year: now.getFullYear()
-            };
-            
-            // Đẩy lên Cloud (Không cần đợi phản hồi để tránh lag)
-            fetch(GOOGLE_SHEET_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-            
-            const t = tables.find(x => x.id === curTable);
-            t.status = 'available'; t.cart = [];
-            localStorage.setItem('pl_tables_v35', JSON.stringify(tables));
-            activeCart = []; updateCartUI(); showTab('tables');
-            syncData(); // Cập nhật lại doanh thu
-        }
+        function closePayment() { document.getElementById('payment-modal').classList.add('hidden'); }
 
-        async function syncData() {
-            const status = document.getElementById('syncStatus');
-            try {
-                const res = await fetch(GOOGLE_SHEET_URL);
-                orders = await res.json();
-                renderStats();
-                status.innerText = "Đã đồng bộ Cloud";
-                status.classList.replace('text-red-500', 'text-green-500');
-            } catch (e) {
-                status.innerText = "Đang chạy Offline";
-                status.classList.add('text-red-500');
+        function setPayType(type) {
+            payType = type;
+            const cash = document.getElementById('pay-cash');
+            const qr = document.getElementById('pay-qr');
+            const qrArea = document.getElementById('qr-area');
+
+            if(type === 'Tiền mặt') {
+                cash.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-orange-500 bg-orange-50";
+                qr.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-slate-100";
+                qrArea.classList.add('hidden');
+            } else {
+                qr.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-blue-500 bg-blue-50";
+                cash.className = "p-6 border-2 rounded-[2rem] flex flex-col items-center gap-3 transition-all border-slate-100";
+                qrArea.classList.remove('hidden');
+                
+                const total = tables.find(t => t.id === currentTableId).cart.reduce((s,i) => s + i.price, 0);
+                document.getElementById('qr-img').src = `https://img.vietqr.io/image/vietcombank-${CONFIG.accountNo}-compact2.png?amount=${total}&addInfo=BAN%20${currentTableId}%20THANH%20TOAN&accountName=PHAT%20LA`;
             }
         }
 
-        function renderStats() {
-            const today = new Date().toLocaleDateString('vi-VN');
-            const dayTotal = orders.filter(o => o.date === today).reduce((s,o)=>s+parseInt(o.total || 0), 0);
-            document.getElementById('statBox').innerHTML = `
-                <p class="text-[10px] font-bold opacity-40 uppercase mb-2 tracking-widest">Doanh thu hôm nay</p>
-                <h2 class="text-4xl font-black text-orange-500 tracking-tighter">${dayTotal.toLocaleString()}đ</h2>
-            `;
-            document.getElementById('history').innerHTML = [...orders].reverse().slice(0,15).map(o => `
-                <div class="bg-white p-5 rounded-2xl flex justify-between items-center border border-gray-100 shadow-sm">
-                    <div>
-                        <b class="text-[11px] uppercase text-gray-800">${o.table}</b>
-                        <p class="text-[8px] font-bold text-gray-400 uppercase mt-1">${o.time}</p>
-                    </div>
-                    <span class="text-orange-600 font-black text-sm">+${parseInt(o.total || 0).toLocaleString()}</span>
-                </div>`).join('');
+        async function completeOrder() {
+            const t = tables.find(x => x.id === currentTableId);
+            const total = t.cart.reduce((s,i) => s + i.price, 0);
+            const now = new Date();
+
+            handlePrint('hoa-don');
+
+            const order = {
+                date: now.toLocaleDateString('vi-VN'),
+                time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
+                table: `Bàn ${t.id}`,
+                total: total,
+                method: payType,
+                month: (now.getMonth()+1)+"/"+now.getFullYear(),
+                year: now.getFullYear()
+            };
+
+            // Reset bàn
+            t.status = 'available'; t.cart = []; t.startTime = null;
+            saveData();
+            closePayment();
+            changeTab('tables');
+
+            // Gửi dữ liệu Cloud
+            try {
+                await fetch(CONFIG.scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(order) });
+                document.getElementById('cloud-status').innerText = "Đã đồng bộ Cloud";
+            } catch(e) {
+                document.getElementById('cloud-status').innerText = "Đang chạy Offline";
+            }
+            syncData();
         }
 
-        window.onload = () => {
-            renderTables();
-            renderMenu();
-            syncData();
-            setInterval(syncData, 30000); // Tự động cập nhật mỗi 30 giây
-        };
+        function handlePrint(type) {
+            const t = tables.find(x => x.id === currentTableId);
+            const total = t.cart.reduce((s,i) => s + i.price, 0);
+
+            document.getElementById('p-title').innerText = type === 'bep' ? "BÁO BẾP" : (type === 'tam-tinh' ? "TẠM TÍNH" : "HÓA ĐƠN");
+            document.getElementById('p-table').innerText = `BÀN: ${t.id}`;
+            document.getElementById('p-time').innerText = `Ngày: ${new Date().toLocaleString('vi-VN')}`;
+            document.getElementById('p-total').innerText = total.toLocaleString() + 'đ';
+            document.getElementById('p-method').innerText = type === 'hoa-don' ? `Thanh toán: ${payType}` : "";
+
+            const summary = {};
+            t.cart.forEach(m => { summary[m.name] = (summary[m.name] || 0) + 1; });
+            
+            document.getElementById('p-items').innerHTML = Object.keys(summary).map(name => {
+                const item = t.cart.find(i => i.name === name);
+                return `<tr><td style="padding:6px 0;">${name}</td><td align="center">x${summary[name]}</td><td align="right">${(item.price * summary[name]).toLocaleString()}</td></tr>`;
+            }).join('');
+
+            window.print();
+        }
+
+        async function syncData() {
+            try {
+                const res = await fetch(CONFIG.scriptUrl);
+                history = await res.json();
+                renderReport();
+            } catch(e) {}
+        }
+
+        function renderReport() {
+            const today = new Date().toLocaleDateString('vi-VN');
+            const daily = history.filter(o => o.date === today);
+            const total = daily.reduce((s,o) => s + parseInt(o.total), 0);
+            const cash = daily.filter(o => o.method === 'Tiền mặt').reduce((s,o) => s + parseInt(o.total), 0);
+            const transfer = daily.filter(o => o.method === 'Chuyển khoản').reduce((s,o) => s + parseInt(o.total), 0);
+
+            document.getElementById('stat-cards').innerHTML = `
+                <div class="bg-gray-900 p-8 rounded-[2.5rem] text-white shadow-xl">
+                    <p class="text-[9px] font-black opacity-40 uppercase mb-2">Tổng Doanh Thu</p>
+                    <h2 class="text-4xl font-black text-orange-500 tracking-tighter">${total.toLocaleString()}đ</h2>
+                </div>
+                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-300 uppercase mb-2">Tiền mặt</p>
+                    <h2 class="text-2xl font-black text-green-600">${cash.toLocaleString()}đ</h2>
+                </div>
+                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-300 uppercase mb-2">Chuyển khoản</p>
+                    <h2 class="text-2xl font-black text-blue-600">${transfer.toLocaleString()}đ</h2>
+                </div>
+            `;
+
+            document.getElementById('history-list').innerHTML = [...daily].reverse().slice(0, 10).map(o => `
+                <div class="flex justify-between items-center p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs">
+                            <i class="fa-solid ${o.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-qrcode text-blue-500'}"></i>
+                        </div>
+                        <div><p class="text-[10px] font-black uppercase">${o.table}</p><p class="text-[8px] font-bold text-slate-400">${o.time} • ${o.method}</p></div>
+                    </div>
+                    <span class="text-xs font-black">+${parseInt(o.total).toLocaleString()}</span>
+                </div>
+            `).join('');
+        }
+
+        function saveData() { localStorage.setItem('pl_v41_data', JSON.stringify(tables)); }
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
+        window.onload = () => { renderTables(); syncData(); };
+
     </script>
 </body>
 </html>
