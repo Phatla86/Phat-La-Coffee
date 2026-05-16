@@ -573,76 +573,86 @@
             `).join('');
         }
 
-                // TÍNH NĂNG XUẤT FILE EXCEL CHIA 3 TAB: NGÀY - THÁNG - NĂM (FIX LỖI DÍNH CHỮ)
+                // TÍNH NĂNG XUẤT EXCEL TỔNG HỢP (NGÀY/THÁNG/NĂM)
 function exportToExcel() {
-    if(appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
+    if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
 
     const now = new Date();
     const todayStr = now.toLocaleDateString('vi-VN');
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    // 1. Lọc dữ liệu riêng biệt cho từng Sheet
+    // --- 1. XỬ LÝ DỮ LIỆU TAB NGÀY (Tổng hợp theo phương thức thanh toán) ---
     const todayData = appState.transactions.filter(t => t.date === todayStr);
-    
+    let daySummary = { cash: 0, qr: 0, count: todayData.length };
+    todayData.forEach(t => {
+        if (t.method === 'Tiền mặt') daySummary.cash += parseInt(t.total || 0);
+        else daySummary.qr += parseInt(t.total || 0);
+    });
+
+    const rowsDay = [
+        ["BÁO CÁO DOANH THU NGÀY:", todayStr],
+        [""],
+        ["Phương thức", "Số lượng đơn", "Tổng tiền (VNĐ)"],
+        ["Tiền mặt", daySummary.count > 0 ? "-" : 0, daySummary.cash],
+        ["Chuyển khoản", daySummary.count > 0 ? "-" : 0, daySummary.qr],
+        ["TỔNG CỘNG", daySummary.count, daySummary.cash + daySummary.qr]
+    ];
+
+    // --- 2. XỬ LÝ DỮ LIỆU TAB THÁNG (Tổng hợp theo từng ngày trong tháng) ---
     const monthData = appState.transactions.filter(t => {
-        if(!t.date) return false;
-        const parts = t.date.split('/');
-        return parts.length === 3 && parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
+        const p = t.date.split('/');
+        return p.length === 3 && parseInt(p[1]) === currentMonth && parseInt(p[2]) === currentYear;
     });
-    
+
+    const dailyMap = {};
+    monthData.forEach(t => {
+        if (!dailyMap[t.date]) dailyMap[t.date] = { cash: 0, qr: 0 };
+        if (t.method === 'Tiền mặt') dailyMap[t.date].cash += parseInt(t.total || 0);
+        else dailyMap[t.date].qr += parseInt(t.total || 0);
+    });
+
+    const rowsMonth = [["Ngày", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng ngày"]];
+    Object.keys(dailyMap).sort().forEach(d => {
+        const day = dailyMap[d];
+        rowsMonth.push([d, day.cash, day.qr, day.cash + day.qr]);
+    });
+
+    // --- 3. XỬ LÝ DỮ LIỆU TAB NĂM (Tổng hợp theo từng tháng trong năm) ---
     const yearData = appState.transactions.filter(t => {
-        if(!t.date) return false;
-        const parts = t.date.split('/');
-        return parts.length === 3 && parseInt(parts[2]) === currentYear;
+        const p = t.date.split('/');
+        return p.length === 3 && parseInt(p[2]) === currentYear;
     });
 
-    // 2. Hàm chuyển đổi dữ liệu sang định dạng Mảng 2 chiều (Để tránh lỗi dính chữ trên điện thoại)
-    const createSheetData = (data) => {
-        const rows = [["Ngày", "Tháng", "Năm", "Giờ", "Bàn", "Phương thức", "Tổng tiền (VNĐ)"]]; // Tiêu đề cột
-        data.forEach(t => {
-            let m = "", y = "";
-            if(t.date) {
-                const parts = t.date.split('/');
-                if(parts.length === 3) { m = parts[1]; y = parts[2]; }
-            }
-            rows.push([t.date, m, y, t.time, t.table, t.method, parseInt(t.total || 0)]);
-        });
-        return rows;
-    };
+    const monthlyMap = {};
+    yearData.forEach(t => {
+        const p = t.date.split('/');
+        const m = `Tháng ${p[1]}/${p[2]}`;
+        if (!monthlyMap[m]) monthlyMap[m] = { cash: 0, qr: 0 };
+        if (t.method === 'Tiền mặt') monthlyMap[m].cash += parseInt(t.total || 0);
+        else monthlyMap[m].qr += parseInt(t.total || 0);
+    });
 
-    // 3. Tạo các Worksheet tương ứng với 3 mảng dữ liệu đã lọc
-    const wsDay = XLSX.utils.aoa_to_sheet(createSheetData(todayData));
-    const wsMonth = XLSX.utils.aoa_to_sheet(createSheetData(monthData));
-    const wsYear = XLSX.utils.aoa_to_sheet(createSheetData(yearData));
+    const rowsYear = [["Tháng", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng tháng"]];
+    Object.keys(monthlyMap).sort((a, b) => {
+        const m1 = parseInt(a.match(/\d+/)[0]), m2 = parseInt(b.match(/\d+/)[0]);
+        return m1 - m2;
+    }).forEach(m => {
+        const mon = monthlyMap[m];
+        rowsYear.push([m, mon.cash, mon.qr, mon.cash + mon.qr]);
+    });
 
-    // Cấu hình độ rộng cột cho đẹp
-    const wscols = [ {wch: 12}, {wch: 8}, {wch: 8}, {wch: 10}, {wch: 10}, {wch: 15}, {wch: 15} ];
-    wsDay['!cols'] = wscols; wsMonth['!cols'] = wscols; wsYear['!cols'] = wscols;
-
-    // 4. Gộp 3 Sheet vào 1 Workbook và đặt tên Tab
+    // --- 4. TẠO FILE EXCEL ---
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, wsDay, "Doanh thu ngày");
-    XLSX.utils.book_append_sheet(wb, wsMonth, "Doanh thu tháng");
-    XLSX.utils.book_append_sheet(wb, wsYear, "Doanh thu năm");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
 
-    // 5. Xuất file dưới dạng Blob để đảm bảo tính tương thích cao trên Mobile
-    try {
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Doanh_Thu_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showNotification("Đã xuất file Excel 3 tab thành công!");
-    } catch (e) {
-        XLSX.writeFile(wb, `Doanh_Thu_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`);
-    }
+    // Xuất file
+    XLSX.writeFile(wb, `Bao_Cao_Tong_Hop_${todayStr.replace(/\//g, '-')}.xlsx`);
+    showNotification("Đã xuất báo cáo tổng hợp!");
 }
+
 
 
         // TÍNH NĂNG 2: ĐỒNG BỘ LÊN GOOGLE SHEETS
