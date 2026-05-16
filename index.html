@@ -573,67 +573,76 @@
             `).join('');
         }
 
-                // TÍNH NĂNG 1: XUẤT FILE EXCEL CHIA TAB
-        function exportToExcel() {
-            if(appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
+                // TÍNH NĂNG XUẤT FILE EXCEL CHIA 3 TAB: NGÀY - THÁNG - NĂM (FIX LỖI DÍNH CHỮ)
+function exportToExcel() {
+    if(appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
 
-            const now = new Date();
-            const todayStr = now.toLocaleDateString('vi-VN');
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('vi-VN');
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
 
-            // Lọc dữ liệu theo Ngày, Tháng, Năm
-            const todayData = appState.transactions.filter(t => t.date === todayStr);
-            const monthData = appState.transactions.filter(t => {
-                if(!t.date) return false;
+    // 1. Lọc dữ liệu riêng biệt cho từng Sheet
+    const todayData = appState.transactions.filter(t => t.date === todayStr);
+    
+    const monthData = appState.transactions.filter(t => {
+        if(!t.date) return false;
+        const parts = t.date.split('/');
+        return parts.length === 3 && parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
+    });
+    
+    const yearData = appState.transactions.filter(t => {
+        if(!t.date) return false;
+        const parts = t.date.split('/');
+        return parts.length === 3 && parseInt(parts[2]) === currentYear;
+    });
+
+    // 2. Hàm chuyển đổi dữ liệu sang định dạng Mảng 2 chiều (Để tránh lỗi dính chữ trên điện thoại)
+    const createSheetData = (data) => {
+        const rows = [["Ngày", "Tháng", "Năm", "Giờ", "Bàn", "Phương thức", "Tổng tiền (VNĐ)"]]; // Tiêu đề cột
+        data.forEach(t => {
+            let m = "", y = "";
+            if(t.date) {
                 const parts = t.date.split('/');
-                return parts.length === 3 && parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
-            });
-            const yearData = appState.transactions.filter(t => {
-                if(!t.date) return false;
-                const parts = t.date.split('/');
-                return parts.length === 3 && parseInt(parts[2]) === currentYear;
-            });
+                if(parts.length === 3) { m = parts[1]; y = parts[2]; }
+            }
+            rows.push([t.date, m, y, t.time, t.table, t.method, parseInt(t.total || 0)]);
+        });
+        return rows;
+    };
 
-            // Hàm hỗ trợ chuyển đổi dữ liệu để hiển thị đẹp trên Excel
-            const formatDataForExcel = (data) => {
-                return data.map(t => {
-                    let m = t.month || "", y = t.year || "";
-                    if(t.date) {
-                        const parts = t.date.split('/');
-                        if(parts.length === 3) { m = parts[1]; y = parts[2]; }
-                    }
-                    return {
-                        "Ngày": t.date,
-                        "Tháng": m,
-                        "Năm": y,
-                        "Giờ": t.time,
-                        "Bàn": t.table,
-                        "Phương thức": t.method,
-                        "Tổng tiền (VNĐ)": parseInt(t.total || 0)
-                    };
-                });
-            };
+    // 3. Tạo các Worksheet tương ứng với 3 mảng dữ liệu đã lọc
+    const wsDay = XLSX.utils.aoa_to_sheet(createSheetData(todayData));
+    const wsMonth = XLSX.utils.aoa_to_sheet(createSheetData(monthData));
+    const wsYear = XLSX.utils.aoa_to_sheet(createSheetData(yearData));
 
-            // Chuyển JSON thành các Worksheet (Tab)
-            const wsDay = XLSX.utils.json_to_sheet(formatDataForExcel(todayData));
-            const wsMonth = XLSX.utils.json_to_sheet(formatDataForExcel(monthData));
-            const wsYear = XLSX.utils.json_to_sheet(formatDataForExcel(yearData));
+    // Cấu hình độ rộng cột cho đẹp
+    const wscols = [ {wch: 12}, {wch: 8}, {wch: 8}, {wch: 10}, {wch: 10}, {wch: 15}, {wch: 15} ];
+    wsDay['!cols'] = wscols; wsMonth['!cols'] = wscols; wsYear['!cols'] = wscols;
 
-            // Tự động căn chỉnh độ rộng cột cho đẹp
-            const wscols = [ {wch: 12}, {wch: 8}, {wch: 8}, {wch: 10}, {wch: 10}, {wch: 15}, {wch: 15} ];
-            wsDay['!cols'] = wscols; wsMonth['!cols'] = wscols; wsYear['!cols'] = wscols;
+    // 4. Gộp 3 Sheet vào 1 Workbook và đặt tên Tab
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, wsDay, "Doanh thu ngày");
+    XLSX.utils.book_append_sheet(wb, wsMonth, "Doanh thu tháng");
+    XLSX.utils.book_append_sheet(wb, wsYear, "Doanh thu năm");
 
-            // Tạo một Workbook (File Excel) mới và gắn các Tab vào
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, wsDay, "Doanh thu ngày");
-            XLSX.utils.book_append_sheet(wb, wsMonth, "Doanh thu tháng");
-            XLSX.utils.book_append_sheet(wb, wsYear, "Doanh thu năm");
-
-            // Kích hoạt tải xuống file đuôi .xlsx
-            XLSX.writeFile(wb, `Tong_Hop_Doanh_Thu_${todayStr.replace(/\//g, '-')}.xlsx`);
-            showNotification("Đã tải xuống file Excel thành công!");
-        }
+    // 5. Xuất file dưới dạng Blob để đảm bảo tính tương thích cao trên Mobile
+    try {
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Doanh_Thu_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification("Đã xuất file Excel 3 tab thành công!");
+    } catch (e) {
+        XLSX.writeFile(wb, `Doanh_Thu_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`);
+    }
+}
 
 
         // TÍNH NĂNG 2: ĐỒNG BỘ LÊN GOOGLE SHEETS
