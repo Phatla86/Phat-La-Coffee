@@ -512,25 +512,52 @@
         // ==========================================
         // KHỐI 4: BÁO CÁO & XUẤT EXCEL/GOOGLE SHEETS
         // ==========================================
-        function renderReportUI() {
-            const todayStr = new Date().toLocaleDateString('vi-VN');
-            document.getElementById('report-date').innerText = `Cập nhật: ${new Date().toLocaleString('vi-VN')}`;
-            const todayData = appState.transactions.filter(t => t.date === todayStr);
-            const sumTotal = todayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
-            const sumCash = todayData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
-            const sumQR = todayData.filter(t => t.method === 'Chuyển khoản').reduce((s, t) => s + parseInt(t.total || 0), 0);
+       function renderReportUI() {
+            const now = new Date();
+            const todayStr = now.toLocaleDateString('vi-VN');
+            const currentMonthStr = `${now.getMonth() + 1}/${now.getFullYear()}`;
+            const currentYear = now.getFullYear();
 
+            document.getElementById('report-date').innerText = `Cập nhật: ${now.toLocaleString('vi-VN')}`;
+
+            // Lọc dữ liệu theo Ngày, Tháng, Năm
+            const todayData = appState.transactions.filter(t => t.date === todayStr);
+            const monthData = appState.transactions.filter(t => t.month === currentMonthStr);
+            const yearData = appState.transactions.filter(t => t.year === currentYear);
+
+            // Tính tổng doanh thu
+            const sumToday = todayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumYear = yearData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+
+            // Render 3 cột thống kê: Hôm Nay, Tháng Này, Năm Nay
             document.getElementById('report-dashboard').innerHTML = `
-                <div class="bg-gray-900 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] text-white"><p class="text-[9px] lg:text-[10px] font-black uppercase text-gray-400 mb-1 lg:mb-2">DOANH THU</p><h2 class="text-3xl lg:text-4xl font-black text-orange-500">${sumTotal.toLocaleString()}đ</h2><p class="text-[9px] mt-2 text-gray-500">${todayData.length} đơn</p></div>
-                <div class="bg-white p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border"><p class="text-[9px] lg:text-[10px] font-black uppercase text-slate-400">Tiền Mặt</p><h2 class="text-2xl lg:text-3xl font-black mt-1 lg:mt-2">${sumCash.toLocaleString()}đ</h2></div>
-                <div class="bg-blue-50 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border border-blue-100"><p class="text-[9px] lg:text-[10px] font-black uppercase text-blue-400">Chuyển Khoản</p><h2 class="text-2xl lg:text-3xl font-black text-blue-700 mt-1 lg:mt-2">${sumQR.toLocaleString()}đ</h2></div>
+                <div class="bg-gray-900 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] text-white">
+                    <p class="text-[9px] lg:text-[10px] font-black uppercase text-gray-400 mb-1 lg:mb-2">HÔM NAY</p>
+                    <h2 class="text-3xl lg:text-4xl font-black text-orange-500">${sumToday.toLocaleString()}đ</h2>
+                    <p class="text-[9px] mt-2 text-gray-500">${todayData.length} đơn</p>
+                </div>
+                <div class="bg-white p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border border-slate-200">
+                    <p class="text-[9px] lg:text-[10px] font-black uppercase text-slate-400">THÁNG NÀY</p>
+                    <h2 class="text-2xl lg:text-3xl font-black text-gray-900 mt-1 lg:mt-2">${sumMonth.toLocaleString()}đ</h2>
+                    <p class="text-[9px] mt-2 text-slate-400">${monthData.length} đơn</p>
+                </div>
+                <div class="bg-blue-50 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border border-blue-100">
+                    <p class="text-[9px] lg:text-[10px] font-black uppercase text-blue-400">NĂM NAY</p>
+                    <h2 class="text-2xl lg:text-3xl font-black text-blue-700 mt-1 lg:mt-2">${sumYear.toLocaleString()}đ</h2>
+                    <p class="text-[9px] mt-2 text-blue-400/80">${yearData.length} đơn</p>
+                </div>
             `;
 
-            document.getElementById('report-history').innerHTML = [...todayData].reverse().slice(0, 20).map(t => `
+            // Lịch sử giao dịch
+            document.getElementById('report-history').innerHTML = [...appState.transactions].reverse().slice(0, 20).map(t => `
                 <div class="flex justify-between items-center p-4 lg:p-5 bg-slate-50 rounded-xl lg:rounded-2xl border border-slate-100">
                     <div class="flex items-center gap-3 lg:gap-4">
                         <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-white flex items-center justify-center"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
-                        <div><p class="text-[10px] lg:text-[11px] font-black uppercase">${t.table}</p><p class="text-[8px] lg:text-[9px] text-slate-400 mt-0.5">${t.time} • ${t.method}</p></div>
+                        <div>
+                            <p class="text-[10px] lg:text-[11px] font-black uppercase">${t.table}</p>
+                            <p class="text-[8px] lg:text-[9px] text-slate-400 mt-0.5">${t.time} ${t.date} • ${t.method}</p>
+                        </div>
                     </div>
                     <span class="text-xs lg:text-sm font-black ${t.method === 'Tiền mặt' ? 'text-gray-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
                 </div>
