@@ -512,18 +512,27 @@
         // ==========================================
         // KHỐI 4: BÁO CÁO & XUẤT EXCEL/GOOGLE SHEETS
         // ==========================================
-       function renderReportUI() {
+               function renderReportUI() {
             const now = new Date();
             const todayStr = now.toLocaleDateString('vi-VN');
-            const currentMonthStr = `${now.getMonth() + 1}/${now.getFullYear()}`;
+            const currentMonth = now.getMonth() + 1;
             const currentYear = now.getFullYear();
 
             document.getElementById('report-date').innerText = `Cập nhật: ${now.toLocaleString('vi-VN')}`;
 
-            // Lọc dữ liệu theo Ngày, Tháng, Năm
+            // Lọc dữ liệu chuẩn xác bằng cách tách chuỗi date
             const todayData = appState.transactions.filter(t => t.date === todayStr);
-            const monthData = appState.transactions.filter(t => t.month === currentMonthStr);
-            const yearData = appState.transactions.filter(t => t.year === currentYear);
+            const monthData = appState.transactions.filter(t => {
+                if(!t.date) return false;
+                const parts = t.date.split('/');
+                return parts.length === 3 && parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
+            });
+            const yearData = appState.transactions.filter(t => {
+                if(!t.date) return false;
+                const parts = t.date.split('/');
+                return parts.length === 3 && parseInt(parts[2]) === currentYear;
+            });
+
 
             // Tính tổng doanh thu
             const sumToday = todayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
