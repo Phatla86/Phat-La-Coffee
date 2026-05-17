@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM</title>
+    <title>PHÁT LA PREMIUM - OMNICHAIN V53</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -11,7 +11,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // 🔥 ĐIỀN CẤU HÌNH FIREBASE CỦA BẠN VÀO ĐÂY 🔥
         const firebaseConfig = {
             apiKey: "AIzaSyDtGst4U0kFKvZwlsV1RNLf4dreU6MOxcE",
             authDomain: "phatla.firebaseapp.com",
@@ -60,7 +59,6 @@
         .thin-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
         .thin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* HỆ THỐNG IN ẤN */
         #print-area { display: none; }
         @media print {
             body > *:not(#print-area) { display: none !important; }
@@ -78,20 +76,17 @@
     <div id="toast-container"></div>
 
     <script>
-        // CẤU HÌNH & DỮ LIỆU
         const SYSTEM_CONFIG = {
             shopName: "PHÁT LA PREMIUM",
             address: "Mặt Tiền Đường Lớn, TP.HCM",
             bank: "VIETCOMBANK",
             accountNo: "1046778674",
             accountName: "LA PHAT",
-            // 🔥 LINK GOOGLE APPS SCRIPT CỦA RIÊNG BẠN (CẦN TẠO ĐỂ LƯU SHEETS VỀ DRIVE CỦA MÌNH) 🔥
             scriptUrl: "https://script.google.com/macros/s/AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82/exec", 
             totalTables: 30
         };
 
         const FULL_MENU = [
-            // CÀ PHÊ
             { id: 'c1', cat: "CÀ PHÊ", name: "Espresso", price: 45000, icon: "fa-mug-hot" },
             { id: 'c2', cat: "CÀ PHÊ", name: "Americano", price: 50000, icon: "fa-mug-saucer" },
             { id: 'c3', cat: "CÀ PHÊ", name: "Latte", price: 55000, icon: "fa-glass-water" },
@@ -100,21 +95,18 @@
             { id: 'c6', cat: "CÀ PHÊ", name: "Cold Brew", price: 65000, icon: "fa-snowflake" },
             { id: 'c7', cat: "CÀ PHÊ", name: "Mocha", price: 65000, icon: "fa-chocolate-bar" },
 
-            // ĐÁ XAY
             { id: 'd1', cat: "ĐÁ XAY", name: "Caramel Frappe", price: 70000, icon: "fa-ice-cream" },
             { id: 'd2', cat: "ĐÁ XAY", name: "Chocolate Frappe", price: 70000, icon: "fa-cookie" },
             { id: 'd3', cat: "ĐÁ XAY", name: "Matcha Frappe", price: 75000, icon: "fa-leaf" },
             { id: 'd4', cat: "ĐÁ XAY", name: "Oreo Frappe", price: 75000, icon: "fa-circle-dot" },
             { id: 'd5', cat: "ĐÁ XAY", name: "Cookie Frappe", price: 75000, icon: "fa-cookie-bite" },
 
-            // TRÀ
             { id: 't1', cat: "TRÀ", name: "Trà Đào", price: 50000, icon: "fa-peach" },
             { id: 't2', cat: "TRÀ", name: "Trà Vải", price: 50000, icon: "fa-seedling" },
             { id: 't3', cat: "TRÀ", name: "Trà Chanh", price: 45000, icon: "fa-lemon" },
             { id: 't4', cat: "TRÀ", name: "Trà Xanh", price: 45000, icon: "fa-leaf" },
             { id: 't5', cat: "TRÀ", name: "Trà Oolong", price: 55000, icon: "fa-mortar-pestle" },
 
-            // SIGNATURE
             { id: 's1', cat: "ĐẶC BIỆT", name: "Cà Phê Sữa Đá", price: 45000, icon: "fa-mug-hot" },
             { id: 's2', cat: "ĐẶC BIỆT", name: "Bạc Xỉu", price: 50000, icon: "fa-glass-water" },
             { id: 's3', cat: "ĐẶC BIỆT", name: "Cà Phê Trứng", price: 60000, icon: "fa-egg" },
@@ -125,18 +117,53 @@
             { id: 's8', cat: "ĐẶC BIỆT", name: "Affogato", price: 80000, icon: "fa-ice-cream" }
         ];
 
+        const RECIPES = {
+            'c1': { 'Cà Phê Hạt (g)': 15 }, 'c2': { 'Cà Phê Hạt (g)': 15 },
+            'c3': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 120 }, 'c4': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 120 },
+            'c5': { 'Cà Phê Hạt (g)': 20, 'Sữa Tươi (ml)': 100 }, 'c6': { 'Cà Phê Hạt (g)': 20 },
+            'c7': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 100, 'Sốt Sô-cô-la (ml)': 15 },
+            'd1': { 'Sữa Tươi (ml)': 150, 'Sốt Caramel (ml)': 20 }, 'd2': { 'Sữa Tươi (ml)': 150, 'Sốt Sô-cô-la (ml)': 20 },
+            'd3': { 'Sữa Tươi (ml)': 150, 'Bột Matcha (g)': 8 }, 'd4': { 'Sữa Tươi (ml)': 120, 'Bánh Oreo (cái)': 2 },
+            'd5': { 'Sữa Tươi (ml)': 120, 'Bánh Cookie (cái)': 2 },
+            't1': { 'Trà Đen (g)': 5, 'Đường Nước (ml)': 20, 'Đào Ngâm (miếng)': 2 },
+            't2': { 'Trà Đen (g)': 5, 'Đường Nước (ml)': 20, 'Quả Vải (trái)': 3 },
+            't3': { 'Trà Xanh (g)': 5, 'Đường Nước (ml)': 25, 'Chanh Tươi (trái)': 0.5 },
+            't4': { 'Trà Xanh (g)': 6 }, 't5': { 'Trà Oolong (g)': 6 },
+            's1': { 'Cà Phê Hạt (g)': 20, 'Sữa Đặc (g)': 25 },
+            's2': { 'Cà Phê Hạt (g)': 15, 'Sữa Đặc (g)': 35, 'Sữa Tươi (ml)': 40 },
+            's3': { 'Cà Phê Hạt (g)': 15, 'Kem Trứng (ml)': 50 },
+            's4': { 'Cà Phê Hạt (g)': 15, 'Sữa Cốt Dừa (ml)': 60 },
+            's5': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 100, 'Sốt Caramel (ml)': 15 },
+            's6': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 100, 'Siro Hạt Dẻ (ml)': 15 },
+            's7': { 'Cà Phê Hạt (g)': 20, 'Siro Vanilla (ml)': 15 },
+            's8': { 'Cà Phê Hạt (g)': 15, 'Kem Viên Vanilla (viên)': 1 }
+        };
+
+        const DEFAULT_INVENTORY = {
+            'Cà Phê Hạt (g)': 5000, 'Sữa Đặc (g)': 3000, 'Sữa Tươi (ml)': 10000,
+            'Trà Đen (g)': 2000, 'Trà Xanh (g)': 2000, 'Trà Oolong (g)': 2000,
+            'Đường Nước (ml)': 5000, 'Sốt Sô-cô-la (ml)': 1000, 'Sốt Caramel (ml)': 1000,
+            'Bột Matcha (g)': 500, 'Bánh Oreo (cái)': 50, 'Bánh Cookie (cái)': 50,
+            'Đào Ngâm (miếng)': 60, 'Quả Vải (trái)': 100, 'Chanh Tươi (trái)': 30,
+            'Kem Trứng (ml)': 1500, 'Sữa Cốt Dừa (ml)': 2000, 'Siro Hạt Dẻ (ml)': 1000,
+            'Siro Vanilla (ml)': 1000, 'Kem Viên Vanilla (viên)': 30
+        };
+
         let appState = {
-            // Thêm bàn "MV" (Mang về) vào mảng bàn mặc định
             tables: [
                 { id: 'MV', status: 'available', cart: [], startTime: null },
                 ...Array.from({length: SYSTEM_CONFIG.totalTables}, (_, i) => ({ id: i+1, status: 'available', cart: [], startTime: null }))
             ],
+            inventory: { ...DEFAULT_INVENTORY },
             currentTableId: null,
             activeTab: 'tables',
             filterCategory: "TẤT CẢ",
             paymentMethod: "Tiền mặt",
             transactions: [],
-            historyFilter: 'ALL' // ALL, CASH, TRANSFER
+            historyFilter: 'ALL',
+            lastDiscountValue: 0,
+            lastDiscountType: 'đ',
+            lastFinalAmount: 0
         };
     </script>
 
@@ -162,7 +189,7 @@
     <nav class="bg-white border-b flex px-1 lg:px-2 shrink-0 z-40 overflow-x-auto no-scrollbar">
         <button onclick="switchTab('tables')" id="nav-tables" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 active-nav transition-colors">Sơ Đồ Bàn</button>
         <button onclick="switchTab('pos')" id="nav-pos" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Gọi Món</button>
-        <button onclick="switchTab('report')" id="nav-report" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Doanh Thu</button>
+        <button onclick="switchTab('report')" id="nav-report" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Doanh Thu & Kho</button>
         <button onclick="switchTab('history')" id="nav-history" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Lịch Sử Đơn</button>
     </nav>
 
@@ -172,7 +199,7 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex justify-between items-end mb-4 lg:mb-6">
                     <h2 class="text-xs lg:text-sm font-black uppercase text-slate-400">Trạng thái bàn</h2>
-                    <span id="table-stats" class="text-[9px] lg:text-[10px] font-bold bg-white px-3 py-1.5 rounded-lg border shadow-sm">0 Bàn phục vụ</span>
+                    <span id="table-stats" class="text-[9px] lg:text-[10px] font-bold bg-white px-3 py-1.5 rounded-lg border shadow-sm">0 Đang phục vụ</span>
                 </div>
                 <div id="grid-tables" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-5"></div>
             </div>
@@ -200,7 +227,7 @@
 
                     <div class="p-4 lg:p-6 bg-white border-t border-slate-100 space-y-3 lg:space-y-4 shrink-0">
                         <div class="flex justify-between items-end">
-                            <span class="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase">Cần thanh toán</span>
+                            <span class="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase">Tạm tính</span>
                             <span id="bill-total-price" class="text-3xl lg:text-4xl font-black text-orange-600 tracking-tighter">0đ</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 lg:gap-3">
@@ -262,6 +289,16 @@
                         <p id="count-year-text" class="text-[10px] mt-4 text-blue-500 font-bold">0 đơn hàng</p>
                     </div>
                 </div>
+
+                <div class="bg-white border border-slate-200 rounded-[2rem] p-5 lg:p-8 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-md font-black tracking-tight text-gray-900">KIỂM KÊ KHO NGUYÊN LIỆU CHI TIẾT</h3>
+                            <p class="text-[10px] text-slate-400 font-medium">Hệ thống tự động khấu trừ ảo định lượng theo thời gian thực khi bán sản phẩm</p>
+                        </div>
+                    </div>
+                    <div id="grid-inventory" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 lg:gap-4"></div>
+                </div>
             </div>
         </section>
 
@@ -289,10 +326,21 @@
         <div class="bg-white w-full max-w-md lg:max-w-lg rounded-[2rem] lg:rounded-[3rem] overflow-hidden flex flex-col shadow-2xl scale-95 opacity-0 transition-all duration-300" id="modal-checkout-content">
             <div class="p-6 lg:p-8 text-center border-b border-slate-50 relative">
                 <button onclick="closeModal()" class="absolute top-4 lg:top-6 right-4 lg:right-6 w-8 h-8 lg:w-10 lg:h-10 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
-                <p class="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase mb-1 lg:mb-2">Thu tiền <span id="checkout-table-label" class="text-orange-500"></span></p>
+                <p class="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase mb-1">Thu tiền <span id="checkout-table-label" class="text-orange-500"></span></p>
                 <h2 id="checkout-amount" class="text-4xl lg:text-5xl font-black text-gray-900 tracking-tighter">0đ</h2>
             </div>
-            <div class="p-6 lg:p-8 space-y-4 lg:space-y-6 bg-slate-50/50">
+            <div class="p-5 lg:p-6 space-y-4 bg-slate-50/50 max-h-[55vh] overflow-y-auto thin-scroll">
+                <div>
+                    <label class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Mã giảm giá / Chiết khấu</label>
+                    <div class="flex gap-2 mt-1">
+                        <input type="number" id="discount-value" value="0" min="0" oninput="calculateDiscountAmount()" class="flex-1 bg-white border border-slate-200 px-3 py-2 rounded-xl text-xs font-black focus:outline-none focus:border-orange-500">
+                        <select id="discount-type" onchange="calculateDiscountAmount()" class="bg-white border border-slate-200 px-3 py-2 rounded-xl text-xs font-black focus:outline-none">
+                            <option value="đ">VNĐ (đ)</option>
+                            <option value="%">Phần trăm (%)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3 lg:gap-4">
                     <button onclick="selectPaymentMethod('Tiền mặt')" id="btn-pay-cash" class="p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all"><i class="fa-solid fa-money-bill-wave text-2xl lg:text-3xl"></i><span class="text-[10px] lg:text-[11px] font-black uppercase">Tiền mặt</span></button>
                     <button onclick="selectPaymentMethod('Chuyển khoản')" id="btn-pay-qr" class="p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all"><i class="fa-solid fa-qrcode text-2xl lg:text-3xl"></i><span class="text-[10px] lg:text-[11px] font-black uppercase">VietQR</span></button>
@@ -327,20 +375,42 @@
             <tbody id="print-doc-items"></tbody>
         </table>
         <div class="print-line"></div>
-        <div id="print-total-section">
-            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 16px; padding: 5px 0;"><span>TỔNG:</span> <span id="print-doc-total">0</span></div>
-            <p id="print-doc-method" style="font-size: 10px; font-style: italic; text-align: center; margin: 4px 0;"></p>
-            <div class="print-line"></div>
-        </div>
+        <div id="print-total-section"></div>
         <div class="print-text-center" style="margin-top: 10px;">
             <p style="font-size: 10px; font-weight: bold; margin: 0;">CẢM ƠN QUÝ KHÁCH</p>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // KHỐI 1: TÍCH HỢP FIREBASE (REALTIME)
-        // ==========================================
+        function sanitizeTables(firebaseData) {
+            let cleanArray = [];
+            if (firebaseData) {
+                if (Array.isArray(firebaseData)) {
+                    cleanArray = firebaseData.filter(t => t !== null);
+                } else if (typeof firebaseData === 'object') {
+                    cleanArray = Object.values(firebaseData);
+                }
+            }
+            
+            let mvNode = cleanArray.find(t => t && t.id === 'MV');
+            if (!mvNode) {
+                mvNode = { id: 'MV', status: 'available', cart: [], startTime: null };
+            }
+            if(!mvNode.cart) mvNode.cart = [];
+
+            let list = [mvNode];
+            for (let i = 1; i <= SYSTEM_CONFIG.totalTables; i++) {
+                let existing = cleanArray.find(t => t && t.id == i);
+                if (existing) {
+                    if(!existing.cart) existing.cart = [];
+                    list.push(existing);
+                } else {
+                    list.push({ id: i, status: 'available', cart: [], startTime: null });
+                }
+            }
+            return list;
+        }
+
         function initRealtimeSync() {
             if(!window.FIREBASE_DB) return;
             const { ref, onValue } = window.firebaseRefs;
@@ -349,11 +419,9 @@
                 document.getElementById('sync-dot').className = "w-2 h-2 rounded-full bg-green-500 animate-pulse";
                 document.getElementById('system-status').innerText = "Đã kết nối máy chủ";
                 const data = snapshot.val();
-                if(data) {
-                    appState.tables = data;
-                    if(appState.activeTab === 'tables') renderTableGrid();
-                    if(appState.activeTab === 'pos') renderCartUI();
-                }
+                appState.tables = sanitizeTables(data);
+                if(appState.activeTab === 'tables') renderTableGrid();
+                if(appState.activeTab === 'pos') renderCartUI();
             });
 
             onValue(ref(window.FIREBASE_DB, 'pos/transactions'), (snapshot) => {
@@ -362,6 +430,14 @@
                     appState.transactions = Object.values(data);
                     if(appState.activeTab === 'report') renderReportUI();
                     if(appState.activeTab === 'history') renderHistoryUI();
+                }
+            });
+
+            onValue(ref(window.FIREBASE_DB, 'pos/inventory'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    appState.inventory = data;
+                    if(appState.activeTab === 'report') renderInventoryUI();
                 }
             });
         }
@@ -373,9 +449,13 @@
             } else { renderTableGrid(); renderCartUI(); }
         }
 
-        // ==========================================
-        // KHỐI 2: UI & LOGIC CƠ BẢN
-        // ==========================================
+        function syncInventoryToCloud() {
+            if(window.FIREBASE_DB) {
+                const { set, ref } = window.firebaseRefs;
+                set(ref(window.FIREBASE_DB, 'pos/inventory'), appState.inventory);
+            } else { if(appState.activeTab === 'report') renderInventoryUI(); }
+        }
+
         function initializeSystemData() {
             document.getElementById('ui-bank-info').innerText = `${SYSTEM_CONFIG.bank} - ${SYSTEM_CONFIG.accountNo}`;
             document.getElementById('ui-account-name').innerText = SYSTEM_CONFIG.accountName;
@@ -427,44 +507,48 @@
             appState.activeTab = targetId;
             if (targetId === 'tables') renderTableGrid();
             if (targetId === 'pos') { renderCategories(); renderMenuItems(); renderCartUI(); }
-            if (targetId === 'report') renderReportUI();
+            if (targetId === 'report') { renderReportUI(); renderInventoryUI(); }
             if (targetId === 'history') renderHistoryUI();
         }
 
-        // TÍNH NĂNG: Thêm phân biệt thẻ "Mua Mang Về" ở sơ đồ bàn
         function renderTableGrid() {
             const grid = document.getElementById('grid-tables');
             let occ = 0;
+            
             grid.innerHTML = appState.tables.map(t => {
-                if (t.status === 'occupied') occ++;
+                const isOccupied = t.status === 'occupied' || (t.cart && t.cart.length > 0);
+                if (isOccupied) occ++;
+                
                 const isTakeaway = t.id === 'MV';
                 const displayName = isTakeaway ? 'MANG VỀ' : (t.id < 10 ? `0${t.id}` : t.id);
                 const subtitle = isTakeaway ? 'ĐƠN' : 'BÀN';
                 
-                // Styling riêng biệt cho đơn mang về (Màu tím) và bàn thường (Màu cam)
                 const baseClass = "table-card p-5 lg:p-8 flex flex-col items-center justify-center cursor-pointer shadow-sm rounded-2xl border-2 transition-all hover:-translate-y-1";
                 let statusClass = "";
                 
                 if (isTakeaway) {
-                    statusClass = t.status === 'occupied' ? 'bg-purple-600 border-purple-600 text-white' : 'bg-purple-50 border-purple-200 text-purple-700';
+                    statusClass = isOccupied ? 'bg-purple-600 border-purple-600 text-white shadow-purple-200' : 'bg-purple-50 border-purple-200 text-purple-700';
                 } else {
-                    statusClass = t.status === 'occupied' ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white border-slate-200 text-slate-800';
+                    statusClass = isOccupied ? 'bg-orange-500 border-orange-500 text-white shadow-orange-200' : 'bg-white border-slate-200 text-slate-800';
                 }
 
                 return `
                     <div onclick="handleSelectTable('${t.id}')" class="${baseClass} ${statusClass}">
-                        <span class="text-[8px] lg:text-[9px] font-black uppercase mb-1 lg:mb-2 opacity-60">${subtitle}</span>
-                        <b class="${isTakeaway ? 'text-xl lg:text-2xl' : 'text-3xl lg:text-4xl'} font-black text-center tracking-tighter">${displayName}</b>
-                        <div class="h-4 mt-1 lg:mt-2">${t.status === 'occupied' && t.startTime ? `<span class="text-[8px] lg:text-[9px] font-bold uppercase bg-black/20 px-2 py-0.5 rounded text-white">${t.startTime}</span>` : ''}</div>
+                        <span class="text-[8px] lg:text-[9px] font-black uppercase mb-1 opacity-60">${subtitle}</span>
+                        <b class="${isTakeaway ? 'text-lg' : 'text-3xl'} font-black text-center tracking-tighter">${displayName}</b>
+                        <div class="h-4 mt-1">${isOccupied && t.startTime ? `<span class="text-[8px] bg-black/20 px-1.5 py-0.5 rounded text-white font-bold font-mono">${t.startTime}</span>` : ''}</div>
                     </div>`;
             }).join('');
+            
             document.getElementById('table-stats').innerText = `${occ} Đang phục vụ`;
         }
 
         function handleSelectTable(id) {
             const table = appState.tables.find(t => t.id == id);
             appState.currentTableId = table.id;
-            if (table.status === 'available' || !table.startTime) {
+            
+            const isOccupied = table.status === 'occupied' || (table.cart && table.cart.length > 0);
+            if (!isOccupied || !table.startTime) {
                 table.startTime = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
             }
             
@@ -475,11 +559,10 @@
             switchTab('pos');
         }
 
-        // TÍNH NĂNG: In đậm/Đổi màu danh mục món đang được chọn
         function selectCategory(cat) {
             appState.filterCategory = cat;
-            renderCategories(); // Render lại danh sách nút để cập nhật nút đang active
-            renderMenuItems();  // Render lại các món ăn tương ứng
+            renderCategories();
+            renderMenuItems();
         }
 
         function renderCategories() {
@@ -505,55 +588,98 @@
         }
 
         function handleAddToCart(productId) {
-            if (!appState.currentTableId) return showNotification("Chọn bàn trước!", "error");
+            if (!appState.currentTableId) return showNotification("Vui lòng sơ đồ và chọn bàn trước!", "error");
             const product = FULL_MENU.find(p => p.id === productId);
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             if(!table.cart) table.cart = [];
             table.status = 'occupied';
-            table.cart.push({...product, tempId: Date.now().toString()});
+            table.cart.push({ ...product, tempId: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 4), note: "" });
             syncStateToCloud();
         }
 
         function handleRemoveFromCart(tempId) {
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             table.cart = table.cart.filter(x => x.tempId !== tempId);
-            if (table.cart.length === 0) { table.status = 'available'; table.startTime = null; }
+            if (!table.cart || table.cart.length === 0) { table.status = 'available'; table.startTime = null; }
             syncStateToCloud();
+        }
+
+        function updateCartItemNote(tempId, value) {
+            const table = appState.tables.find(t => t.id === appState.currentTableId);
+            if(table && table.cart) {
+                const idx = table.cart.findIndex(x => x.tempId === tempId);
+                if(idx !== -1) {
+                    table.cart[idx].note = value;
+                    if(window.FIREBASE_DB) {
+                        const { set, ref } = window.firebaseRefs;
+                        set(ref(window.FIREBASE_DB, 'pos/tables'), appState.tables);
+                    }
+                }
+            }
         }
 
         function renderCartUI() {
             const container = document.getElementById('bill-items');
             const totalEl = document.getElementById('bill-total-price');
             if (!appState.currentTableId || !appState.tables.find(t => t.id === appState.currentTableId).cart?.length) { 
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-30 text-slate-400"><i class="fa-solid fa-basket-shopping text-3xl lg:text-5xl mb-2 lg:mb-4"></i><p class="text-[9px] lg:text-[10px] font-black uppercase">Chưa có món</p></div>`; 
+                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-30 text-slate-400"><i class="fa-solid fa-basket-shopping text-3xl lg:text-5xl mb-2 lg:mb-4"></i><p class="text-[9px] lg:text-[10px] font-black uppercase">Chưa gọi món ăn</p></div>`; 
                 totalEl.innerText = "0đ"; 
                 return; 
             }
             
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             container.innerHTML = table.cart.map(x => `
-                <div class="flex justify-between items-center p-3 lg:p-4 bg-white rounded-xl lg:rounded-2xl border border-slate-100 shadow-sm fade-in">
-                    <div class="flex items-center gap-2 lg:gap-3"><div class="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-[10px] lg:text-xs"><i class="fa-solid ${x.icon}"></i></div><span class="text-[9px] lg:text-[10px] font-black uppercase text-gray-800 max-w-[100px] lg:max-w-[150px] truncate">${x.name}</span></div>
-                    <div class="flex items-center gap-2 lg:gap-3"><span class="text-[10px] lg:text-[11px] font-bold text-orange-600">${x.price.toLocaleString()}</span><button onclick="handleRemoveFromCart('${x.tempId}')" class="text-red-400 hover:text-red-600 w-6 h-6 flex items-center justify-center bg-red-50 rounded-full"><i class="fa-solid fa-xmark text-[10px]"></i></button></div>
+                <div class="flex flex-col p-3 lg:p-4 bg-white rounded-xl lg:rounded-2xl border border-slate-100 shadow-sm fade-in space-y-2">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-[10px]"><i class="fa-solid ${x.icon}"></i></div><span class="text-[9px] lg:text-[10px] font-black uppercase text-gray-800 truncate max-w-[140px]">${x.name}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-[10px] lg:text-[11px] font-bold text-orange-600">${x.price.toLocaleString()}</span><button onclick="handleRemoveFromCart('${x.tempId}')" class="text-red-400 hover:text-red-600 w-6 h-6 flex items-center justify-center bg-red-50 rounded-full"><i class="fa-solid fa-xmark text-[10px]"></i></button></div>
+                    </div>
+                    <div class="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                        <i class="fa-regular fa-comment-dots text-slate-400 text-[10px]"></i>
+                        <input type="text" placeholder="Ghi chú món (ít đá, ngọt vừa...)" value="${x.note || ''}" onchange="updateCartItemNote('${x.tempId}', this.value)" class="bg-transparent text-[9px] font-bold text-slate-600 placeholder-slate-300 w-full focus:outline-none">
+                    </div>
                 </div>
             `).join('');
             totalEl.innerText = table.cart.reduce((s, i) => s + i.price, 0).toLocaleString() + 'đ';
         }
 
-        // ==========================================
-        // KHỐI 3: THANH TOÁN & IN ẤN
-        // ==========================================
         function triggerPaymentFlow() {
             if (!appState.currentTableId) return;
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-            if (!table.cart || table.cart.length === 0) return showNotification("Bàn chưa có món!", "warning");
+            if (!table.cart || table.cart.length === 0) return showNotification("Bàn chưa có món ăn!", "warning");
             
             document.getElementById('checkout-table-label').innerText = table.id === 'MV' ? 'MANG VỀ' : `BÀN ${table.id}`;
-            document.getElementById('checkout-amount').innerText = table.cart.reduce((s, i) => s + i.price, 0).toLocaleString() + 'đ';
+            document.getElementById('discount-value').value = 0;
+            document.getElementById('discount-type').value = "đ";
+            
+            calculateDiscountAmount();
+
             const modal = document.getElementById('modal-checkout'), content = document.getElementById('modal-checkout-content');
             modal.classList.remove('hidden');
             setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
             selectPaymentMethod('Tiền mặt'); 
+        }
+
+        function calculateDiscountAmount() {
+            const table = appState.tables.find(t => t.id === appState.currentTableId);
+            const rawTotal = table.cart.reduce((s, i) => s + i.price, 0);
+            
+            const discValue = parseFloat(document.getElementById('discount-value').value) || 0;
+            const discType = document.getElementById('discount-type').value;
+            
+            let finalAmt = rawTotal;
+            if (discType === '%') {
+                finalAmt = rawTotal - (rawTotal * (discValue / 100));
+            } else {
+                finalAmt = rawTotal - discValue;
+            }
+            if(finalAmt < 0) finalAmt = 0;
+
+            appState.lastDiscountValue = discValue;
+            appState.lastDiscountType = discType;
+            appState.lastFinalAmount = Math.round(finalAmt);
+
+            document.getElementById('checkout-amount').innerText = appState.lastFinalAmount.toLocaleString() + 'đ';
         }
 
         function closeModal() {
@@ -576,25 +702,41 @@
             } else {
                 btnQr.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-blue-500 bg-blue-50 text-blue-600";
                 btnCash.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-slate-100 text-slate-400";
-                const total = appState.tables.find(t => t.id === appState.currentTableId).cart.reduce((s, i) => s + i.price, 0);
+                
                 const infoBan = appState.currentTableId === 'MV' ? 'MANG VE' : `BAN ${appState.currentTableId}`;
-                document.getElementById('checkout-qr-image').src = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-qr_only.png?amount=${total}&addInfo=THANH TOAN ${infoBan}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
+                document.getElementById('checkout-qr-image').src = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-qr_only.png?amount=${appState.lastFinalAmount}&addInfo=THANH TOAN ${infoBan}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
                 qrBox.classList.remove('hidden'); qrBox.classList.add('flex', 'fade-in');
             }
         }
 
+        function processInventoryDeduction(cart) {
+            cart.forEach(item => {
+                const recipe = RECIPES[item.id];
+                if (recipe) {
+                    Object.keys(recipe).forEach(material => {
+                        if (appState.inventory[material] !== undefined) {
+                            appState.inventory[material] = Math.max(0, appState.inventory[material] - recipe[material]);
+                        }
+                    });
+                }
+            });
+            syncInventoryToCloud();
+        }
+
         function finalizeTransaction() {
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-            const total = table.cart.reduce((s, i) => s + i.price, 0);
             const now = new Date();
 
             processPrint('hoa-don');
+            processInventoryDeduction(table.cart);
 
             const payload = {
                 date: getSystemDateString(now), 
                 time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
                 table: table.id === 'MV' ? 'MANG VỀ' : `Bàn ${table.id}`, 
-                total: total, 
+                rawTotal: table.cart.reduce((s, i) => s + i.price, 0),
+                discount: appState.lastDiscountValue > 0 ? `${appState.lastDiscountValue}${appState.lastDiscountType}` : "0",
+                total: appState.lastFinalAmount, 
                 method: appState.paymentMethod, 
                 month: `${now.getMonth()+1}/${now.getFullYear()}`, 
                 year: now.getFullYear()
@@ -603,12 +745,14 @@
             if(window.FIREBASE_DB) {
                 const { push, ref } = window.firebaseRefs;
                 push(ref(window.FIREBASE_DB, 'pos/transactions'), payload);
+            } else {
+                appState.transactions.push(payload);
             }
 
             table.status = 'available'; table.cart = []; table.startTime = null;
             syncStateToCloud();
             closeModal(); switchTab('tables');
-            showNotification(`Đã thanh toán!`);
+            showNotification(`Thanh toán hoàn tất! Khấu trừ kho thành công.`);
         }
 
         function processPrint(printType) {
@@ -620,25 +764,57 @@
             document.getElementById('print-doc-time').innerText = `TG: ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate()}/${now.getMonth()+1}`;
 
             const grouped = {};
-            table.cart.forEach(item => { if(!grouped[item.name]) grouped[item.name] = { count: 0, price: item.price }; grouped[item.name].count++; });
+            table.cart.forEach(item => { 
+                if(!grouped[item.name]) {
+                    grouped[item.name] = { count: 0, price: item.price, notes: [] };
+                }
+                grouped[item.name].count++;
+                if (item.note && item.note.trim() !== "") {
+                    grouped[item.name].notes.push(item.note.trim());
+                }
+            });
             const isBep = printType === 'bep';
-            document.getElementById('print-total-section').style.display = isBep ? 'none' : 'block';
 
-            document.getElementById('print-doc-items').innerHTML = Object.keys(grouped).map(name => `
-                <tr><td style="padding: 4px 0;">${name}</td><td style="text-align: center; font-weight: bold;">${grouped[name].count}</td>
-                <td style="text-align: right;">${isBep ? '' : (grouped[name].price * grouped[name].count).toLocaleString()}</td></tr>
-            `).join('');
+            document.getElementById('print-doc-items').innerHTML = Object.keys(grouped).map(name => {
+                const itemMeta = grouped[name];
+                let noteLine = "";
+                if (itemMeta.notes.length > 0) {
+                    noteLine = `<tr><td colspan="3" style="font-size: 10px; font-style: italic; color: #374151; padding: 0 0 4px 8px;">* Ghi chú: ${[...new Set(itemMeta.notes)].join(', ')}</td></tr>`;
+                }
+                return `
+                    <tr><td style="padding: 4px 0;">${name}</td><td style="text-align: center; font-weight: bold;">${itemMeta.count}</td>
+                    <td style="text-align: right;">${isBep ? '' : (itemMeta.price * itemMeta.count).toLocaleString()}</td></tr>
+                    ${noteLine}
+                `;
+            }).join('');
 
-            if (!isBep) {
-                document.getElementById('print-doc-total').innerText = table.cart.reduce((s, i) => s + i.price, 0).toLocaleString() + 'đ';
-                document.getElementById('print-doc-method').innerText = printType === 'hoa-don' ? `(${appState.paymentMethod})` : '(Chưa thu tiền)';
+            const totalSect = document.getElementById('print-total-section');
+            if (isBep) {
+                totalSect.style.display = 'none';
+            } else {
+                totalSect.style.display = 'block';
+                const originalTotal = table.cart.reduce((s, i) => s + i.price, 0);
+                let discountMarkup = "";
+                let printableFinal = originalTotal;
+
+                if (printType === 'hoa-don' && appState.lastDiscountValue > 0) {
+                    printableFinal = appState.lastFinalAmount;
+                    const dsText = appState.lastDiscountType === '%' ? `${appState.lastDiscountValue}%` : `${appState.lastDiscountValue.toLocaleString()}đ`;
+                    discountMarkup = `<div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;"><span>Giảm giá:</span> <span>-${dsText}</span></div>`;
+                }
+
+                totalSect.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;"><span>Tạm tính:</span> <span>${originalTotal.toLocaleString()}đ</span></div>
+                    ${discountMarkup}
+                    <div class="print-line"></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 15px; padding: 4px 0;"><span>THÀNH TIỀN:</span> <span>${printableFinal.toLocaleString()}đ</span></div>
+                    <p style="font-size: 10px; font-style: italic; text-align: center; margin: 4px 0;">(${printType === 'hoa-don' ? appState.paymentMethod : 'Chưa thanh toán'})</p>
+                    <div class="print-line"></div>
+                `;
             }
             window.print();
         }
 
-        // ==========================================
-        // KHỐI 4: BÁO CÁO DOANH THU & LỊCH SỬ ĐƠN
-        // ==========================================
         function renderReportUI() {
             const now = new Date();
             document.getElementById('report-date').innerText = `Cập nhật: ${now.toLocaleString('vi-VN')}`;
@@ -651,7 +827,6 @@
             }
             const dayData = appState.transactions.filter(t => t.date === formattedDayStr);
             const sumDay = dayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
-            
             document.getElementById('sum-day-text').innerText = `${sumDay.toLocaleString()}đ`;
             document.getElementById('count-day-text').innerText = `${dayData.length} đơn hàng`;
 
@@ -663,23 +838,62 @@
             }
             const monthData = appState.transactions.filter(t => t.month === formattedMonthStr);
             const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
-
             document.getElementById('sum-month-text').innerText = `${sumMonth.toLocaleString()}đ`;
             document.getElementById('count-month-text').innerText = `${monthData.length} đơn hàng`;
 
             const selectedYear = parseInt(document.getElementById('filter-year').value);
             const yearData = appState.transactions.filter(t => t.year === selectedYear);
             const sumYear = yearData.reduce((s, t) => s + parseInt(t.total || 0), 0);
-
             document.getElementById('sum-year-text').innerText = `${sumYear.toLocaleString()}đ`;
             document.getElementById('count-year-text').innerText = `${yearData.length} đơn hàng`;
         }
 
-        // TÍNH NĂNG: Lọc lịch sử đơn hàng
+        function renderInventoryUI() {
+            const grid = document.getElementById('grid-inventory');
+            if(!grid) return;
+            
+            grid.innerHTML = Object.keys(appState.inventory).map(key => {
+                const stock = appState.inventory[key];
+                let barColor = "bg-green-500";
+                let textColor = "text-green-700 bg-green-50 border-green-100";
+                
+                if (stock < 400) {
+                    barColor = "bg-red-500 animate-pulse";
+                    textColor = "text-red-700 bg-red-50 border-red-200";
+                } else if (stock < 1200) {
+                    barColor = "bg-amber-500";
+                    textColor = "text-amber-700 bg-amber-50 border-amber-100";
+                }
+
+                return `
+                    <div class="border border-slate-100 rounded-2xl p-3 bg-slate-50 flex flex-col justify-between shadow-sm">
+                        <div>
+                            <span class="text-[8px] font-black uppercase text-slate-400 block truncate tracking-tight">${key}</span>
+                            <div class="flex items-baseline gap-0.5 mt-1">
+                                <span class="text-base font-black text-slate-800 tracking-tight font-mono">${stock.toLocaleString()}</span>
+                            </div>
+                            <div class="w-full bg-slate-200 h-1 rounded-full mt-2 overflow-hidden">
+                                <div class="${barColor}" style="width: ${Math.min(100, (stock / DEFAULT_INVENTORY[key]) * 100)}%"></div>
+                            </div>
+                        </div>
+                        <button onclick="handleRestockMaterial('${key}')" class="mt-3 w-full bg-white text-gray-700 border border-slate-200 hover:border-orange-300 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-colors">+ Nhập Kho</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleRestockMaterial(key) {
+            let addValue = 2000;
+            if (key.includes('(cái)') || key.includes('(miếng)') || key.includes('(trái)') || key.includes('(viên)')) {
+                addValue = 50;
+            }
+            appState.inventory[key] = (appState.inventory[key] || 0) + addValue;
+            syncInventoryToCloud();
+            showNotification(`Đã nạp thêm +${addValue} vào ${key}`);
+        }
+
         function setHistoryFilter(type) {
             appState.historyFilter = type;
-            
-            // Cập nhật UI nút bấm
             ['ALL', 'CASH', 'TRANSFER'].forEach(t => {
                 const btn = document.getElementById(`hf-${t}`);
                 if (t === type) {
@@ -688,112 +902,69 @@
                     btn.className = "px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200";
                 }
             });
-            
             renderHistoryUI();
         }
 
         function renderHistoryUI() {
             const container = document.getElementById('history-container');
-            
-            // Lấy dữ liệu và áp dụng bộ lọc
             let dataToShow = appState.transactions;
+            
             if (appState.historyFilter === 'CASH') {
                 dataToShow = dataToShow.filter(t => t.method === 'Tiền mặt');
             } else if (appState.historyFilter === 'TRANSFER') {
                 dataToShow = dataToShow.filter(t => t.method !== 'Tiền mặt');
             }
 
-            if (dataToShow.length === 0) {
-                container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[11px]">Chưa có dữ liệu giao dịch</div>`;
+            if (!dataToShow || dataToShow.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[10px] tracking-wider">Chưa phát sinh giao dịch nào</div>`;
                 return;
             }
 
             container.innerHTML = [...dataToShow].reverse().map(t => `
-                <div class="flex justify-between items-center p-4 lg:p-5 bg-slate-50 rounded-xl lg:rounded-2xl border border-slate-100 fade-in">
-                    <div class="flex items-center gap-3 lg:gap-4">
-                        <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
+                <div class="flex justify-between items-center p-4 bg-slate-50 rounded-xl lg:rounded-2xl border border-slate-100 fade-in">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
                         <div>
                             <p class="text-[10px] lg:text-[11px] font-black uppercase tracking-tight">${t.table}</p>
-                            <p class="text-[8px] lg:text-[9px] text-slate-400 mt-0.5 font-semibold">${t.time} ${t.date} • ${t.method}</p>
+                            <p class="text-[8px] text-slate-400 mt-0.5 font-bold">${t.time} ${t.date} • Giảm: ${t.discount || '0'} • ${t.method}</p>
                         </div>
                     </div>
-                    <span class="text-xs lg:text-sm font-black ${t.method === 'Tiền mặt' ? 'text-gray-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
+                    <span class="text-xs lg:text-sm font-black ${t.method === 'Tiền mặt' ? 'text-slate-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
                 </div>
             `).join('');
         }
 
-        // SỬA LỖI: Xuất Excel bao bọc try/catch để báo lỗi cụ thể
         function exportToExcel() {
-            if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
+            if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu giao dịch!", "warning");
 
             try {
-                if(typeof XLSX === 'undefined') {
-                    return showNotification("Đang tải thư viện Excel, vui lòng thử lại sau 2 giây!", "error");
-                }
+                if(typeof XLSX === 'undefined') return showNotification("Thư viện đang tải, thử lại sau ít giây!", "error");
 
                 const now = new Date();
                 const todayStr = getSystemDateString(now);
-                const currentMonthStr = `${now.getMonth() + 1}/${now.getFullYear()}`;
-                const currentYear = now.getFullYear();
 
                 const todayData = appState.transactions.filter(t => t.date === todayStr);
-                let daySummary = { cash: 0, qr: 0, count: todayData.length };
-                todayData.forEach(t => {
-                    if (t.method === 'Tiền mặt') daySummary.cash += parseInt(t.total || 0);
-                    else daySummary.qr += parseInt(t.total || 0);
-                });
-
-                const rowsDay = [
-                    ["BÁO CÁO DOANH THU NGÀY:", todayStr],
-                    [""],
-                    ["Phương thức", "Số lượng đơn", "Tổng tiền (VNĐ)"],
-                    ["Tiền mặt", todayData.filter(d => d.method === 'Tiền mặt').length, daySummary.cash],
-                    ["Chuyển khoản", todayData.filter(d => d.method !== 'Tiền mặt').length, daySummary.qr],
-                    ["TỔNG CỘNG", daySummary.count, daySummary.cash + daySummary.qr]
+                let rowsDay = [
+                    ["BÁO CÁO DOANH THU NGÀY:", todayStr], [""],
+                    ["Mã đơn", "Thời gian", "Vị trí", "Tổng gốc", "Chiết khấu", "Thu thực tế", "Hình thức"],
                 ];
-
-                const monthData = appState.transactions.filter(t => t.month === currentMonthStr);
-                const dailyMap = {};
-                monthData.forEach(t => {
-                    if (!dailyMap[t.date]) dailyMap[t.date] = { cash: 0, qr: 0 };
-                    if (t.method === 'Tiền mặt') dailyMap[t.date].cash += parseInt(t.total || 0);
-                    else dailyMap[t.date].qr += parseInt(t.total || 0);
+                todayData.forEach((t, idx) => {
+                    rowsDay.push([idx+1, t.time, t.table, t.rawTotal || t.total, t.discount || 0, t.total, t.method]);
                 });
 
-                const rowsMonth = [["Ngày", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng ngày"]];
-                Object.keys(dailyMap).sort().forEach(d => {
-                    const day = dailyMap[d];
-                    rowsMonth.push([d, day.cash, day.qr, day.cash + day.qr]);
-                });
-
-                const yearData = appState.transactions.filter(t => t.year === currentYear);
-                const monthlyMap = {};
-                yearData.forEach(t => {
-                    const m = `Tháng ${t.month}`;
-                    if (!monthlyMap[m]) monthlyMap[m] = { cash: 0, qr: 0 };
-                    if (t.method === 'Tiền mặt') monthlyMap[m].cash += parseInt(t.total || 0);
-                    else monthlyMap[m].qr += parseInt(t.total || 0);
-                });
-
-                const rowsYear = [["Tháng", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng tháng"]];
-                Object.keys(monthlyMap).sort((a, b) => {
-                    const m1 = parseInt(a.match(/\d+/)[0]), m2 = parseInt(b.match(/\d+/)[0]);
-                    return m1 - m2;
-                }).forEach(m => {
-                    const mon = monthlyMap[m];
-                    rowsYear.push([m, mon.cash, mon.qr, mon.cash + mon.qr]);
+                let rowsInv = [["Nguyên liệu kho", "Số lượng tồn hiện tại"]];
+                Object.keys(appState.inventory).forEach(key => {
+                    rowsInv.push([key, appState.inventory[key]]);
                 });
 
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu ngày");
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsInv), "Báo cáo tồn kho");
 
-                XLSX.writeFile(wb, `Bao_Cao_Doanh_Thu_${todayStr.replace(/\//g, '-')}.xlsx`);
-                showNotification("Đã tải xuống file Excel thành công!");
+                XLSX.writeFile(wb, `Bao_Cao_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`);
+                showNotification("Đã kết xuất và tải xuống file Excel!");
             } catch (error) {
-                console.error(error);
-                showNotification("Lỗi tải xuống! Thử dùng trình duyệt Chrome/Safari.", "error");
+                showNotification("Trình duyệt lỗi khi xuất tệp!", "error");
             }
         }
 
@@ -802,19 +973,15 @@
             const todayStr = getSystemDateString(now);
             const dataToExport = appState.transactions.filter(t => t.date === todayStr);
             
-            if(dataToExport.length === 0) return showNotification("Không có dữ liệu ngày hôm nay để đồng bộ!", "warning");
+            if(dataToExport.length === 0) return showNotification("Không có dữ liệu hôm nay để đồng bộ!", "warning");
             
-            if(SYSTEM_CONFIG.scriptUrl.includes("AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82")) {
-                alert("Chú ý: Để file có thể tải thẳng vào Google Drive của bạn, bạn cần tạo một file Google Sheets và lấy link Google Apps Script của riêng mình để dán vào cấu hình mã nguồn. Hiện tại hệ thống đang dùng link dùng chung để chạy thử.");
-            }
-
-            showNotification("Đang gửi dữ liệu lên Google Sheets...", "warning");
+            showNotification("Đang kết nối API Google Sheets...", "warning");
             const sumTotal = dataToExport.reduce((s, t) => s + parseInt(t.total || 0), 0);
             
             const payload = {
                 date: todayStr,
                 time: now.toLocaleTimeString('vi-VN'),
-                table: `TỔNG KẾT NGÀY (${dataToExport.length} đơn)`,
+                table: `TỔNG KẾT OMNICHAIN (${dataToExport.length} đơn)`,
                 total: sumTotal,
                 method: "Hệ thống tự đồng bộ",
                 month: `${now.getMonth()+1}/${now.getFullYear()}`,
@@ -822,25 +989,23 @@
             };
 
             try {
-                await fetch(SYSTEM_CONFIG.scriptUrl, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify(payload) 
-                });
-                showNotification("Đã lưu tổng kết ngày lên Google Sheets!", "success");
+                await fetch(SYSTEM_CONFIG.scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                showNotification("Đã đẩy dữ liệu tổng kết lên Drive!", "success");
             } catch (err) {
-                showNotification("Lỗi mạng khi kết nối Google Sheets!", "error");
+                showNotification("Lỗi đồng bộ API Sheets!", "error");
             }
         }
 
-        // KHỞI CHẠY HỆ THỐNG
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
+        
         window.onload = () => {
             initializeSystemData();
+            appState.tables = sanitizeTables([]);
+            renderTableGrid();
             setTimeout(() => {
                 initRealtimeSync();
                 switchTab('tables');
-            }, 800);
+            }, 500);
         };
     </script>
 </body>
