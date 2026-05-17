@@ -49,12 +49,6 @@
         .toast.error { border-color: #ef4444; }
         .toast.success { border-color: #22c55e; }
         .toast.warning { border-color: #f59e0b; }
-
-        .table-card { transition: all 0.25s ease; border-radius: 2rem; position: relative; overflow: hidden; }
-        .table-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%); opacity: 0; transition: opacity 0.3s; }
-        .table-card:hover::before { opacity: 1; }
-        .table-card.available { background: white; border: 2px solid #e2e8f0; }
-        .table-card.occupied { background: var(--primary); color: white; transform: translateY(-4px); box-shadow: 0 15px 30px -10px rgba(249, 115, 22, 0.4); border: 2px solid var(--primary); }
         
         .item-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 1.5rem; border: 1px solid #e2e8f0; background: white; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; height: 140px; padding: 1.25rem; }
         .item-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
@@ -91,6 +85,7 @@
             bank: "VIETCOMBANK",
             accountNo: "1046778674",
             accountName: "LA PHAT",
+            // 🔥 LINK GOOGLE APPS SCRIPT CỦA RIÊNG BẠN (CẦN TẠO ĐỂ LƯU SHEETS VỀ DRIVE CỦA MÌNH) 🔥
             scriptUrl: "https://script.google.com/macros/s/AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82/exec", 
             totalTables: 30
         };
@@ -131,12 +126,17 @@
         ];
 
         let appState = {
-            tables: Array.from({length: SYSTEM_CONFIG.totalTables}, (_, i) => ({ id: i+1, status: 'available', cart: [], startTime: null })),
+            // Thêm bàn "MV" (Mang về) vào mảng bàn mặc định
+            tables: [
+                { id: 'MV', status: 'available', cart: [], startTime: null },
+                ...Array.from({length: SYSTEM_CONFIG.totalTables}, (_, i) => ({ id: i+1, status: 'available', cart: [], startTime: null }))
+            ],
             currentTableId: null,
             activeTab: 'tables',
             filterCategory: "TẤT CẢ",
             paymentMethod: "Tiền mặt",
-            transactions: []
+            transactions: [],
+            historyFilter: 'ALL' // ALL, CASH, TRANSFER
         };
     </script>
 
@@ -154,7 +154,7 @@
         <div class="flex items-center gap-3 lg:gap-5">
             <div class="text-right hidden sm:block">
                 <p id="live-clock" class="text-xs font-black font-mono">00:00:00</p>
-                <p class="text-[8px] font-bold text-orange-500 uppercase">V52 OMNICHAIN</p>
+                <p class="text-[8px] font-bold text-orange-500 uppercase">V53 OMNICHAIN</p>
             </div>
         </div>
     </header>
@@ -272,6 +272,13 @@
                     <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Danh sách tất cả các biên lai giao dịch đã hoàn tất</p>
                 </div>
                 <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
+                    
+                    <div class="flex gap-2 mb-4 lg:mb-6 overflow-x-auto no-scrollbar pb-2">
+                        <button onclick="setHistoryFilter('ALL')" id="hf-ALL" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md">Tất cả</button>
+                        <button onclick="setHistoryFilter('CASH')" id="hf-CASH" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Tiền mặt</button>
+                        <button onclick="setHistoryFilter('TRANSFER')" id="hf-TRANSFER" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Chuyển khoản</button>
+                    </div>
+
                     <div id="history-container" class="space-y-2 lg:space-y-3"></div>
                 </div>
             </div>
@@ -375,7 +382,6 @@
             document.getElementById('print-shop-name').innerText = SYSTEM_CONFIG.shopName;
             document.getElementById('print-shop-address').innerText = SYSTEM_CONFIG.address;
 
-            // Khởi tạo bộ lọc thời gian mặc định cho trang doanh thu
             const now = new Date();
             document.getElementById('filter-day').value = now.toISOString().split('T')[0];
             document.getElementById('filter-month').value = now.toISOString().slice(0, 7);
@@ -425,39 +431,67 @@
             if (targetId === 'history') renderHistoryUI();
         }
 
+        // TÍNH NĂNG: Thêm phân biệt thẻ "Mua Mang Về" ở sơ đồ bàn
         function renderTableGrid() {
             const grid = document.getElementById('grid-tables');
             let occ = 0;
             grid.innerHTML = appState.tables.map(t => {
                 if (t.status === 'occupied') occ++;
-                const displayId = t.id < 10 ? `0${t.id}` : t.id;
+                const isTakeaway = t.id === 'MV';
+                const displayName = isTakeaway ? 'MANG VỀ' : (t.id < 10 ? `0${t.id}` : t.id);
+                const subtitle = isTakeaway ? 'ĐƠN' : 'BÀN';
+                
+                // Styling riêng biệt cho đơn mang về (Màu tím) và bàn thường (Màu cam)
+                const baseClass = "table-card p-5 lg:p-8 flex flex-col items-center justify-center cursor-pointer shadow-sm rounded-2xl border-2 transition-all hover:-translate-y-1";
+                let statusClass = "";
+                
+                if (isTakeaway) {
+                    statusClass = t.status === 'occupied' ? 'bg-purple-600 border-purple-600 text-white' : 'bg-purple-50 border-purple-200 text-purple-700';
+                } else {
+                    statusClass = t.status === 'occupied' ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white border-slate-200 text-slate-800';
+                }
+
                 return `
-                    <div onclick="handleSelectTable(${t.id})" class="table-card ${t.status} p-5 lg:p-8 flex flex-col items-center justify-center cursor-pointer shadow-sm">
-                        <span class="text-[8px] lg:text-[9px] font-black uppercase mb-1 lg:mb-2 ${t.status === 'occupied' ? 'opacity-50 text-white' : 'opacity-40 text-slate-500'}">BÀN</span>
-                        <b class="text-3xl lg:text-4xl font-black">${displayId}</b>
-                        <div class="h-4 mt-1 lg:mt-2">${t.status === 'occupied' && t.startTime ? `<span class="text-[8px] lg:text-[9px] font-bold uppercase bg-white/20 px-2 py-0.5 rounded text-white">${t.startTime}</span>` : ''}</div>
+                    <div onclick="handleSelectTable('${t.id}')" class="${baseClass} ${statusClass}">
+                        <span class="text-[8px] lg:text-[9px] font-black uppercase mb-1 lg:mb-2 opacity-60">${subtitle}</span>
+                        <b class="${isTakeaway ? 'text-xl lg:text-2xl' : 'text-3xl lg:text-4xl'} font-black text-center tracking-tighter">${displayName}</b>
+                        <div class="h-4 mt-1 lg:mt-2">${t.status === 'occupied' && t.startTime ? `<span class="text-[8px] lg:text-[9px] font-bold uppercase bg-black/20 px-2 py-0.5 rounded text-white">${t.startTime}</span>` : ''}</div>
                     </div>`;
             }).join('');
-            document.getElementById('table-stats').innerText = `${occ}/${SYSTEM_CONFIG.totalTables} Bàn phục vụ`;
+            document.getElementById('table-stats').innerText = `${occ} Đang phục vụ`;
         }
 
         function handleSelectTable(id) {
-            const table = appState.tables.find(t => t.id === id);
-            appState.currentTableId = id;
+            const table = appState.tables.find(t => t.id == id);
+            appState.currentTableId = table.id;
             if (table.status === 'available' || !table.startTime) {
                 table.startTime = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
             }
-            document.getElementById('bill-table-name').innerText = `BÀN ${id < 10 ? '0'+id : id}`;
+            
+            const isTakeaway = table.id === 'MV';
+            document.getElementById('bill-table-name').innerText = isTakeaway ? 'MANG VỀ' : `BÀN ${table.id < 10 ? '0'+table.id : table.id}`;
             document.getElementById('bill-time-in').innerText = `Giờ vào: ${table.startTime}`;
             syncStateToCloud();
             switchTab('pos');
         }
 
+        // TÍNH NĂNG: In đậm/Đổi màu danh mục món đang được chọn
+        function selectCategory(cat) {
+            appState.filterCategory = cat;
+            renderCategories(); // Render lại danh sách nút để cập nhật nút đang active
+            renderMenuItems();  // Render lại các món ăn tương ứng
+        }
+
         function renderCategories() {
             const cats = ["TẤT CẢ", ...new Set(FULL_MENU.map(m => m.cat))];
-            document.getElementById('sidebar-categories').innerHTML = cats.map(c => `
-                <button onclick="appState.filterCategory='${c}'; renderMenuItems()" class="px-4 lg:px-5 py-3 lg:py-4 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black uppercase transition-all shrink-0 text-center lg:text-left border ${appState.filterCategory === c ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white text-slate-500 border-slate-200'} whitespace-nowrap">${c}</button>
-            `).join('');
+            document.getElementById('sidebar-categories').innerHTML = cats.map(c => {
+                const isActive = appState.filterCategory === c;
+                const styleClass = isActive 
+                    ? 'bg-gray-900 text-white border-gray-900 shadow-md font-black scale-105' 
+                    : 'bg-white text-slate-500 border-slate-200 font-semibold hover:bg-slate-50';
+                
+                return `<button onclick="selectCategory('${c}')" class="px-4 lg:px-5 py-3 lg:py-4 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] uppercase transition-all shrink-0 text-center lg:text-left border ${styleClass} whitespace-nowrap">${c}</button>`;
+            }).join('');
         }
 
         function renderMenuItems() {
@@ -514,7 +548,7 @@
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             if (!table.cart || table.cart.length === 0) return showNotification("Bàn chưa có món!", "warning");
             
-            document.getElementById('checkout-table-label').innerText = table.id;
+            document.getElementById('checkout-table-label').innerText = table.id === 'MV' ? 'MANG VỀ' : `BÀN ${table.id}`;
             document.getElementById('checkout-amount').innerText = table.cart.reduce((s, i) => s + i.price, 0).toLocaleString() + 'đ';
             const modal = document.getElementById('modal-checkout'), content = document.getElementById('modal-checkout-content');
             modal.classList.remove('hidden');
@@ -528,7 +562,6 @@
             setTimeout(() => document.getElementById('modal-checkout').classList.add('hidden'), 300);
         }
 
-        // Tạo chuỗi ngày có định dạng chuẩn d/m/yyyy đồng bộ với định dạng hệ thống lưu trữ
         function getSystemDateString(dateObj) {
             return `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
         }
@@ -544,7 +577,8 @@
                 btnQr.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-blue-500 bg-blue-50 text-blue-600";
                 btnCash.className = "p-4 lg:p-6 border-2 rounded-2xl lg:rounded-[2rem] flex flex-col items-center gap-2 lg:gap-3 transition-all border-slate-100 text-slate-400";
                 const total = appState.tables.find(t => t.id === appState.currentTableId).cart.reduce((s, i) => s + i.price, 0);
-                document.getElementById('checkout-qr-image').src = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-qr_only.png?amount=${total}&addInfo=THANH TOAN BAN ${appState.currentTableId}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
+                const infoBan = appState.currentTableId === 'MV' ? 'MANG VE' : `BAN ${appState.currentTableId}`;
+                document.getElementById('checkout-qr-image').src = `https://img.vietqr.io/image/vietcombank-${SYSTEM_CONFIG.accountNo}-qr_only.png?amount=${total}&addInfo=THANH TOAN ${infoBan}&accountName=${encodeURIComponent(SYSTEM_CONFIG.accountName)}`;
                 qrBox.classList.remove('hidden'); qrBox.classList.add('flex', 'fade-in');
             }
         }
@@ -559,14 +593,13 @@
             const payload = {
                 date: getSystemDateString(now), 
                 time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
-                table: `Bàn ${table.id}`, 
+                table: table.id === 'MV' ? 'MANG VỀ' : `Bàn ${table.id}`, 
                 total: total, 
                 method: appState.paymentMethod, 
                 month: `${now.getMonth()+1}/${now.getFullYear()}`, 
                 year: now.getFullYear()
             };
 
-            // Lưu dữ liệu lên Firebase Realtime
             if(window.FIREBASE_DB) {
                 const { push, ref } = window.firebaseRefs;
                 push(ref(window.FIREBASE_DB, 'pos/transactions'), payload);
@@ -575,14 +608,14 @@
             table.status = 'available'; table.cart = []; table.startTime = null;
             syncStateToCloud();
             closeModal(); switchTab('tables');
-            showNotification(`Đã thanh toán bàn ${table.id}!`);
+            showNotification(`Đã thanh toán!`);
         }
 
         function processPrint(printType) {
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             const titles = { 'bep': 'PHIẾU BÁO BẾP', 'tam-tinh': 'PHIẾU TẠM TÍNH', 'hoa-don': 'HÓA ĐƠN' };
             document.getElementById('print-doc-title').innerText = titles[printType];
-            document.getElementById('print-doc-table').innerText = `BÀN ${table.id}`;
+            document.getElementById('print-doc-table').innerText = table.id === 'MV' ? 'MANG VỀ' : `BÀN ${table.id}`;
             const now = new Date();
             document.getElementById('print-doc-time').innerText = `TG: ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate()}/${now.getMonth()+1}`;
 
@@ -610,8 +643,7 @@
             const now = new Date();
             document.getElementById('report-date').innerText = `Cập nhật: ${now.toLocaleString('vi-VN')}`;
 
-            // 1. Phân tích & Lọc doanh thu theo NGÀY được chọn
-            const rawDayInput = document.getElementById('filter-day').value; // Định dạng YYYY-MM-DD
+            const rawDayInput = document.getElementById('filter-day').value;
             let formattedDayStr = "";
             if (rawDayInput) {
                 const parts = rawDayInput.split('-');
@@ -623,8 +655,7 @@
             document.getElementById('sum-day-text').innerText = `${sumDay.toLocaleString()}đ`;
             document.getElementById('count-day-text').innerText = `${dayData.length} đơn hàng`;
 
-            // 2. Phân tích & Lọc doanh thu theo THÁNG được chọn
-            const rawMonthInput = document.getElementById('filter-month').value; // Định dạng YYYY-MM
+            const rawMonthInput = document.getElementById('filter-month').value;
             let formattedMonthStr = "";
             if (rawMonthInput) {
                 const parts = rawMonthInput.split('-');
@@ -636,7 +667,6 @@
             document.getElementById('sum-month-text').innerText = `${sumMonth.toLocaleString()}đ`;
             document.getElementById('count-month-text').innerText = `${monthData.length} đơn hàng`;
 
-            // 3. Phân tích & Lọc doanh thu theo NĂM được chọn
             const selectedYear = parseInt(document.getElementById('filter-year').value);
             const yearData = appState.transactions.filter(t => t.year === selectedYear);
             const sumYear = yearData.reduce((s, t) => s + parseInt(t.total || 0), 0);
@@ -645,15 +675,40 @@
             document.getElementById('count-year-text').innerText = `${yearData.length} đơn hàng`;
         }
 
-        // Render cấu trúc danh sách đơn hàng độc lập tại tab Lịch Sử Đơn
+        // TÍNH NĂNG: Lọc lịch sử đơn hàng
+        function setHistoryFilter(type) {
+            appState.historyFilter = type;
+            
+            // Cập nhật UI nút bấm
+            ['ALL', 'CASH', 'TRANSFER'].forEach(t => {
+                const btn = document.getElementById(`hf-${t}`);
+                if (t === type) {
+                    btn.className = "px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md";
+                } else {
+                    btn.className = "px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200";
+                }
+            });
+            
+            renderHistoryUI();
+        }
+
         function renderHistoryUI() {
             const container = document.getElementById('history-container');
-            if (appState.transactions.length === 0) {
+            
+            // Lấy dữ liệu và áp dụng bộ lọc
+            let dataToShow = appState.transactions;
+            if (appState.historyFilter === 'CASH') {
+                dataToShow = dataToShow.filter(t => t.method === 'Tiền mặt');
+            } else if (appState.historyFilter === 'TRANSFER') {
+                dataToShow = dataToShow.filter(t => t.method !== 'Tiền mặt');
+            }
+
+            if (dataToShow.length === 0) {
                 container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[11px]">Chưa có dữ liệu giao dịch</div>`;
                 return;
             }
 
-            container.innerHTML = [...appState.transactions].reverse().map(t => `
+            container.innerHTML = [...dataToShow].reverse().map(t => `
                 <div class="flex justify-between items-center p-4 lg:p-5 bg-slate-50 rounded-xl lg:rounded-2xl border border-slate-100 fade-in">
                     <div class="flex items-center gap-3 lg:gap-4">
                         <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
@@ -667,76 +722,81 @@
             `).join('');
         }
 
-        // TÍNH NĂNG XUẤT EXCEL TỔNG HỢP (NGÀY/THÁNG/NĂM CHUẨN)
+        // SỬA LỖI: Xuất Excel bao bọc try/catch để báo lỗi cụ thể
         function exportToExcel() {
             if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
 
-            const now = new Date();
-            const todayStr = getSystemDateString(now);
-            const currentMonthStr = `${now.getMonth() + 1}/${now.getFullYear()}`;
-            const currentYear = now.getFullYear();
+            try {
+                if(typeof XLSX === 'undefined') {
+                    return showNotification("Đang tải thư viện Excel, vui lòng thử lại sau 2 giây!", "error");
+                }
 
-            // --- 1. TAB NGÀY (Tổng hợp theo phương thức của ngày hôm nay) ---
-            const todayData = appState.transactions.filter(t => t.date === todayStr);
-            let daySummary = { cash: 0, qr: 0, count: todayData.length };
-            todayData.forEach(t => {
-                if (t.method === 'Tiền mặt') daySummary.cash += parseInt(t.total || 0);
-                else daySummary.qr += parseInt(t.total || 0);
-            });
+                const now = new Date();
+                const todayStr = getSystemDateString(now);
+                const currentMonthStr = `${now.getMonth() + 1}/${now.getFullYear()}`;
+                const currentYear = now.getFullYear();
 
-            const rowsDay = [
-                ["BÁO CÁO DOANH THU NGÀY:", todayStr],
-                [""],
-                ["Phương thức", "Số lượng đơn", "Tổng tiền (VNĐ)"],
-                ["Tiền mặt", todayData.filter(d => d.method === 'Tiền mặt').length, daySummary.cash],
-                ["Chuyển khoản", todayData.filter(d => d.method !== 'Tiền mặt').length, daySummary.qr],
-                ["TỔNG CỘNG", daySummary.count, daySummary.cash + daySummary.qr]
-            ];
+                const todayData = appState.transactions.filter(t => t.date === todayStr);
+                let daySummary = { cash: 0, qr: 0, count: todayData.length };
+                todayData.forEach(t => {
+                    if (t.method === 'Tiền mặt') daySummary.cash += parseInt(t.total || 0);
+                    else daySummary.qr += parseInt(t.total || 0);
+                });
 
-            // --- 2. TAB THÁNG (Tổng hợp các ngày trong tháng hiện tại) ---
-            const monthData = appState.transactions.filter(t => t.month === currentMonthStr);
-            const dailyMap = {};
-            monthData.forEach(t => {
-                if (!dailyMap[t.date]) dailyMap[t.date] = { cash: 0, qr: 0 };
-                if (t.method === 'Tiền mặt') dailyMap[t.date].cash += parseInt(t.total || 0);
-                else dailyMap[t.date].qr += parseInt(t.total || 0);
-            });
+                const rowsDay = [
+                    ["BÁO CÁO DOANH THU NGÀY:", todayStr],
+                    [""],
+                    ["Phương thức", "Số lượng đơn", "Tổng tiền (VNĐ)"],
+                    ["Tiền mặt", todayData.filter(d => d.method === 'Tiền mặt').length, daySummary.cash],
+                    ["Chuyển khoản", todayData.filter(d => d.method !== 'Tiền mặt').length, daySummary.qr],
+                    ["TỔNG CỘNG", daySummary.count, daySummary.cash + daySummary.qr]
+                ];
 
-            const rowsMonth = [["Ngày", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng ngày"]];
-            Object.keys(dailyMap).sort().forEach(d => {
-                const day = dailyMap[d];
-                rowsMonth.push([d, day.cash, day.qr, day.cash + day.qr]);
-            });
+                const monthData = appState.transactions.filter(t => t.month === currentMonthStr);
+                const dailyMap = {};
+                monthData.forEach(t => {
+                    if (!dailyMap[t.date]) dailyMap[t.date] = { cash: 0, qr: 0 };
+                    if (t.method === 'Tiền mặt') dailyMap[t.date].cash += parseInt(t.total || 0);
+                    else dailyMap[t.date].qr += parseInt(t.total || 0);
+                });
 
-            // --- 3. TAB NĂM (Tổng hợp 12 tháng của năm hiện tại) ---
-            const yearData = appState.transactions.filter(t => t.year === currentYear);
-            const monthlyMap = {};
-            yearData.forEach(t => {
-                const m = `Tháng ${t.month}`;
-                if (!monthlyMap[m]) monthlyMap[m] = { cash: 0, qr: 0 };
-                if (t.method === 'Tiền mặt') monthlyMap[m].cash += parseInt(t.total || 0);
-                else monthlyMap[m].qr += parseInt(t.total || 0);
-            });
+                const rowsMonth = [["Ngày", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng ngày"]];
+                Object.keys(dailyMap).sort().forEach(d => {
+                    const day = dailyMap[d];
+                    rowsMonth.push([d, day.cash, day.qr, day.cash + day.qr]);
+                });
 
-            const rowsYear = [["Tháng", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng tháng"]];
-            Object.keys(monthlyMap).sort((a, b) => {
-                const m1 = parseInt(a.match(/\d+/)[0]), m2 = parseInt(b.match(/\d+/)[0]);
-                return m1 - m2;
-            }).forEach(m => {
-                const mon = monthlyMap[m];
-                rowsYear.push([m, mon.cash, mon.qr, mon.cash + mon.qr]);
-            });
+                const yearData = appState.transactions.filter(t => t.year === currentYear);
+                const monthlyMap = {};
+                yearData.forEach(t => {
+                    const m = `Tháng ${t.month}`;
+                    if (!monthlyMap[m]) monthlyMap[m] = { cash: 0, qr: 0 };
+                    if (t.method === 'Tiền mặt') monthlyMap[m].cash += parseInt(t.total || 0);
+                    else monthlyMap[m].qr += parseInt(t.total || 0);
+                });
 
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
+                const rowsYear = [["Tháng", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng tháng"]];
+                Object.keys(monthlyMap).sort((a, b) => {
+                    const m1 = parseInt(a.match(/\d+/)[0]), m2 = parseInt(b.match(/\d+/)[0]);
+                    return m1 - m2;
+                }).forEach(m => {
+                    const mon = monthlyMap[m];
+                    rowsYear.push([m, mon.cash, mon.qr, mon.cash + mon.qr]);
+                });
 
-            XLSX.writeFile(wb, `Bao_Cao_Doanh_Thu_${todayStr.replace(/\//g, '-')}.xlsx`);
-            showNotification("Đã xuất báo cáo tổng hợp!");
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
+
+                XLSX.writeFile(wb, `Bao_Cao_Doanh_Thu_${todayStr.replace(/\//g, '-')}.xlsx`);
+                showNotification("Đã tải xuống file Excel thành công!");
+            } catch (error) {
+                console.error(error);
+                showNotification("Lỗi tải xuống! Thử dùng trình duyệt Chrome/Safari.", "error");
+            }
         }
 
-        // TÍNH NĂNG 2: ĐỒNG BỘ LÊN GOOGLE SHEETS
         async function syncToGoogleSheets() {
             const now = new Date();
             const todayStr = getSystemDateString(now);
@@ -744,7 +804,11 @@
             
             if(dataToExport.length === 0) return showNotification("Không có dữ liệu ngày hôm nay để đồng bộ!", "warning");
             
-            showNotification("Đang nén và gửi lên Google Sheets...", "warning");
+            if(SYSTEM_CONFIG.scriptUrl.includes("AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82")) {
+                alert("Chú ý: Để file có thể tải thẳng vào Google Drive của bạn, bạn cần tạo một file Google Sheets và lấy link Google Apps Script của riêng mình để dán vào cấu hình mã nguồn. Hiện tại hệ thống đang dùng link dùng chung để chạy thử.");
+            }
+
+            showNotification("Đang gửi dữ liệu lên Google Sheets...", "warning");
             const sumTotal = dataToExport.reduce((s, t) => s + parseInt(t.total || 0), 0);
             
             const payload = {
