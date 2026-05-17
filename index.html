@@ -91,7 +91,7 @@
             bank: "VIETCOMBANK",
             accountNo: "1046778674",
             accountName: "LA PHAT",
-            scriptUrl: "https://script.google.com/macros/s/AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82/exec", // Link Google Sheets từ V43
+            scriptUrl: "https://script.google.com/macros/s/AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82/exec", 
             totalTables: 30
         };
 
@@ -154,15 +154,16 @@
         <div class="flex items-center gap-3 lg:gap-5">
             <div class="text-right hidden sm:block">
                 <p id="live-clock" class="text-xs font-black font-mono">00:00:00</p>
-                <p class="text-[8px] font-bold text-orange-500 uppercase">V51 OMNICHAIN</p>
+                <p class="text-[8px] font-bold text-orange-500 uppercase">V52 OMNICHAIN</p>
             </div>
         </div>
     </header>
 
-    <nav class="bg-white border-b flex px-1 lg:px-2 shrink-0 z-40">
-        <button onclick="switchTab('tables')" id="nav-tables" class="flex-1 py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 active-nav transition-colors">Sơ Đồ Bàn</button>
-        <button onclick="switchTab('pos')" id="nav-pos" class="flex-1 py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Gọi Món</button>
-        <button onclick="switchTab('report')" id="nav-report" class="flex-1 py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Báo Cáo</button>
+    <nav class="bg-white border-b flex px-1 lg:px-2 shrink-0 z-40 overflow-x-auto no-scrollbar">
+        <button onclick="switchTab('tables')" id="nav-tables" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 active-nav transition-colors">Sơ Đồ Bàn</button>
+        <button onclick="switchTab('pos')" id="nav-pos" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Gọi Món</button>
+        <button onclick="switchTab('report')" id="nav-report" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Doanh Thu</button>
+        <button onclick="switchTab('history')" id="nav-history" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Lịch Sử Đơn</button>
     </nav>
 
     <main class="flex-1 relative bg-slate-50 overflow-hidden">
@@ -218,7 +219,7 @@
             <div class="max-w-5xl mx-auto space-y-6 lg:space-y-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-xl lg:text-2xl font-black tracking-tighter">TỔNG QUAN DOANH THU</h2>
+                        <h2 class="text-xl lg:text-2xl font-black tracking-tighter">BÁO CÁO DOANH THU</h2>
                         <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1" id="report-date"></p>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto">
@@ -227,11 +228,51 @@
                     </div>
                 </div>
                 
-                <div id="report-dashboard" class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5"></div>
-                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
+                    <div class="bg-gray-900 p-6 lg:p-8 rounded-3xl text-white flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <p class="text-[9px] lg:text-[10px] font-black uppercase text-gray-400 tracking-wider">DOANH THU NGÀY</p>
+                                <input type="date" id="filter-day" onchange="renderReportUI()" class="bg-white/10 text-white text-[11px] font-bold px-2 py-1 rounded border border-white/20 focus:outline-none">
+                            </div>
+                            <h2 id="sum-day-text" class="text-3xl lg:text-4xl font-black text-orange-500">0đ</h2>
+                        </div>
+                        <p id="count-day-text" class="text-[10px] mt-4 text-gray-400 font-bold">0 đơn hàng</p>
+                    </div>
+
+                    <div class="bg-white p-6 lg:p-8 rounded-3xl border border-slate-200 flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <p class="text-[9px] lg:text-[10px] font-black uppercase text-slate-400 tracking-wider">DOANH THU THÁNG</p>
+                                <input type="month" id="filter-month" onchange="renderReportUI()" class="bg-slate-100 text-gray-800 text-[11px] font-bold px-2 py-1 rounded border border-slate-300 focus:outline-none">
+                            </div>
+                            <h2 id="sum-month-text" class="text-2xl lg:text-3xl font-black text-gray-900">0đ</h2>
+                        </div>
+                        <p id="count-month-text" class="text-[10px] mt-4 text-slate-400 font-bold">0 đơn hàng</p>
+                    </div>
+
+                    <div class="bg-blue-50 p-6 lg:p-8 rounded-3xl border border-blue-100 flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <p class="text-[9px] lg:text-[10px] font-black uppercase text-blue-400 tracking-wider">DOANH THU NĂM</p>
+                                <select id="filter-year" onchange="renderReportUI()" class="bg-white text-gray-800 text-[11px] font-bold px-2 py-1 rounded border border-blue-200 focus:outline-none"></select>
+                            </div>
+                            <h2 id="sum-year-text" class="text-2xl lg:text-3xl font-black text-blue-700">0đ</h2>
+                        </div>
+                        <p id="count-year-text" class="text-[10px] mt-4 text-blue-500 font-bold">0 đơn hàng</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-history" class="absolute inset-0 p-4 sm:p-6 lg:p-8 hidden overflow-y-auto thin-scroll">
+            <div class="max-w-5xl mx-auto space-y-6">
+                <div>
+                    <h2 class="text-xl lg:text-2xl font-black tracking-tighter">LỊCH SỬ ĐƠN HÀNG</h2>
+                    <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Danh sách tất cả các biên lai giao dịch đã hoàn tất</p>
+                </div>
                 <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
-                    <h3 class="text-[10px] lg:text-[11px] font-black uppercase text-slate-400 mb-4 lg:mb-6 tracking-widest border-b pb-4">Biên lai giao dịch</h3>
-                    <div id="report-history" class="space-y-2 lg:space-y-3"></div>
+                    <div id="history-container" class="space-y-2 lg:space-y-3"></div>
                 </div>
             </div>
         </section>
@@ -313,6 +354,7 @@
                 if(data) {
                     appState.transactions = Object.values(data);
                     if(appState.activeTab === 'report') renderReportUI();
+                    if(appState.activeTab === 'history') renderHistoryUI();
                 }
             });
         }
@@ -332,6 +374,18 @@
             document.getElementById('ui-account-name').innerText = SYSTEM_CONFIG.accountName;
             document.getElementById('print-shop-name').innerText = SYSTEM_CONFIG.shopName;
             document.getElementById('print-shop-address').innerText = SYSTEM_CONFIG.address;
+
+            // Khởi tạo bộ lọc thời gian mặc định cho trang doanh thu
+            const now = new Date();
+            document.getElementById('filter-day').value = now.toISOString().split('T')[0];
+            document.getElementById('filter-month').value = now.toISOString().slice(0, 7);
+            
+            const yearSelect = document.getElementById('filter-year');
+            const currentYear = now.getFullYear();
+            yearSelect.innerHTML = '';
+            for (let i = currentYear - 3; i <= currentYear + 2; i++) {
+                yearSelect.innerHTML += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>Năm ${i}</option>`;
+            }
         }
 
         function showNotification(message, type = 'success') {
@@ -346,22 +400,29 @@
         }
 
         function switchTab(targetId) {
-            ['view-tables', 'view-pos', 'view-report'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-                document.getElementById(id).classList.remove('block', 'flex', 'fade-in');
+            ['view-tables', 'view-pos', 'view-report', 'view-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
             });
             document.querySelectorAll('nav button').forEach(b => { b.classList.remove('active-nav'); b.classList.add('text-slate-400'); });
 
             const targetEl = document.getElementById(`view-${targetId}`);
-            targetEl.classList.remove('hidden'); targetEl.classList.add('block', 'fade-in');
+            if (targetEl) {
+                targetEl.classList.remove('hidden');
+                targetEl.classList.add('block', 'fade-in');
+            }
             
-            document.getElementById(`nav-${targetId}`).classList.add('active-nav');
-            document.getElementById(`nav-${targetId}`).classList.remove('text-slate-400');
+            const navBtn = document.getElementById(`nav-${targetId}`);
+            if (navBtn) {
+                navBtn.classList.add('active-nav');
+                navBtn.classList.remove('text-slate-400');
+            }
 
             appState.activeTab = targetId;
             if (targetId === 'tables') renderTableGrid();
             if (targetId === 'pos') { renderCategories(); renderMenuItems(); renderCartUI(); }
             if (targetId === 'report') renderReportUI();
+            if (targetId === 'history') renderHistoryUI();
         }
 
         function renderTableGrid() {
@@ -467,6 +528,11 @@
             setTimeout(() => document.getElementById('modal-checkout').classList.add('hidden'), 300);
         }
 
+        // Tạo chuỗi ngày có định dạng chuẩn d/m/yyyy đồng bộ với định dạng hệ thống lưu trữ
+        function getSystemDateString(dateObj) {
+            return `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+        }
+
         function selectPaymentMethod(method) {
             appState.paymentMethod = method;
             const btnCash = document.getElementById('btn-pay-cash'), btnQr = document.getElementById('btn-pay-qr'), qrBox = document.getElementById('checkout-qr-box');
@@ -491,11 +557,16 @@
             processPrint('hoa-don');
 
             const payload = {
-                date: now.toLocaleDateString('vi-VN'), time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
-                table: `Bàn ${table.id}`, total: total, method: appState.paymentMethod, month: `${now.getMonth()+1}/${now.getFullYear()}`, year: now.getFullYear()
+                date: getSystemDateString(now), 
+                time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
+                table: `Bàn ${table.id}`, 
+                total: total, 
+                method: appState.paymentMethod, 
+                month: `${now.getMonth()+1}/${now.getFullYear()}`, 
+                year: now.getFullYear()
             };
 
-            // Lưu lên Firebase Realtime
+            // Lưu dữ liệu lên Firebase Realtime
             if(window.FIREBASE_DB) {
                 const { push, ref } = window.firebaseRefs;
                 push(ref(window.FIREBASE_DB, 'pos/transactions'), payload);
@@ -533,62 +604,62 @@
         }
 
         // ==========================================
-        // KHỐI 4: BÁO CÁO & XUẤT EXCEL/GOOGLE SHEETS
+        // KHỐI 4: BÁO CÁO DOANH THU & LỊCH SỬ ĐƠN
         // ==========================================
-               function renderReportUI() {
+        function renderReportUI() {
             const now = new Date();
-            const todayStr = now.toLocaleDateString('vi-VN');
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
-
             document.getElementById('report-date').innerText = `Cập nhật: ${now.toLocaleString('vi-VN')}`;
 
-            // Lọc dữ liệu chuẩn xác bằng cách tách chuỗi date
-            const todayData = appState.transactions.filter(t => t.date === todayStr);
-            const monthData = appState.transactions.filter(t => {
-                if(!t.date) return false;
-                const parts = t.date.split('/');
-                return parts.length === 3 && parseInt(parts[1]) === currentMonth && parseInt(parts[2]) === currentYear;
-            });
-            const yearData = appState.transactions.filter(t => {
-                if(!t.date) return false;
-                const parts = t.date.split('/');
-                return parts.length === 3 && parseInt(parts[2]) === currentYear;
-            });
+            // 1. Phân tích & Lọc doanh thu theo NGÀY được chọn
+            const rawDayInput = document.getElementById('filter-day').value; // Định dạng YYYY-MM-DD
+            let formattedDayStr = "";
+            if (rawDayInput) {
+                const parts = rawDayInput.split('-');
+                formattedDayStr = `${parseInt(parts[2])}/${parseInt(parts[1])}/${parseInt(parts[0])}`;
+            }
+            const dayData = appState.transactions.filter(t => t.date === formattedDayStr);
+            const sumDay = dayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            
+            document.getElementById('sum-day-text').innerText = `${sumDay.toLocaleString()}đ`;
+            document.getElementById('count-day-text').innerText = `${dayData.length} đơn hàng`;
 
-
-            // Tính tổng doanh thu
-            const sumToday = todayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            // 2. Phân tích & Lọc doanh thu theo THÁNG được chọn
+            const rawMonthInput = document.getElementById('filter-month').value; // Định dạng YYYY-MM
+            let formattedMonthStr = "";
+            if (rawMonthInput) {
+                const parts = rawMonthInput.split('-');
+                formattedMonthStr = `${parseInt(parts[1])}/${parseInt(parts[0])}`;
+            }
+            const monthData = appState.transactions.filter(t => t.month === formattedMonthStr);
             const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+
+            document.getElementById('sum-month-text').innerText = `${sumMonth.toLocaleString()}đ`;
+            document.getElementById('count-month-text').innerText = `${monthData.length} đơn hàng`;
+
+            // 3. Phân tích & Lọc doanh thu theo NĂM được chọn
+            const selectedYear = parseInt(document.getElementById('filter-year').value);
+            const yearData = appState.transactions.filter(t => t.year === selectedYear);
             const sumYear = yearData.reduce((s, t) => s + parseInt(t.total || 0), 0);
 
-            // Render 3 cột thống kê: Hôm Nay, Tháng Này, Năm Nay
-            document.getElementById('report-dashboard').innerHTML = `
-                <div class="bg-gray-900 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] text-white">
-                    <p class="text-[9px] lg:text-[10px] font-black uppercase text-gray-400 mb-1 lg:mb-2">HÔM NAY</p>
-                    <h2 class="text-3xl lg:text-4xl font-black text-orange-500">${sumToday.toLocaleString()}đ</h2>
-                    <p class="text-[9px] mt-2 text-gray-500">${todayData.length} đơn</p>
-                </div>
-                <div class="bg-white p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border border-slate-200">
-                    <p class="text-[9px] lg:text-[10px] font-black uppercase text-slate-400">THÁNG NÀY</p>
-                    <h2 class="text-2xl lg:text-3xl font-black text-gray-900 mt-1 lg:mt-2">${sumMonth.toLocaleString()}đ</h2>
-                    <p class="text-[9px] mt-2 text-slate-400">${monthData.length} đơn</p>
-                </div>
-                <div class="bg-blue-50 p-6 lg:p-8 rounded-3xl lg:rounded-[2.5rem] border border-blue-100">
-                    <p class="text-[9px] lg:text-[10px] font-black uppercase text-blue-400">NĂM NAY</p>
-                    <h2 class="text-2xl lg:text-3xl font-black text-blue-700 mt-1 lg:mt-2">${sumYear.toLocaleString()}đ</h2>
-                    <p class="text-[9px] mt-2 text-blue-400/80">${yearData.length} đơn</p>
-                </div>
-            `;
+            document.getElementById('sum-year-text').innerText = `${sumYear.toLocaleString()}đ`;
+            document.getElementById('count-year-text').innerText = `${yearData.length} đơn hàng`;
+        }
 
-            // Lịch sử giao dịch
-            document.getElementById('report-history').innerHTML = [...appState.transactions].reverse().slice(0, 20).map(t => `
-                <div class="flex justify-between items-center p-4 lg:p-5 bg-slate-50 rounded-xl lg:rounded-2xl border border-slate-100">
+        // Render cấu trúc danh sách đơn hàng độc lập tại tab Lịch Sử Đơn
+        function renderHistoryUI() {
+            const container = document.getElementById('history-container');
+            if (appState.transactions.length === 0) {
+                container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[11px]">Chưa có dữ liệu giao dịch</div>`;
+                return;
+            }
+
+            container.innerHTML = [...appState.transactions].reverse().map(t => `
+                <div class="flex justify-between items-center p-4 lg:p-5 bg-slate-50 rounded-xl lg:rounded-2xl border border-slate-100 fade-in">
                     <div class="flex items-center gap-3 lg:gap-4">
-                        <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-white flex items-center justify-center"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
+                        <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-white flex items-center justify-center shadow-sm"><i class="fa-solid ${t.method === 'Tiền mặt' ? 'fa-wallet text-green-500' : 'fa-building-columns text-blue-500'}"></i></div>
                         <div>
-                            <p class="text-[10px] lg:text-[11px] font-black uppercase">${t.table}</p>
-                            <p class="text-[8px] lg:text-[9px] text-slate-400 mt-0.5">${t.time} ${t.date} • ${t.method}</p>
+                            <p class="text-[10px] lg:text-[11px] font-black uppercase tracking-tight">${t.table}</p>
+                            <p class="text-[8px] lg:text-[9px] text-slate-400 mt-0.5 font-semibold">${t.time} ${t.date} • ${t.method}</p>
                         </div>
                     </div>
                     <span class="text-xs lg:text-sm font-black ${t.method === 'Tiền mặt' ? 'text-gray-900' : 'text-blue-600'}">+${parseInt(t.total).toLocaleString()}đ</span>
@@ -596,110 +667,97 @@
             `).join('');
         }
 
-                // TÍNH NĂNG XUẤT EXCEL TỔNG HỢP (NGÀY/THÁNG/NĂM)
-function exportToExcel() {
-    if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
+        // TÍNH NĂNG XUẤT EXCEL TỔNG HỢP (NGÀY/THÁNG/NĂM CHUẨN)
+        function exportToExcel() {
+            if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu!", "warning");
 
-    const now = new Date();
-    const todayStr = now.toLocaleDateString('vi-VN');
-    const currentMonth = now.getMonth() + 1;
-    const currentYear = now.getFullYear();
+            const now = new Date();
+            const todayStr = getSystemDateString(now);
+            const currentMonthStr = `${now.getMonth() + 1}/${now.getFullYear()}`;
+            const currentYear = now.getFullYear();
 
-    // --- 1. XỬ LÝ DỮ LIỆU TAB NGÀY (Tổng hợp theo phương thức thanh toán) ---
-    const todayData = appState.transactions.filter(t => t.date === todayStr);
-    let daySummary = { cash: 0, qr: 0, count: todayData.length };
-    todayData.forEach(t => {
-        if (t.method === 'Tiền mặt') daySummary.cash += parseInt(t.total || 0);
-        else daySummary.qr += parseInt(t.total || 0);
-    });
+            // --- 1. TAB NGÀY (Tổng hợp theo phương thức của ngày hôm nay) ---
+            const todayData = appState.transactions.filter(t => t.date === todayStr);
+            let daySummary = { cash: 0, qr: 0, count: todayData.length };
+            todayData.forEach(t => {
+                if (t.method === 'Tiền mặt') daySummary.cash += parseInt(t.total || 0);
+                else daySummary.qr += parseInt(t.total || 0);
+            });
 
-    const rowsDay = [
-        ["BÁO CÁO DOANH THU NGÀY:", todayStr],
-        [""],
-        ["Phương thức", "Số lượng đơn", "Tổng tiền (VNĐ)"],
-        ["Tiền mặt", daySummary.count > 0 ? "-" : 0, daySummary.cash],
-        ["Chuyển khoản", daySummary.count > 0 ? "-" : 0, daySummary.qr],
-        ["TỔNG CỘNG", daySummary.count, daySummary.cash + daySummary.qr]
-    ];
+            const rowsDay = [
+                ["BÁO CÁO DOANH THU NGÀY:", todayStr],
+                [""],
+                ["Phương thức", "Số lượng đơn", "Tổng tiền (VNĐ)"],
+                ["Tiền mặt", todayData.filter(d => d.method === 'Tiền mặt').length, daySummary.cash],
+                ["Chuyển khoản", todayData.filter(d => d.method !== 'Tiền mặt').length, daySummary.qr],
+                ["TỔNG CỘNG", daySummary.count, daySummary.cash + daySummary.qr]
+            ];
 
-    // --- 2. XỬ LÝ DỮ LIỆU TAB THÁNG (Tổng hợp theo từng ngày trong tháng) ---
-    const monthData = appState.transactions.filter(t => {
-        const p = t.date.split('/');
-        return p.length === 3 && parseInt(p[1]) === currentMonth && parseInt(p[2]) === currentYear;
-    });
+            // --- 2. TAB THÁNG (Tổng hợp các ngày trong tháng hiện tại) ---
+            const monthData = appState.transactions.filter(t => t.month === currentMonthStr);
+            const dailyMap = {};
+            monthData.forEach(t => {
+                if (!dailyMap[t.date]) dailyMap[t.date] = { cash: 0, qr: 0 };
+                if (t.method === 'Tiền mặt') dailyMap[t.date].cash += parseInt(t.total || 0);
+                else dailyMap[t.date].qr += parseInt(t.total || 0);
+            });
 
-    const dailyMap = {};
-    monthData.forEach(t => {
-        if (!dailyMap[t.date]) dailyMap[t.date] = { cash: 0, qr: 0 };
-        if (t.method === 'Tiền mặt') dailyMap[t.date].cash += parseInt(t.total || 0);
-        else dailyMap[t.date].qr += parseInt(t.total || 0);
-    });
+            const rowsMonth = [["Ngày", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng ngày"]];
+            Object.keys(dailyMap).sort().forEach(d => {
+                const day = dailyMap[d];
+                rowsMonth.push([d, day.cash, day.qr, day.cash + day.qr]);
+            });
 
-    const rowsMonth = [["Ngày", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng ngày"]];
-    Object.keys(dailyMap).sort().forEach(d => {
-        const day = dailyMap[d];
-        rowsMonth.push([d, day.cash, day.qr, day.cash + day.qr]);
-    });
+            // --- 3. TAB NĂM (Tổng hợp 12 tháng của năm hiện tại) ---
+            const yearData = appState.transactions.filter(t => t.year === currentYear);
+            const monthlyMap = {};
+            yearData.forEach(t => {
+                const m = `Tháng ${t.month}`;
+                if (!monthlyMap[m]) monthlyMap[m] = { cash: 0, qr: 0 };
+                if (t.method === 'Tiền mặt') monthlyMap[m].cash += parseInt(t.total || 0);
+                else monthlyMap[m].qr += parseInt(t.total || 0);
+            });
 
-    // --- 3. XỬ LÝ DỮ LIỆU TAB NĂM (Tổng hợp theo từng tháng trong năm) ---
-    const yearData = appState.transactions.filter(t => {
-        const p = t.date.split('/');
-        return p.length === 3 && parseInt(p[2]) === currentYear;
-    });
+            const rowsYear = [["Tháng", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng tháng"]];
+            Object.keys(monthlyMap).sort((a, b) => {
+                const m1 = parseInt(a.match(/\d+/)[0]), m2 = parseInt(b.match(/\d+/)[0]);
+                return m1 - m2;
+            }).forEach(m => {
+                const mon = monthlyMap[m];
+                rowsYear.push([m, mon.cash, mon.qr, mon.cash + mon.qr]);
+            });
 
-    const monthlyMap = {};
-    yearData.forEach(t => {
-        const p = t.date.split('/');
-        const m = `Tháng ${p[1]}/${p[2]}`;
-        if (!monthlyMap[m]) monthlyMap[m] = { cash: 0, qr: 0 };
-        if (t.method === 'Tiền mặt') monthlyMap[m].cash += parseInt(t.total || 0);
-        else monthlyMap[m].qr += parseInt(t.total || 0);
-    });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
 
-    const rowsYear = [["Tháng", "Tiền mặt (VNĐ)", "Chuyển khoản (VNĐ)", "Tổng tháng"]];
-    Object.keys(monthlyMap).sort((a, b) => {
-        const m1 = parseInt(a.match(/\d+/)[0]), m2 = parseInt(b.match(/\d+/)[0]);
-        return m1 - m2;
-    }).forEach(m => {
-        const mon = monthlyMap[m];
-        rowsYear.push([m, mon.cash, mon.qr, mon.cash + mon.qr]);
-    });
-
-    // --- 4. TẠO FILE EXCEL ---
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
-
-    // Xuất file
-    XLSX.writeFile(wb, `Bao_Cao_Tong_Hop_${todayStr.replace(/\//g, '-')}.xlsx`);
-    showNotification("Đã xuất báo cáo tổng hợp!");
-}
+            XLSX.writeFile(wb, `Bao_Cao_Doanh_Thu_${todayStr.replace(/\//g, '-')}.xlsx`);
+            showNotification("Đã xuất báo cáo tổng hợp!");
+        }
 
         // TÍNH NĂNG 2: ĐỒNG BỘ LÊN GOOGLE SHEETS
         async function syncToGoogleSheets() {
-            const todayStr = new Date().toLocaleDateString('vi-VN');
+            const now = new Date();
+            const todayStr = getSystemDateString(now);
             const dataToExport = appState.transactions.filter(t => t.date === todayStr);
             
-            if(dataToExport.length === 0) return showNotification("Không có dữ liệu để đồng bộ!", "warning");
+            if(dataToExport.length === 0) return showNotification("Không có dữ liệu ngày hôm nay để đồng bộ!", "warning");
             
             showNotification("Đang nén và gửi lên Google Sheets...", "warning");
-            
-            // Vì Google Apps Script thường nhận từng dòng, ta sẽ gom tổng quan ngày hôm đó để đỡ spam
             const sumTotal = dataToExport.reduce((s, t) => s + parseInt(t.total || 0), 0);
             
             const payload = {
                 date: todayStr,
-                time: new Date().toLocaleTimeString('vi-VN'),
+                time: now.toLocaleTimeString('vi-VN'),
                 table: `TỔNG KẾT NGÀY (${dataToExport.length} đơn)`,
                 total: sumTotal,
                 method: "Hệ thống tự đồng bộ",
-                month: `${new Date().getMonth()+1}/${new Date().getFullYear()}`,
-                year: new Date().getFullYear()
+                month: `${now.getMonth()+1}/${now.getFullYear()}`,
+                year: now.getFullYear()
             };
 
             try {
-                // Sử dụng mode no-cors kế thừa từ V43 để tránh lỗi Cross-Origin
                 await fetch(SYSTEM_CONFIG.scriptUrl, { 
                     method: 'POST', 
                     mode: 'no-cors', 
@@ -711,7 +769,7 @@ function exportToExcel() {
             }
         }
 
-        // INIT
+        // KHỞI CHẠY HỆ THỐNG
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
         window.onload = () => {
             initializeSystemData();
