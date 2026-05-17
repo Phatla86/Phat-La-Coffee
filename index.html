@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - OMNICHAIN V53</title>
+    <title>PHÁT LA PREMIUM - OMNICHAIN V54</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -117,36 +117,51 @@
             { id: 's8', cat: "ĐẶC BIỆT", name: "Affogato", price: 80000, icon: "fa-ice-cream" }
         ];
 
+        // Công thức đã được làm sạch Key (Bỏ phần tử đơn vị)
         const RECIPES = {
-            'c1': { 'Cà Phê Hạt (g)': 15 }, 'c2': { 'Cà Phê Hạt (g)': 15 },
-            'c3': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 120 }, 'c4': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 120 },
-            'c5': { 'Cà Phê Hạt (g)': 20, 'Sữa Tươi (ml)': 100 }, 'c6': { 'Cà Phê Hạt (g)': 20 },
-            'c7': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 100, 'Sốt Sô-cô-la (ml)': 15 },
-            'd1': { 'Sữa Tươi (ml)': 150, 'Sốt Caramel (ml)': 20 }, 'd2': { 'Sữa Tươi (ml)': 150, 'Sốt Sô-cô-la (ml)': 20 },
-            'd3': { 'Sữa Tươi (ml)': 150, 'Bột Matcha (g)': 8 }, 'd4': { 'Sữa Tươi (ml)': 120, 'Bánh Oreo (cái)': 2 },
-            'd5': { 'Sữa Tươi (ml)': 120, 'Bánh Cookie (cái)': 2 },
-            't1': { 'Trà Đen (g)': 5, 'Đường Nước (ml)': 20, 'Đào Ngâm (miếng)': 2 },
-            't2': { 'Trà Đen (g)': 5, 'Đường Nước (ml)': 20, 'Quả Vải (trái)': 3 },
-            't3': { 'Trà Xanh (g)': 5, 'Đường Nước (ml)': 25, 'Chanh Tươi (trái)': 0.5 },
-            't4': { 'Trà Xanh (g)': 6 }, 't5': { 'Trà Oolong (g)': 6 },
-            's1': { 'Cà Phê Hạt (g)': 20, 'Sữa Đặc (g)': 25 },
-            's2': { 'Cà Phê Hạt (g)': 15, 'Sữa Đặc (g)': 35, 'Sữa Tươi (ml)': 40 },
-            's3': { 'Cà Phê Hạt (g)': 15, 'Kem Trứng (ml)': 50 },
-            's4': { 'Cà Phê Hạt (g)': 15, 'Sữa Cốt Dừa (ml)': 60 },
-            's5': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 100, 'Sốt Caramel (ml)': 15 },
-            's6': { 'Cà Phê Hạt (g)': 15, 'Sữa Tươi (ml)': 100, 'Siro Hạt Dẻ (ml)': 15 },
-            's7': { 'Cà Phê Hạt (g)': 20, 'Siro Vanilla (ml)': 15 },
-            's8': { 'Cà Phê Hạt (g)': 15, 'Kem Viên Vanilla (viên)': 1 }
+            'c1': { 'Cà Phê Hạt': 15 }, 'c2': { 'Cà Phê Hạt': 15 },
+            'c3': { 'Cà Phê Hạt': 15, 'Sữa Tươi': 120 }, 'c4': { 'Cà Phê Hạt': 15, 'Sữa Tươi': 120 },
+            'c5': { 'Cà Phê Hạt': 20, 'Sữa Tươi': 100 }, 'c6': { 'Cà Phê Hạt': 20 },
+            'c7': { 'Cà Phê Hạt': 15, 'Sữa Tươi': 100, 'Sốt Sô-cô-la': 15 },
+            'd1': { 'Sữa Tươi': 150, 'Sốt Caramel': 20 }, 'd2': { 'Sữa Tươi': 150, 'Sốt Sô-cô-la': 20 },
+            'd3': { 'Sữa Tươi': 150, 'Bột Matcha': 8 }, 'd4': { 'Sữa Tươi': 120, 'Bánh Oreo': 2 },
+            'd5': { 'Sữa Tươi': 120, 'Bánh Cookie': 2 },
+            't1': { 'Trà Đen': 5, 'Đường Nước': 20, 'Đào Ngâm': 2 },
+            't2': { 'Trà Đen': 5, 'Đường Nước': 20, 'Quả Vải': 3 },
+            't3': { 'Trà Xanh': 5, 'Đường Nước': 25, 'Chanh Tươi': 0.5 },
+            't4': { 'Trà Xanh': 6 }, 't5': { 'Trà Oolong': 6 },
+            's1': { 'Cà Phê Hạt': 20, 'Sữa Đặc': 25 },
+            's2': { 'Cà Phê Hạt': 15, 'Sữa Đặc': 35, 'Sữa Tươi': 40 },
+            's3': { 'Cà Phê Hạt': 15, 'Kem Trứng': 50 },
+            's4': { 'Cà Phê Hạt': 15, 'Sữa Cốt Dừa': 60 },
+            's5': { 'Cà Phê Hạt': 15, 'Sữa Tươi': 100, 'Sốt Caramel': 15 },
+            's6': { 'Cà Phê Hạt': 15, 'Sữa Tươi': 100, 'Siro Hạt Dẻ': 15 },
+            's7': { 'Cà Phê Hạt': 20, 'Siro Vanilla': 15 },
+            's8': { 'Cà Phê Hạt': 15, 'Kem Viên Vanilla': 1 }
         };
 
+        // Kho được cấu trúc lại dạng Object để quản lý Stock và Unit riêng
         const DEFAULT_INVENTORY = {
-            'Cà Phê Hạt (g)': 5000, 'Sữa Đặc (g)': 3000, 'Sữa Tươi (ml)': 10000,
-            'Trà Đen (g)': 2000, 'Trà Xanh (g)': 2000, 'Trà Oolong (g)': 2000,
-            'Đường Nước (ml)': 5000, 'Sốt Sô-cô-la (ml)': 1000, 'Sốt Caramel (ml)': 1000,
-            'Bột Matcha (g)': 500, 'Bánh Oreo (cái)': 50, 'Bánh Cookie (cái)': 50,
-            'Đào Ngâm (miếng)': 60, 'Quả Vải (trái)': 100, 'Chanh Tươi (trái)': 30,
-            'Kem Trứng (ml)': 1500, 'Sữa Cốt Dừa (ml)': 2000, 'Siro Hạt Dẻ (ml)': 1000,
-            'Siro Vanilla (ml)': 1000, 'Kem Viên Vanilla (viên)': 30
+            'Cà Phê Hạt': { stock: 5000, unit: 'g', max: 5000 },
+            'Sữa Đặc': { stock: 3000, unit: 'g', max: 3000 },
+            'Sữa Tươi': { stock: 10000, unit: 'ml', max: 10000 },
+            'Trà Đen': { stock: 2000, unit: 'g', max: 2000 },
+            'Trà Xanh': { stock: 2000, unit: 'g', max: 2000 },
+            'Trà Oolong': { stock: 2000, unit: 'g', max: 2000 },
+            'Đường Nước': { stock: 5000, unit: 'ml', max: 5000 },
+            'Sốt Sô-cô-la': { stock: 1000, unit: 'ml', max: 1000 },
+            'Sốt Caramel': { stock: 1000, unit: 'ml', max: 1000 },
+            'Bột Matcha': { stock: 500, unit: 'g', max: 500 },
+            'Bánh Oreo': { stock: 50, unit: 'cái', max: 50 },
+            'Bánh Cookie': { stock: 50, unit: 'cái', max: 50 },
+            'Đào Ngâm': { stock: 60, unit: 'miếng', max: 60 },
+            'Quả Vải': { stock: 100, unit: 'trái', max: 100 },
+            'Chanh Tươi': { stock: 30, unit: 'trái', max: 30 },
+            'Kem Trứng': { stock: 1500, unit: 'ml', max: 1500 },
+            'Sữa Cốt Dừa': { stock: 2000, unit: 'ml', max: 2000 },
+            'Siro Hạt Dẻ': { stock: 1000, unit: 'ml', max: 1000 },
+            'Siro Vanilla': { stock: 1000, unit: 'ml', max: 1000 },
+            'Kem Viên Vanilla': { stock: 30, unit: 'viên', max: 30 }
         };
 
         let appState = {
@@ -154,7 +169,7 @@
                 { id: 'MV', status: 'available', cart: [], startTime: null },
                 ...Array.from({length: SYSTEM_CONFIG.totalTables}, (_, i) => ({ id: i+1, status: 'available', cart: [], startTime: null }))
             ],
-            inventory: { ...DEFAULT_INVENTORY },
+            inventory: JSON.parse(JSON.stringify(DEFAULT_INVENTORY)),
             currentTableId: null,
             activeTab: 'tables',
             filterCategory: "TẤT CẢ",
@@ -181,7 +196,7 @@
         <div class="flex items-center gap-3 lg:gap-5">
             <div class="text-right hidden sm:block">
                 <p id="live-clock" class="text-xs font-black font-mono">00:00:00</p>
-                <p class="text-[8px] font-bold text-orange-500 uppercase">V53 OMNICHAIN</p>
+                <p class="text-[8px] font-bold text-orange-500 uppercase">V54 OMNICHAIN</p>
             </div>
         </div>
     </header>
@@ -189,7 +204,8 @@
     <nav class="bg-white border-b flex px-1 lg:px-2 shrink-0 z-40 overflow-x-auto no-scrollbar">
         <button onclick="switchTab('tables')" id="nav-tables" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 active-nav transition-colors">Sơ Đồ Bàn</button>
         <button onclick="switchTab('pos')" id="nav-pos" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Gọi Món</button>
-        <button onclick="switchTab('report')" id="nav-report" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Doanh Thu & Kho</button>
+        <button onclick="switchTab('report')" id="nav-report" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Doanh Thu</button>
+        <button onclick="switchTab('inventory')" id="nav-inventory" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Kho Hàng</button>
         <button onclick="switchTab('history')" id="nav-history" class="flex-1 min-w-[80px] py-4 lg:py-5 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400 transition-colors">Lịch Sử Đơn</button>
     </nav>
 
@@ -207,13 +223,10 @@
 
         <section id="view-pos" class="absolute inset-0 hidden bg-white">
             <div class="flex flex-col lg:flex-row w-full h-full overflow-hidden">
-                
                 <div class="w-full lg:w-48 bg-slate-50 p-3 lg:p-4 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto no-scrollbar border-b lg:border-b-0 lg:border-r border-slate-200 shrink-0" id="sidebar-categories"></div>
-                
                 <div class="flex-1 p-3 lg:p-6 overflow-y-auto bg-slate-100/50 thin-scroll pb-[45vh] lg:pb-6">
                     <div id="grid-menu" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4"></div>
                 </div>
-                
                 <div class="w-full lg:w-[400px] xl:w-[420px] h-[45vh] lg:h-full absolute lg:relative bottom-0 lg:bottom-auto flex flex-col bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.06)] lg:shadow-[-10px_0_30px_rgba(0,0,0,0.02)] z-10 shrink-0 border-t lg:border-t-0 lg:border-l border-slate-200 transition-all">
                     <div class="p-4 lg:p-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
                         <div>
@@ -266,7 +279,6 @@
                         </div>
                         <p id="count-day-text" class="text-[10px] mt-4 text-gray-400 font-bold">0 đơn hàng</p>
                     </div>
-
                     <div class="bg-white p-6 lg:p-8 rounded-3xl border border-slate-200 flex flex-col justify-between shadow-sm">
                         <div>
                             <div class="flex justify-between items-center mb-3">
@@ -277,7 +289,6 @@
                         </div>
                         <p id="count-month-text" class="text-[10px] mt-4 text-slate-400 font-bold">0 đơn hàng</p>
                     </div>
-
                     <div class="bg-blue-50 p-6 lg:p-8 rounded-3xl border border-blue-100 flex flex-col justify-between shadow-sm">
                         <div>
                             <div class="flex justify-between items-center mb-3">
@@ -289,15 +300,17 @@
                         <p id="count-year-text" class="text-[10px] mt-4 text-blue-500 font-bold">0 đơn hàng</p>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="bg-white border border-slate-200 rounded-[2rem] p-5 lg:p-8 shadow-sm">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h3 class="text-md font-black tracking-tight text-gray-900">KIỂM KÊ KHO NGUYÊN LIỆU CHI TIẾT</h3>
-                            <p class="text-[10px] text-slate-400 font-medium">Hệ thống tự động khấu trừ ảo định lượng theo thời gian thực khi bán sản phẩm</p>
-                        </div>
-                    </div>
-                    <div id="grid-inventory" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 lg:gap-4"></div>
+        <section id="view-inventory" class="absolute inset-0 p-4 sm:p-6 lg:p-8 hidden overflow-y-auto thin-scroll">
+            <div class="max-w-7xl mx-auto space-y-6">
+                <div>
+                    <h2 class="text-xl lg:text-2xl font-black tracking-tighter">QUẢN LÝ KHO NGUYÊN LIỆU</h2>
+                    <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Tự động khấu trừ khi bán hàng. Quản lý Nhập/Xuất & Chỉnh sửa Đơn vị</p>
+                </div>
+                <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
+                    <div id="grid-inventory" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5"></div>
                 </div>
             </div>
         </section>
@@ -309,13 +322,11 @@
                     <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Danh sách tất cả các biên lai giao dịch đã hoàn tất</p>
                 </div>
                 <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
-                    
                     <div class="flex gap-2 mb-4 lg:mb-6 overflow-x-auto no-scrollbar pb-2">
                         <button onclick="setHistoryFilter('ALL')" id="hf-ALL" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md">Tất cả</button>
                         <button onclick="setHistoryFilter('CASH')" id="hf-CASH" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Tiền mặt</button>
                         <button onclick="setHistoryFilter('TRANSFER')" id="hf-TRANSFER" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Chuyển khoản</button>
                     </div>
-
                     <div id="history-container" class="space-y-2 lg:space-y-3"></div>
                 </div>
             </div>
@@ -393,9 +404,7 @@
             }
             
             let mvNode = cleanArray.find(t => t && t.id === 'MV');
-            if (!mvNode) {
-                mvNode = { id: 'MV', status: 'available', cart: [], startTime: null };
-            }
+            if (!mvNode) mvNode = { id: 'MV', status: 'available', cart: [], startTime: null };
             if(!mvNode.cart) mvNode.cart = [];
 
             let list = [mvNode];
@@ -409,6 +418,32 @@
                 }
             }
             return list;
+        }
+
+        function migrateInventoryData(data) {
+            // Tự động chuyển đổi nếu database vẫn còn lưu format cũ: 'Cà Phê Hạt (g)': 5000
+            let migrated = {};
+            let isOldFormat = false;
+
+            for (let k in data) {
+                if (typeof data[k] === 'number') {
+                    isOldFormat = true;
+                    let match = k.match(/(.*?)\s*\((.*?)\)$/);
+                    if (match) {
+                        migrated[match[1]] = { stock: data[k], unit: match[2], max: data[k] || 1000 };
+                    } else {
+                        migrated[k] = { stock: data[k], unit: 'đv', max: data[k] || 1000 };
+                    }
+                } else {
+                    migrated[k] = data[k];
+                }
+            }
+            
+            if(isOldFormat && window.FIREBASE_DB) {
+                const { set, ref } = window.firebaseRefs;
+                set(ref(window.FIREBASE_DB, 'pos/inventory'), migrated);
+            }
+            return migrated;
         }
 
         function initRealtimeSync() {
@@ -436,8 +471,8 @@
             onValue(ref(window.FIREBASE_DB, 'pos/inventory'), (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    appState.inventory = data;
-                    if(appState.activeTab === 'report') renderInventoryUI();
+                    appState.inventory = migrateInventoryData(data);
+                    if(appState.activeTab === 'inventory') renderInventoryUI();
                 }
             });
         }
@@ -453,7 +488,7 @@
             if(window.FIREBASE_DB) {
                 const { set, ref } = window.firebaseRefs;
                 set(ref(window.FIREBASE_DB, 'pos/inventory'), appState.inventory);
-            } else { if(appState.activeTab === 'report') renderInventoryUI(); }
+            } else { if(appState.activeTab === 'inventory') renderInventoryUI(); }
         }
 
         function initializeSystemData() {
@@ -486,7 +521,7 @@
         }
 
         function switchTab(targetId) {
-            ['view-tables', 'view-pos', 'view-report', 'view-history'].forEach(id => {
+            ['view-tables', 'view-pos', 'view-report', 'view-inventory', 'view-history'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
             });
@@ -507,7 +542,8 @@
             appState.activeTab = targetId;
             if (targetId === 'tables') renderTableGrid();
             if (targetId === 'pos') { renderCategories(); renderMenuItems(); renderCartUI(); }
-            if (targetId === 'report') { renderReportUI(); renderInventoryUI(); }
+            if (targetId === 'report') renderReportUI();
+            if (targetId === 'inventory') renderInventoryUI();
             if (targetId === 'history') renderHistoryUI();
         }
 
@@ -588,7 +624,7 @@
         }
 
         function handleAddToCart(productId) {
-            if (!appState.currentTableId) return showNotification("Vui lòng sơ đồ và chọn bàn trước!", "error");
+            if (!appState.currentTableId) return showNotification("Vui lòng vào Sơ đồ và chọn bàn trước!", "error");
             const product = FULL_MENU.find(p => p.id === productId);
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             if(!table.cart) table.cart = [];
@@ -714,8 +750,8 @@
                 const recipe = RECIPES[item.id];
                 if (recipe) {
                     Object.keys(recipe).forEach(material => {
-                        if (appState.inventory[material] !== undefined) {
-                            appState.inventory[material] = Math.max(0, appState.inventory[material] - recipe[material]);
+                        if (appState.inventory[material] && appState.inventory[material].stock !== undefined) {
+                            appState.inventory[material].stock = Math.max(0, appState.inventory[material].stock - recipe[material]);
                         }
                     });
                 }
@@ -848,49 +884,83 @@
             document.getElementById('count-year-text').innerText = `${yearData.length} đơn hàng`;
         }
 
+        // ==========================================
+        // KHỐI QUẢN LÝ KHO (INVENTORY MODULE)
+        // ==========================================
         function renderInventoryUI() {
             const grid = document.getElementById('grid-inventory');
             if(!grid) return;
             
             grid.innerHTML = Object.keys(appState.inventory).map(key => {
-                const stock = appState.inventory[key];
+                const item = appState.inventory[key];
                 let barColor = "bg-green-500";
-                let textColor = "text-green-700 bg-green-50 border-green-100";
                 
-                if (stock < 400) {
+                if (item.stock < (item.max * 0.2)) {
                     barColor = "bg-red-500 animate-pulse";
-                    textColor = "text-red-700 bg-red-50 border-red-200";
-                } else if (stock < 1200) {
+                } else if (item.stock < (item.max * 0.5)) {
                     barColor = "bg-amber-500";
-                    textColor = "text-amber-700 bg-amber-50 border-amber-100";
                 }
 
                 return `
-                    <div class="border border-slate-100 rounded-2xl p-3 bg-slate-50 flex flex-col justify-between shadow-sm">
-                        <div>
-                            <span class="text-[8px] font-black uppercase text-slate-400 block truncate tracking-tight">${key}</span>
-                            <div class="flex items-baseline gap-0.5 mt-1">
-                                <span class="text-base font-black text-slate-800 tracking-tight font-mono">${stock.toLocaleString()}</span>
-                            </div>
-                            <div class="w-full bg-slate-200 h-1 rounded-full mt-2 overflow-hidden">
-                                <div class="${barColor}" style="width: ${Math.min(100, (stock / DEFAULT_INVENTORY[key]) * 100)}%"></div>
+                    <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col justify-between shadow-sm transition-all hover:border-orange-300 hover:shadow-md">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-black uppercase text-slate-800 tracking-tight leading-tight w-2/3">${key}</span>
+                            <div class="w-1/3 flex justify-end">
+                                <input type="text" value="${item.unit}" onchange="updateInventoryUnit('${key}', this.value)" title="Sửa đơn vị tính" class="w-10 text-center text-[9px] font-bold border border-slate-300 rounded bg-white text-slate-500 px-1 py-0.5 focus:outline-none focus:border-orange-500">
                             </div>
                         </div>
-                        <button onclick="handleRestockMaterial('${key}')" class="mt-3 w-full bg-white text-gray-700 border border-slate-200 hover:border-orange-300 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-colors">+ Nhập Kho</button>
+                        
+                        <div class="my-2">
+                            <span class="text-2xl font-black text-slate-900 tracking-tighter font-mono">${item.stock.toLocaleString()}</span>
+                            <div class="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden shadow-inner">
+                                <div class="${barColor} h-full" style="width: ${Math.min(100, (item.stock / (item.max || 1000)) * 100)}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 pt-3 border-t border-slate-200 border-dashed">
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="number" id="adj-${key}" placeholder="Nhập số lượng..." class="w-full bg-white border border-slate-300 rounded-lg text-[10px] px-2 py-1.5 font-bold focus:outline-none focus:border-orange-500 text-center">
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="adjustInventoryStock('${key}', 'add')" class="flex-1 bg-green-50 text-green-600 hover:bg-green-100 border border-green-200 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors">+ NHẬP</button>
+                                <button onclick="adjustInventoryStock('${key}', 'sub')" class="flex-1 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors">- XUẤT</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function handleRestockMaterial(key) {
-            let addValue = 2000;
-            if (key.includes('(cái)') || key.includes('(miếng)') || key.includes('(trái)') || key.includes('(viên)')) {
-                addValue = 50;
+        window.updateInventoryUnit = function(key, newUnit) {
+            if(appState.inventory[key]) {
+                appState.inventory[key].unit = newUnit;
+                syncInventoryToCloud();
+                showNotification(`Đã đổi đơn vị của ${key} thành ${newUnit}`, "success");
             }
-            appState.inventory[key] = (appState.inventory[key] || 0) + addValue;
+        };
+
+        window.adjustInventoryStock = function(key, type) {
+            const inputEl = document.getElementById(`adj-${key}`);
+            if(!inputEl) return;
+            const val = parseFloat(inputEl.value);
+            
+            if(isNaN(val) || val <= 0) return showNotification("Vui lòng nhập số lượng hợp lệ (> 0)!", "warning");
+            if(!appState.inventory[key]) return;
+
+            const unitName = appState.inventory[key].unit;
+
+            if(type === 'add') {
+                appState.inventory[key].stock += val;
+                showNotification(`Đã NHẬP thêm ${val} ${unitName} ${key} vào kho`, "success");
+            } else {
+                appState.inventory[key].stock = Math.max(0, appState.inventory[key].stock - val);
+                showNotification(`Đã XUẤT ${val} ${unitName} ${key} khỏi kho`, "success");
+            }
+            
+            inputEl.value = "";
             syncInventoryToCloud();
-            showNotification(`Đã nạp thêm +${addValue} vào ${key}`);
-        }
+            renderInventoryUI();
+        };
 
         function setHistoryFilter(type) {
             appState.historyFilter = type;
@@ -952,9 +1022,9 @@
                     rowsDay.push([idx+1, t.time, t.table, t.rawTotal || t.total, t.discount || 0, t.total, t.method]);
                 });
 
-                let rowsInv = [["Nguyên liệu kho", "Số lượng tồn hiện tại"]];
+                let rowsInv = [["Nguyên liệu kho", "Số lượng tồn", "Đơn vị"]];
                 Object.keys(appState.inventory).forEach(key => {
-                    rowsInv.push([key, appState.inventory[key]]);
+                    rowsInv.push([key, appState.inventory[key].stock, appState.inventory[key].unit]);
                 });
 
                 const wb = XLSX.utils.book_new();
