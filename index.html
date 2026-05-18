@@ -1005,38 +1005,89 @@
         }
 
         function exportToExcel() {
-            if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu giao dịch!", "warning");
+    if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu giao dịch!", "warning");
 
-            try {
-                if(typeof XLSX === 'undefined') return showNotification("Thư viện đang tải, thử lại sau ít giây!", "error");
+    try {
+        if(typeof XLSX === 'undefined') return showNotification("Thư viện đang tải, thử lại sau ít giây!", "error");
 
-                const now = new Date();
-                const todayStr = getSystemDateString(now);
+        const now = new Date();
+        const todayStr = getSystemDateString(now);
 
-                const todayData = appState.transactions.filter(t => t.date === todayStr);
-                let rowsDay = [
-                    ["BÁO CÁO DOANH THU NGÀY:", todayStr], [""],
-                    ["Mã đơn", "Thời gian", "Vị trí", "Tổng gốc", "Chiết khấu", "Thu thực tế", "Hình thức"],
-                ];
-                todayData.forEach((t, idx) => {
-                    rowsDay.push([idx+1, t.time, t.table, t.rawTotal || t.total, t.discount || 0, t.total, t.method]);
-                });
-
-                let rowsInv = [["Nguyên liệu kho", "Số lượng tồn", "Đơn vị"]];
-                Object.keys(appState.inventory).forEach(key => {
-                    rowsInv.push([key, appState.inventory[key].stock, appState.inventory[key].unit]);
-                });
-
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu ngày");
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsInv), "Báo cáo tồn kho");
-
-                XLSX.writeFile(wb, `Bao_Cao_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`);
-                showNotification("Đã kết xuất và tải xuống file Excel!");
-            } catch (error) {
-                showNotification("Trình duyệt lỗi khi xuất tệp!", "error");
-            }
+        // 1. LẤY VÀ LỌC DỮ LIỆU THEO NGÀY ĐANG CHỌN TRÊN UI
+        const rawDayInput = document.getElementById('filter-day').value;
+        let formattedDayStr = "";
+        if (rawDayInput) {
+            const parts = rawDayInput.split('-');
+            formattedDayStr = `${parseInt(parts[2])}/${parseInt(parts[1])}/${parseInt(parts[0])}`;
         }
+        const dayData = appState.transactions.filter(t => t.date === formattedDayStr);
+        
+        let rowsDay = [
+            ["BÁO CÁO DOANH THU NGÀY:", formattedDayStr], [""],
+            ["Mã đơn", "Thời gian", "Vị trí", "Tổng gốc", "Chiết khấu", "Thu thực tế", "Hình thức"],
+        ];
+        dayData.forEach((t, idx) => {
+            rowsDay.push([idx+1, t.time, t.table, t.rawTotal || t.total, t.discount || 0, t.total, t.method]);
+        });
+        const sumDay = dayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+        rowsDay.push(["", "", "TỔNG CỘNG NHẬN:", "", "", sumDay, ""]);
+
+
+        // 2. LẤY VÀ LỌC DỮ LIỆU THEO THÁNG ĐANG CHỌN TRÊN UI
+        const rawMonthInput = document.getElementById('filter-month').value;
+        let formattedMonthStr = "";
+        if (rawMonthInput) {
+            const parts = rawMonthInput.split('-');
+            formattedMonthStr = `${parseInt(parts[1])}/${parseInt(parts[0])}`;
+        }
+        const monthData = appState.transactions.filter(t => t.month === formattedMonthStr);
+        
+        let rowsMonth = [
+            ["BÁO CÁO DOANH THU THÁNG:", formattedMonthStr], [""],
+            ["Mã đơn", "Ngày", "Thời gian", "Vị trí", "Tổng gốc", "Chiết khấu", "Thu thực tế", "Hình thức"],
+        ];
+        monthData.forEach((t, idx) => {
+            rowsMonth.push([idx+1, t.date, t.time, t.table, t.rawTotal || t.total, t.discount || 0, t.total, t.method]);
+        });
+        const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+        rowsMonth.push(["", "", "", "TỔNG CỘNG NHẬN:", "", "", sumMonth, ""]);
+
+
+        // 3. LẤY VÀ LỌC DỮ LIỆU THEO NĂM ĐANG CHỌN TRÊN UI
+        const selectedYear = parseInt(document.getElementById('filter-year').value);
+        const yearData = appState.transactions.filter(t => t.year === selectedYear);
+        
+        let rowsYear = [
+            ["BÁO CÁO DOANH THU NĂM:", selectedYear], [""],
+            ["Mã đơn", "Ngày", "Thời gian", "Vị trí", "Tổng gốc", "Chiết khấu", "Thu thực tế", "Hình thức"],
+        ];
+        yearData.forEach((t, idx) => {
+            rowsYear.push([idx+1, t.date, t.time, t.table, t.rawTotal || t.total, t.discount || 0, t.total, t.method]);
+        });
+        const sumYear = yearData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+        rowsYear.push(["", "", "", "TỔNG CỘNG NHẬN:", "", "", sumYear, ""]);
+
+
+        // 4. DỮ LIỆU TỒN KHO NGUYÊN LIỆU
+        let rowsInv = [["Nguyên liệu kho", "Số lượng tồn", "Đơn vị"]];
+        Object.keys(appState.inventory).forEach(key => {
+            rowsInv.push([key, appState.inventory[key].stock, appState.inventory[key].unit]);
+        });
+
+        // TIẾN HÀNH KHỞI TẠO FILE EXCEL VÀ GHÉP CÁC TAB (SHEETS)
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsInv), "Báo cáo tồn kho");
+
+        // Tải file về máy tính / điện thoại
+        XLSX.writeFile(wb, `Bao_Cao_DoanhThu_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`);
+        showNotification("Đã kết xuất thành công file Excel 4 tab độc lập!");
+    } catch (error) {
+        showNotification("Trình duyệt lỗi khi xuất tệp!", "error");
+    }
+}
 
         async function syncToGoogleSheets() {
             const now = new Date();
