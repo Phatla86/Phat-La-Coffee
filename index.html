@@ -108,13 +108,13 @@
 
         <div class="text-right hidden md:block">
             <p id="live-clock" class="text-xs font-black font-mono text-slate-800">00:00:00</p>
-            <span class="text-[9px] font-extrabold text-orange-500 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded border border-orange-200">PHÁT LA PREMIUM POS</span>
+            <span class="text-[9px] font-extrabold text-orange-500 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded border border-orange-200">Premium Pos</span>
         </div>
     </header>
 
     <nav class="bg-white border-b flex px-4 shrink-0 z-40 overflow-x-auto no-scrollbar">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 active-tab transition-all">Tổng Quan</button>
-        <button onclick="switchTab('tables')" id="nav-tables" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Sơ Đồ Bàn</button>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 active-tab transition-all">Bàn Cờ Tổng Quan</button>
+        <button onclick="switchTab('tables')" id="nav-tables" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Sơ Đồ Bàn POS</button>
         <button onclick="switchTab('pos')" id="nav-pos" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Màn Hình Gọi Món</button>
         <button onclick="switchTab('inventory')" id="nav-inventory" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Quản Lý Kho Chuỗi</button>
         <button onclick="switchTab('logistics')" id="nav-logistics" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Điều Phối Nội Bộ</button>
@@ -340,9 +340,16 @@
 
         <section id="view-history" class="absolute inset-0 p-6 overflow-y-auto thin-scroll hidden fade-in">
             <div class="max-w-5xl mx-auto space-y-4">
-                <div class="bg-white p-5 rounded-2xl border shadow-sm flex justify-between items-center">
-                    <h2 class="text-xs font-black uppercase text-slate-400 tracking-widest">Dòng Thời Gian Giao Dịch Hợp Nhất</h2>
-                    <select id="history-branch-filter" onchange="renderGlobalHistoryUI()" class="bg-slate-50 border text-xs font-bold p-2 rounded-xl focus:outline-none">
+                <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-xs font-black uppercase text-slate-400 tracking-widest">Dòng Thời Gian Giao Dịch Hợp Nhất</h2>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="setHistoryMethodFilter('ALL')" id="hm-ALL" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md">Tất cả</button>
+                            <button onclick="setHistoryMethodFilter('CASH')" id="hm-CASH" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Tiền mặt</button>
+                            <button onclick="setHistoryMethodFilter('TRANSFER')" id="hm-TRANSFER" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Chuyển khoản</button>
+                        </div>
+                    </div>
+                    <select id="history-branch-filter" onchange="renderGlobalHistoryUI()" class="bg-slate-50 border text-xs font-bold p-2.5 rounded-xl focus:outline-none w-full sm:w-auto cursor-pointer">
                         <option value="all">Xem Tất Cả Các Chi Nhánh</option>
                         <option value="cn1">Chỉ Chi Nhánh 1 (Quận 1)</option>
                         <option value="cn2">Chỉ Chi Nhánh 2 (Bình Thạnh)</option>
@@ -390,6 +397,37 @@
         </div>
     </div>
 
+    <div id="modal-tx-detail" class="fixed inset-0 z-[110] bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4 fade-in">
+        <div class="bg-white w-full max-w-md rounded-[2rem] overflow-hidden flex flex-col shadow-2xl">
+            <div class="p-6 border-b relative bg-slate-50">
+                <button onclick="closeTxDetailModal()" class="absolute top-4 right-4 w-8 h-8 bg-white border rounded-full text-slate-500 hover:bg-slate-100 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="text-sm font-black text-gray-900 uppercase">CHI TIẾT GIAO DỊCH</h3>
+                <p id="dtl-id" class="text-[10px] font-mono font-bold text-slate-400 mt-1">#ID</p>
+            </div>
+            <div class="p-6 max-h-[60vh] overflow-y-auto thin-scroll space-y-4">
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Chi nhánh</p><p id="dtl-branch" class="font-black text-slate-800 mt-0.5">--</p></div>
+                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Bàn phục vụ</p><p id="dtl-table" class="font-black text-slate-800 mt-0.5">--</p></div>
+                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Thời gian</p><p id="dtl-time" class="font-black text-slate-800 mt-0.5">--</p></div>
+                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Thanh toán</p><div id="dtl-method" class="mt-0.5">--</div></div>
+                </div>
+                
+                <div class="border-t border-slate-100 pt-4">
+                    <p class="text-[10px] font-black uppercase text-slate-400 mb-2">Danh sách món ăn đã gọi</p>
+                    <div id="dtl-items" class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1"></div>
+                </div>
+            </div>
+            <div class="p-6 bg-slate-50 border-t space-y-2">
+                <div class="flex justify-between text-xs font-bold text-slate-500"><p>Tổng gốc:</p><p id="dtl-subtotal">0đ</p></div>
+                <div class="flex justify-between text-xs font-bold text-slate-500"><p>Chiết khấu:</p><p id="dtl-discount" class="text-orange-500">0đ</p></div>
+                <div class="border-t border-dashed border-slate-300 pt-2 flex justify-between items-center">
+                    <p class="text-xs font-black uppercase text-slate-800">Thu thực tế:</p>
+                    <p id="dtl-total" class="text-2xl font-black text-slate-900 tracking-tighter">0đ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="print-area">
         <div style="text-align: center;">
             <h2 id="pr-shop" style="margin: 0; font-size: 18px; font-weight: 900;">PHÁT LA PREMIUM COFFEE</h2>
@@ -414,7 +452,7 @@
 
     <script>
         const MASTER_CONFIG = {
-            bankCode: "vietcombank", // Sửa thành chữ thường định dạng chuẩn API vietqr
+            bankCode: "vietcombank",
             accountNumber: "1046778674",
             accountHolder: "LA PHAT",
             googleSheetEndpoint: "https://script.google.com/macros/s/AKfycbzBZ1B39h1LWgqLBexKBC21f6_jbgepG96UE628vVOo-P_4iqyLN1CyLmhqBo3gbA82/exec",
@@ -469,6 +507,7 @@
             focusTableId: null,
             filterPosCategory: 'TẤT CẢ',
             gatePaymentMethod: 'Cash',
+            historyMethodFilter: 'ALL',
             logisticsHistory: [],
             branches: {
                 cn1: { name: "Chi Nhánh 1 - Quận 1", tables: [], inventory: {}, transactions: [] },
@@ -989,7 +1028,6 @@
             }
         }
 
-        // ĐÃ KHẮC PHỤC LỖI TẠO QR BẰNG CÁCH MÃ HÓA CHUỖI ADDINFO AN TOÀN
         function recalcModalAmount() {
             let bId = globalChainState.focusBranchId;
             let tId = globalChainState.focusTableId;
@@ -1006,7 +1044,6 @@
             document.getElementById('modal-final-amount').innerText = finalAmt.toLocaleString('vi-VN') + "đ";
 
             if(globalChainState.gatePaymentMethod === 'Transfer') {
-                // Sử dụng encodeURIComponent để mã hóa an toàn các khoảng trắng và ký tự đặc biệt
                 let safeAddInfo = encodeURIComponent(`PL ${bId.toUpperCase()} BAN ${tId}`);
                 let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
                 
@@ -1134,7 +1171,6 @@
             showNotification(`Đã xuất lệnh in thành công.`, "success");
         }
 
-        // TÁI CẤU TRÚC LOGIC BÁO CÁO DOANH THU THEO BỘ LỌC CHI NHÁNH & TÁCH BẠCH TIỀN MẶT/CHUYỂN KHOẢN
         function calculateFinancialReports() {
             let branchFilter = document.getElementById('rep-branch-filter').value;
             let targetDay = document.getElementById('rep-filter-day').value;
@@ -1160,12 +1196,10 @@
             let yearTotal = 0, yearCash = 0, yearTransfer = 0, yearCount = 0;
 
             ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                // Nếu chọn lọc cụ thể 1 chi nhánh, thì bỏ qua các chi nhánh khác
                 if(branchFilter !== 'all' && bId !== branchFilter) return;
 
                 let txs = globalChainState.branches[bId].transactions || [];
                 
-                // Doanh thu Ngày
                 let dayTxs = txs.filter(t => new Date(t.timestamp).toLocaleDateString('vi-VN') === dFormatted);
                 dayCount += dayTxs.length;
                 dayTxs.forEach(t => {
@@ -1174,7 +1208,6 @@
                     else dayTransfer += t.finalAmount;
                 });
 
-                // Doanh thu Tháng
                 let monthTxs = txs.filter(t => t.timestamp.substring(0, 7) === targetMonth);
                 monthCount += monthTxs.length;
                 monthTxs.forEach(t => {
@@ -1183,7 +1216,6 @@
                     else monthTransfer += t.finalAmount;
                 });
 
-                // Doanh thu Năm
                 let yearTxs = txs.filter(t => new Date(t.timestamp).getFullYear() === targetYear);
                 yearCount += yearTxs.length;
                 yearTxs.forEach(t => {
@@ -1193,84 +1225,149 @@
                 });
             });
 
-            // Gán dữ liệu NGÀY ra giao diện
             document.getElementById('rep-total-day').innerText = dayTotal.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-day-cash').innerText = dayCash.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-day-transfer').innerText = dayTransfer.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-count-day').innerText = `${dayCount} hóa đơn hoàn tất`;
             
-            // Gán dữ liệu THÁNG ra giao diện
             document.getElementById('rep-total-month').innerText = monthTotal.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-month-cash').innerText = monthCash.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-month-transfer').innerText = monthTransfer.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-count-month').innerText = `${monthCount} hóa đơn hoàn tất`;
 
-            // Gán dữ liệu NĂM ra giao diện
             document.getElementById('rep-total-year').innerText = yearTotal.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-year-cash').innerText = yearCash.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-year-transfer').innerText = yearTransfer.toLocaleString('vi-VN') + "đ";
             document.getElementById('rep-count-year').innerText = `${yearCount} hóa đơn hoàn tất`;
         }
 
+        // TÍNH NĂNG MỚI LỌC THEO PHƯƠNG THỨC THANH TOÁN
+        function setHistoryMethodFilter(type) {
+            globalChainState.historyMethodFilter = type;
+            ['ALL', 'CASH', 'TRANSFER'].forEach(t => {
+                const btn = document.getElementById(`hm-${t}`);
+                if(btn) {
+                    if (t === type) {
+                        btn.className = "px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200";
+                    }
+                }
+            });
+            renderGlobalHistoryUI();
+        }
+
         function renderGlobalHistoryUI() {
             const container = document.getElementById('master-history-timeline');
             container.innerHTML = "";
 
-            let filter = document.getElementById('history-branch-filter').value;
+            let bFilter = document.getElementById('history-branch-filter').value;
+            let mFilter = globalChainState.historyMethodFilter;
             let aggregatedTxs = [];
 
             ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                if(filter !== 'all' && filter !== bId) return;
-                aggregatedTxs = aggregatedTxs.concat(globalChainState.branches[bId].transactions || []);
+                if(bFilter !== 'all' && bFilter !== bId) return;
+                
+                let txs = globalChainState.branches[bId].transactions || [];
+                
+                // Áp dụng bộ lọc thanh toán
+                if (mFilter === 'CASH') {
+                    txs = txs.filter(t => t.paymentMethod === 'Tiền Mặt');
+                } else if (mFilter === 'TRANSFER') {
+                    txs = txs.filter(t => t.paymentMethod !== 'Tiền Mặt');
+                }
+                
+                aggregatedTxs = aggregatedTxs.concat(txs);
             });
 
             aggregatedTxs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             if(aggregatedTxs.length === 0) {
-                container.innerHTML = `<div class="p-6 text-center text-xs font-bold text-slate-400 bg-white border rounded-xl shadow-sm uppercase">Chưa có bản ghi dữ liệu tài chính phù hợp.</div>`;
+                container.innerHTML = `<div class="p-6 text-center text-xs font-bold text-slate-400 bg-white border rounded-xl shadow-sm uppercase">Chưa có bản ghi dữ liệu phù hợp với bộ lọc.</div>`;
                 return;
             }
 
             aggregatedTxs.forEach(tx => {
+                const isCash = tx.paymentMethod === 'Tiền Mặt';
                 const row = document.createElement('div');
-                row.className = "bg-white p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 shadow-sm hover:border-slate-300 transition-all";
+                
+                // Bổ sung sự kiện onClick để mở xem chi tiết đơn
+                row.className = "bg-white p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 shadow-sm hover:border-orange-300 hover:shadow-md cursor-pointer transition-all";
+                row.onclick = () => openTxDetailModal(tx.id, tx.branchId);
+                
                 row.innerHTML = `
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="branch-badge ${tx.branchId}-badge">${tx.branchId.toUpperCase()}</span>
-                            <span class="font-black text-xs text-slate-900">${tx.id}</span>
-                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border">Bàn ${String(tx.tableId).padStart(2, '0')}</span>
+                    <div class="flex items-start gap-3 w-full sm:w-auto">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isCash ? 'bg-green-50 text-green-500' : 'bg-blue-50 text-blue-500'}">
+                            <i class="fa-solid ${isCash ? 'fa-money-bill-wave' : 'fa-qrcode'} text-lg"></i>
                         </div>
-                        <p class="text-[11px] font-semibold text-slate-500 mt-1">
-                            Mua: <span class="text-slate-800 font-bold">${tx.items.map(i => `${i.name} (${i.quantity})`).join(', ')}</span>
-                        </p>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="branch-badge ${tx.branchId}-badge">${tx.branchId.toUpperCase()}</span>
+                                <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Bàn ${String(tx.tableId).padStart(2, '0')}</span>
+                            </div>
+                            <span class="font-black text-xs text-slate-800">${tx.id}</span>
+                            <p class="text-[10px] font-semibold text-slate-400 mt-0.5 truncate max-w-[220px]">
+                                ${tx.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+                            </p>
+                        </div>
                     </div>
-                    <div class="text-right shrink-0">
-                        <span class="text-sm font-black ${tx.paymentMethod === 'Tiền Mặt' ? 'text-green-600' : 'text-blue-600'}">${tx.finalAmount.toLocaleString()}đ</span>
-                        <p class="text-[10px] font-mono font-bold text-slate-400 mt-0.5">${new Date(tx.timestamp).toLocaleString('vi-VN')}</p>
+                    <div class="text-right shrink-0 w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end mt-2 sm:mt-0 border-t sm:border-0 pt-3 sm:pt-0">
+                        <span class="text-sm font-black ${isCash ? 'text-green-600' : 'text-blue-600'}">+${tx.finalAmount.toLocaleString()}đ</span>
+                        <p class="text-[9px] font-mono font-bold text-slate-400 mt-1">${new Date(tx.timestamp).toLocaleString('vi-VN')}</p>
                     </div>
                 `;
                 container.appendChild(row);
             });
         }
 
-        // TÁI CẤU TRÚC LẠI FILE EXCEL - GỘP CHUNG 3 CHI NHÁNH VÀ CHỈ HIỂN THỊ TỔNG DOANH THU
+        // TÍNH NĂNG MỚI: MỞ MODAL XEM CHI TIẾT ĐƠN HÀNG TRONG LỊCH SỬ
+        function openTxDetailModal(txId, bId) {
+            let tx = globalChainState.branches[bId].transactions.find(t => t.id === txId);
+            if(!tx) return;
+            
+            document.getElementById('dtl-id').innerText = tx.id;
+            document.getElementById('dtl-branch').innerText = globalChainState.branches[bId].name;
+            document.getElementById('dtl-table').innerText = `Bàn ${String(tx.tableId).padStart(2, '0')}`;
+            document.getElementById('dtl-time').innerText = new Date(tx.timestamp).toLocaleString('vi-VN');
+            
+            let isCash = tx.paymentMethod === 'Tiền Mặt';
+            let methodHtml = `<span class="px-2 py-1 rounded-md text-[10px] font-black uppercase ${isCash ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}"><i class="fa-solid ${isCash ? 'fa-money-bill-wave' : 'fa-qrcode'} mr-1"></i>${tx.paymentMethod}</span>`;
+            document.getElementById('dtl-method').innerHTML = methodHtml;
+            
+            let itemsHtml = tx.items.map(i => `
+                <div class="flex justify-between items-center py-2 border-b border-dashed border-slate-200 last:border-0">
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">${i.name}</p>
+                        <p class="text-[10px] text-slate-500">${i.price.toLocaleString()}đ x ${i.quantity}</p>
+                    </div>
+                    <span class="text-xs font-black text-slate-900">${(i.price * i.quantity).toLocaleString()}đ</span>
+                </div>
+            `).join('');
+            document.getElementById('dtl-items').innerHTML = itemsHtml;
+            
+            document.getElementById('dtl-subtotal').innerText = tx.originalAmount.toLocaleString() + 'đ';
+            document.getElementById('dtl-discount').innerText = (tx.discountValue > 0 ? `-${tx.discountValue}${tx.discountType}` : '0đ');
+            document.getElementById('dtl-total').innerText = tx.finalAmount.toLocaleString() + 'đ';
+
+            document.getElementById('modal-tx-detail').classList.remove('hidden');
+        }
+
+        function closeTxDetailModal() {
+            document.getElementById('modal-tx-detail').classList.add('hidden');
+        }
+
         function exportChainExcel() {
             try {
                 if(typeof XLSX === 'undefined') return showNotification("Thư viện Excel đang tải, vui lòng thử lại!", "error");
 
                 let workbook = XLSX.utils.book_new();
 
-                // Lấy thông số thời gian lọc từ giao diện
                 let targetDay = document.getElementById('rep-filter-day').value;
                 let targetMonth = document.getElementById('rep-filter-month').value;
                 let targetYear = parseInt(document.getElementById('rep-filter-year').value);
 
                 let dFormatted = targetDay ? new Date(targetDay).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN');
 
-                // ==========================================
-                // TAB 1: DOANH THU NGÀY TỔNG HỢP 3 CHI NHÁNH
-                // ==========================================
                 let dayTotal = 0, dayCash = 0, dayTransfer = 0, dayCount = 0;
                 
                 ['cn1', 'cn2', 'cn3'].forEach(b => {
@@ -1296,9 +1393,6 @@
                     ["TỔNG DOANH THU THỰC NHẬN (VNĐ)", dayTotal]
                 ];
 
-                // ==========================================
-                // TAB 2: DOANH THU THÁNG TỔNG HỢP 3 CHI NHÁNH
-                // ==========================================
                 let monthGroup = {};
                 
                 ['cn1', 'cn2', 'cn3'].forEach(b => {
@@ -1332,9 +1426,6 @@
                 });
                 rowsMonth.push(["", "", "", "", ""], ["TỔNG KẾT THÁNG:", sumM_count, sumM_cash, sumM_transfer, sumM_total]);
 
-                // ==========================================
-                // TAB 3: DOANH THU NĂM TỔNG HỢP 3 CHI NHÁNH
-                // ==========================================
                 let yearGroup = {};
                 
                 ['cn1', 'cn2', 'cn3'].forEach(b => {
@@ -1342,7 +1433,7 @@
                     let ytxs = txs.filter(t => new Date(t.timestamp).getFullYear() === targetYear);
                     
                     ytxs.forEach(t => {
-                        let mKey = t.timestamp.substring(0, 7); // yyyy-mm
+                        let mKey = t.timestamp.substring(0, 7); 
                         if(!yearGroup[mKey]) yearGroup[mKey] = { count: 0, cash: 0, transfer: 0, total: 0 };
                         
                         yearGroup[mKey].count++;
@@ -1368,9 +1459,6 @@
                 });
                 rowsYear.push(["", "", "", "", ""], ["TỔNG KẾT NĂM:", sumY_count, sumY_cash, sumY_transfer, sumY_total]);
 
-                // ==========================================
-                // TAB 4: THỐNG KÊ TỒN KHO 3 CHI NHÁNH
-                // ==========================================
                 let rowsInv = [
                     ["BÁO CÁO KIỂM KÊ KHO HÀNG TRÊN TOÀN HỆ THỐNG", ""],
                     ["Thời gian kiểm kê:", new Date().toLocaleString('vi-VN')],
@@ -1387,13 +1475,12 @@
                     rowsInv.push([k, unit, stock1, stock2, stock3, stock1 + stock2 + stock3]);
                 });
 
-                // ĐÓNG GÓI VÀO CƠ CHẾ EXCEL WORKBOOK
                 XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh Thu Ngày Tổng");
                 XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh Thu Tháng Tổng");
                 XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh Thu Năm Tổng");
                 XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rowsInv), "Báo Cáo Kho Chuỗi");
 
-                let excelFilename = `Bao_Cao_Tai_Chinh_PhatLa_Premium_Coffee_${dFormatted.replace(/\//g, '-')}.xlsx`;
+                let excelFilename = `Bao_Cao_Tai_Chinh_PhatLa_Premium_${dFormatted.replace(/\//g, '-')}.xlsx`;
                 XLSX.writeFile(workbook, excelFilename);
                 showNotification("Đã xuất File Excel Gộp thành công!", "success");
 
