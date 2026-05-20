@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - OMNICHAIN V54</title>
+    <title>PHÁT LA PREMIUM - POS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -27,7 +27,7 @@
             db = getDatabase(app);
             window.FIREBASE_DB = db; 
         } catch (e) {
-            console.warn("Chưa cấu hình Firebase. Chạy Offline Demo.");
+            console.warn("Chưa cấu hình Firebase hoặc lỗi mạng. Chạy Offline Demo Mode.");
         }
 
         window.firebaseRefs = { ref, onValue, set, update, push };
@@ -188,7 +188,7 @@
                 <h1 class="text-[10px] lg:text-xs font-black uppercase tracking-tight text-gray-900">Phát La Premium</h1>
                 <div class="flex items-center gap-1 mt-0.5">
                     <span id="sync-dot" class="w-2 h-2 rounded-full bg-red-500"></span>
-                    <p id="system-status" class="text-[8px] lg:text-[9px] font-bold text-slate-500 uppercase">Đang chờ Firebase...</p>
+                    <p id="system-status" class="text-[8px] lg:text-[9px] font-bold text-slate-500 uppercase">Đang kết nối...</p>
                 </div>
             </div>
         </div>
@@ -258,11 +258,11 @@
             <div class="max-w-5xl mx-auto space-y-6 lg:space-y-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-xl lg:text-2xl font-black tracking-tighter">BÁO CÁO DOANH THU</h2>
+                        <h2 class="text-xl lg:text-2xl font-black tracking-tighter">BÁO CÁO DOANH THU TỔNG HỢP</h2>
                         <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1" id="report-date"></p>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto">
-                        <button onclick="exportToExcel()" class="flex-1 sm:flex-none bg-green-50 text-green-600 hover:bg-green-100 px-4 py-3 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black uppercase transition-colors shadow-sm"><i class="fa-solid fa-file-excel mr-1"></i> Xuất Excel</button>
+                        <button onclick="exportToExcel()" class="flex-1 sm:flex-none bg-green-50 text-green-600 hover:bg-green-100 px-4 py-3 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black uppercase transition-colors shadow-sm"><i class="fa-solid fa-file-excel mr-1"></i> Xuất Excel Báo Cáo</button>
                         <button onclick="syncToGoogleSheets()" class="flex-1 sm:flex-none bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-3 rounded-xl lg:rounded-2xl text-[9px] lg:text-[10px] font-black uppercase transition-colors shadow-sm"><i class="fa-brands fa-google-drive mr-1"></i> Lưu Sheets</button>
                     </div>
                 </div>
@@ -306,7 +306,7 @@
             <div class="max-w-7xl mx-auto space-y-6">
                 <div>
                     <h2 class="text-xl lg:text-2xl font-black tracking-tighter">QUẢN LÝ KHO NGUYÊN LIỆU</h2>
-                    <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Tự động khấu trừ khi bán hàng. Quản lý Nhập/Xuất & Chỉnh sửa Đơn vị</p>
+                    <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Tự động khấu trừ khi thanh toán. Cập nhật số lượng Xuất / Nhập linh hoạt.</p>
                 </div>
                 <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
                     <div id="grid-inventory" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5"></div>
@@ -317,8 +317,8 @@
         <section id="view-history" class="absolute inset-0 p-4 sm:p-6 lg:p-8 hidden overflow-y-auto thin-scroll">
             <div class="max-w-5xl mx-auto space-y-6">
                 <div>
-                    <h2 class="text-xl lg:text-2xl font-black tracking-tighter">LỊCH SỬ ĐƠN HÀNG</h2>
-                    <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Danh sách tất cả các biên lai giao dịch đã hoàn tất</p>
+                    <h2 class="text-xl lg:text-2xl font-black tracking-tighter">LỊCH SỬ GIAO DỊCH</h2>
+                    <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Hóa đơn hệ thống đã xử lý thành công</p>
                 </div>
                 <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
                     <div class="flex gap-2 mb-4 lg:mb-6 overflow-x-auto no-scrollbar pb-2">
@@ -450,7 +450,7 @@
             
             onValue(ref(window.FIREBASE_DB, 'pos/tables'), (snapshot) => {
                 document.getElementById('sync-dot').className = "w-2 h-2 rounded-full bg-green-500 animate-pulse";
-                document.getElementById('system-status').innerText = "Đã kết nối máy chủ";
+                document.getElementById('system-status').innerText = "Hệ thống trực tuyến";
                 const data = snapshot.val();
                 appState.tables = sanitizeTables(data);
                 if(appState.activeTab === 'tables') renderTableGrid();
@@ -629,7 +629,7 @@
         }
 
         function handleAddToCart(productId) {
-            if (!appState.currentTableId) return showNotification("Vui lòng vào Sơ đồ và chọn bàn trước!", "error");
+            if (!appState.currentTableId) return showNotification("Vui lòng quay lại Sơ đồ chọn bàn trước!", "error");
             const product = FULL_MENU.find(p => p.id === productId);
             const table = appState.tables.find(t => t.id === appState.currentTableId);
             if(!table.cart) table.cart = [];
@@ -663,7 +663,7 @@
             const container = document.getElementById('bill-items');
             const totalEl = document.getElementById('bill-total-price');
             if (!appState.currentTableId || !appState.tables.find(t => t.id === appState.currentTableId).cart?.length) { 
-                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-30 text-slate-400"><i class="fa-solid fa-basket-shopping text-3xl lg:text-5xl mb-2 lg:mb-4"></i><p class="text-[9px] lg:text-[10px] font-black uppercase">Chưa gọi món ăn</p></div>`; 
+                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-30 text-slate-400"><i class="fa-solid fa-basket-shopping text-3xl lg:text-5xl mb-2 lg:mb-4"></i><p class="text-[9px] lg:text-[10px] font-black uppercase">Giỏ hàng trống</p></div>`; 
                 totalEl.innerText = "0đ"; 
                 return; 
             }
@@ -677,7 +677,7 @@
                     </div>
                     <div class="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
                         <i class="fa-regular fa-comment-dots text-slate-400 text-[10px]"></i>
-                        <input type="text" placeholder="Ghi chú món (ít đá, ngọt vừa...)" value="${x.note || ''}" onchange="updateCartItemNote('${x.tempId}', this.value)" class="bg-transparent text-[9px] font-bold text-slate-600 placeholder-slate-300 w-full focus:outline-none">
+                        <input type="text" placeholder="Ghi chú món ăn..." value="${x.note || ''}" onchange="updateCartItemNote('${x.tempId}', this.value)" class="bg-transparent text-[9px] font-bold text-slate-600 placeholder-slate-300 w-full focus:outline-none">
                     </div>
                 </div>
             `).join('');
@@ -687,7 +687,7 @@
         function triggerPaymentFlow() {
             if (!appState.currentTableId) return;
             const table = appState.tables.find(t => t.id === appState.currentTableId);
-            if (!table.cart || table.cart.length === 0) return showNotification("Bàn chưa có món ăn!", "warning");
+            if (!table.cart || table.cart.length === 0) return showNotification("Bàn trống chưa chọn món!", "warning");
             
             document.getElementById('checkout-table-label').innerText = table.id === 'MV' ? 'MANG VỀ' : `BÀN ${table.id}`;
             document.getElementById('discount-value').value = 0;
@@ -756,7 +756,7 @@
                 date: getSystemDateString(now),
                 time: now.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'}),
                 material: material,
-                type: type, // 'add' hoặc 'sub'
+                type: type, 
                 amount: amount
             };
             if(window.FIREBASE_DB) {
@@ -811,7 +811,7 @@
             table.status = 'available'; table.cart = []; table.startTime = null;
             syncStateToCloud();
             closeModal(); switchTab('tables');
-            showNotification(`Thanh toán hoàn tất! Khấu trừ kho thành công.`);
+            showNotification(`Thanh toán thành công. Kho hàng đã được cập nhật.`);
         }
 
         function processPrint(printType) {
@@ -859,7 +859,7 @@
                 if (printType === 'hoa-don' && appState.lastDiscountValue > 0) {
                     printableFinal = appState.lastFinalAmount;
                     const dsText = appState.lastDiscountType === '%' ? `${appState.lastDiscountValue}%` : `${appState.lastDiscountValue.toLocaleString()}đ`;
-                    discountMarkup = `<div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;"><span>Giảm giá:</span> <span>-${dsText}</span></div>`;
+                    discountMarkup = `<div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;"><span>Giảm giá:</span> <span>-{dsText}</span></div>`;
                 }
 
                 totalSect.innerHTML = `
@@ -926,7 +926,7 @@
                         <div class="flex justify-between items-start mb-2">
                             <span class="text-[10px] font-black uppercase text-slate-800 tracking-tight leading-tight w-2/3">${key}</span>
                             <div class="w-1/3 flex justify-end">
-                                <input type="text" value="${item.unit}" onchange="updateInventoryUnit('${key}', this.value)" title="Sửa đơn vị tính" class="w-10 text-center text-[9px] font-bold border border-slate-300 rounded bg-white text-slate-500 px-1 py-0.5 focus:outline-none focus:border-orange-500">
+                                <input type="text" value="${item.unit}" onchange="updateInventoryUnit('${key}', this.value)" title="Đổi đơn vị tính" class="w-10 text-center text-[9px] font-bold border border-slate-300 rounded bg-white text-slate-500 px-1 py-0.5 focus:outline-none focus:border-orange-500">
                             </div>
                         </div>
                         
@@ -939,7 +939,7 @@
                         
                         <div class="mt-3 pt-3 border-t border-slate-200 border-dashed">
                             <div class="flex items-center gap-2 mb-2">
-                                <input type="number" id="adj-${key}" placeholder="Nhập số lượng..." class="w-full bg-white border border-slate-300 rounded-lg text-[10px] px-2 py-1.5 font-bold focus:outline-none focus:border-orange-500 text-center">
+                                <input type="number" id="adj-${key}" placeholder="Số lượng..." class="w-full bg-white border border-slate-300 rounded-lg text-[10px] px-2 py-1.5 font-bold focus:outline-none focus:border-orange-500 text-center">
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="adjustInventoryStock('${key}', 'add')" class="flex-1 bg-green-50 text-green-600 hover:bg-green-100 border border-green-200 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors">+ NHẬP</button>
@@ -955,7 +955,7 @@
             if(appState.inventory[key]) {
                 appState.inventory[key].unit = newUnit;
                 syncInventoryToCloud();
-                showNotification(`Đã đổi đơn vị của ${key} thành ${newUnit}`, "success");
+                showNotification(`Đã cập nhật đơn vị tính cho ${key}`, "success");
             }
         };
 
@@ -964,7 +964,7 @@
             if(!inputEl) return;
             const val = parseFloat(inputEl.value);
             
-            if(isNaN(val) || val <= 0) return showNotification("Vui lòng nhập số lượng hợp lệ (> 0)!", "warning");
+            if(isNaN(val) || val <= 0) return showNotification("Vui lòng điền số lượng lớn hơn 0!", "warning");
             if(!appState.inventory[key]) return;
 
             const unitName = appState.inventory[key].unit;
@@ -972,11 +972,11 @@
             if(type === 'add') {
                 appState.inventory[key].stock += val;
                 logInventoryAction(key, 'add', val);
-                showNotification(`Đã NHẬP thêm ${val} ${unitName} ${key} vào kho`, "success");
+                showNotification(`Nhập thêm ${val} ${unitName} ${key} vào kho thành công.`);
             } else {
                 appState.inventory[key].stock = Math.max(0, appState.inventory[key].stock - val);
                 logInventoryAction(key, 'sub', val);
-                showNotification(`Đã XUẤT ${val} ${unitName} ${key} khỏi kho`, "success");
+                showNotification(`Xuất kho ${val} ${unitName} ${key} thành công.`);
             }
             
             inputEl.value = "";
@@ -1008,7 +1008,7 @@
             }
 
             if (!dataToShow || dataToShow.length === 0) {
-                container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[10px] tracking-wider">Chưa phát sinh giao dịch nào</div>`;
+                container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[10px] tracking-wider">Hệ thống chưa ghi nhận đơn hàng</div>`;
                 return;
             }
 
@@ -1027,15 +1027,15 @@
         }
 
         function exportToExcel() {
-            if (appState.transactions.length === 0) return showNotification("Chưa có dữ liệu giao dịch!", "warning");
+            if (appState.transactions.length === 0) return showNotification("Hệ thống chưa có dữ liệu để kết xuất báo cáo!", "warning");
 
             try {
-                if(typeof XLSX === 'undefined') return showNotification("Thư viện đang tải, thử lại sau ít giây!", "error");
+                if(typeof XLSX === 'undefined') return showNotification("Thư viện đang tải, vui lòng thử lại sau!", "error");
 
                 const now = new Date();
                 const todayStr = getSystemDateString(now);
 
-                // 1. CHUẨN BỊ TAB NGÀY: Chỉ ghi tổng số đơn và tổng doanh thu ngày đang lọc trên UI
+                // --- TAB 1: NGÀY (CHỈ GHI TỔNG SỐ ĐƠN & TỔNG DOANH THU - TUYỆT ĐỐI KHÔNG GHI TỪNG ĐƠN) ---
                 const rawDayInput = document.getElementById('filter-day').value;
                 let formattedDayStr = "";
                 if (rawDayInput) {
@@ -1047,16 +1047,16 @@
                 const countDay = dayData.length;
 
                 let rowsDay = [
-                    ["BÁO CÁO DOANH THU TỔNG HỢP NGÀY:", formattedDayStr],
+                    ["BÁO CÁO DOANH THU TỔNG HỢP THEO NGÀY", ""],
+                    ["Ngày báo cáo:", formattedDayStr],
+                    ["Xuất bản lúc:", now.toLocaleString('vi-VN')],
                     [""],
-                    ["Chỉ tiêu thống kê", "Giá trị tương ứng"],
-                    ["Tổng số lượng đơn hàng bán ra", countDay + " đơn hàng"],
-                    ["Tổng doanh thu thu về thực tế", sumDay],
-                    [""],
-                    ["Ghi chú:", "Dữ liệu được trích xuất tự động từ hệ thống Phát La Omnichain."]
+                    ["Chỉ tiêu kinh doanh", "Số liệu tổng kết"],
+                    ["Tổng số lượng đơn hàng hoàn tất trong ngày", countDay + " đơn"],
+                    ["Tổng doanh thu thu về thực tế (VNĐ)", sumDay]
                 ];
 
-                // 2. CHUẨN BỊ TAB THÁNG: Ghi tổng doanh thu & đơn hàng của TỪNG NGÀY trong tháng
+                // --- TAB 2: THÁNG (GHI DOANH THU TỔNG HỢP CỦA TỪNG NGÀY TRONG THÁNG) ---
                 const rawMonthInput = document.getElementById('filter-month').value;
                 let formattedMonthStr = "";
                 if (rawMonthInput) {
@@ -1065,7 +1065,6 @@
                 }
                 const monthData = appState.transactions.filter(t => t.month === formattedMonthStr);
                 
-                // Gom nhóm theo từng ngày duy nhất trong tháng đó
                 let groupMonthDays = {};
                 monthData.forEach(t => {
                     if(!groupMonthDays[t.date]) {
@@ -1076,12 +1075,11 @@
                 });
 
                 let rowsMonth = [
-                    ["BÁO CÁO CHI TIẾT DOANH THU CÁC NGÀY TRONG THÁNG:", formattedMonthStr],
+                    ["BÁO CÁO CHI TIẾT DOANH THU CÁC NGÀY TRONG THÁNG", formattedMonthStr],
                     [""],
-                    ["Ngày", "Tổng số đơn bán được", "Doanh thu thực tế (VNĐ)"]
+                    ["Ngày", "Tổng số đơn hàng", "Doanh thu thực tế (VNĐ)"]
                 ];
 
-                // Sắp xếp tăng dần theo số ngày để file xuất ra có thứ tự đẹp mắt
                 let sortedDays = Object.keys(groupMonthDays).sort((a,b) => {
                     return parseInt(a.split('/')[0]) - parseInt(b.split('/')[0]);
                 });
@@ -1089,39 +1087,37 @@
                 sortedDays.forEach(dayKey => {
                     rowsMonth.push([dayKey, groupMonthDays[dayKey].totalOrders, groupMonthDays[dayKey].revenue]);
                 });
+                
                 const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
-                rowsMonth.push(["", "TỔNG CỘNG DOANH THU THÁNG:", sumMonth]);
+                rowsMonth.push([""], ["TỔNG CỘNG DOANH THU THÁNG:", "", sumMonth]);
 
-                // 3. CHUẨN BỊ TAB NĂM: Ghi tổng doanh thu của 12 THÁNG trong năm đang chọn
+                // --- TAB 3: NĂM (GHI TỔNG DOANH THU CỦA 12 THÁNG) ---
                 const selectedYear = parseInt(document.getElementById('filter-year').value);
                 
                 let rowsYear = [
-                    ["BÁO CÁO DOANH THU TOÀN DIỆN NĂM:", selectedYear],
+                    ["BÁO CÁO PHÂN TÍCH DOANH THU THEO 12 THÁNG TRONG NĂM", selectedYear],
                     [""],
-                    ["Tháng", "Số lượng đơn toàn tháng", "Tổng doanh thu tháng (VNĐ)"]
+                    ["Giai đoạn thời gian", "Tổng số lượng đơn hàng", "Tổng doanh thu tích lũy (VNĐ)"]
                 ];
 
                 let totalYearSum = 0;
-                let totalYearOrders = 0;
-                
-                // Lặp tuần tự từ tháng 1 đến tháng 12
                 for (let m = 1; m <= 12; m++) {
                     const currentMonthQuery = `${m}/${selectedYear}`;
                     const currentMonthData = appState.transactions.filter(t => t.month === currentMonthQuery);
                     const currentMonthSum = currentMonthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
                     const currentMonthCount = currentMonthData.length;
 
-                    rowsYear.push([`Tháng ${m}`, currentMonthCount, currentMonthSum]);
+                    rowsYear.push([`Tháng ${m}/${selectedYear}`, currentMonthCount, currentMonthSum]);
                     totalYearSum += currentMonthSum;
-                    totalYearOrders += currentMonthCount;
                 }
-                rowsYear.push(["", "TỔNG TOÀN BỘ NĂM:", totalYearSum]);
+                rowsYear.push([""], ["TỔNG CỘNG DOANH THU TOÀN NĂM:", "", totalYearSum]);
 
-                // 4. CHUẨN BỊ TAB KHO: Thêm cột Tổng Nhập và Tổng Xuất của ngày được chọn
+                // --- TAB 4: KHO (THÊM CỘT NHẬP VÀ XUẤT MỖI NGÀY CỦA TỪNG NGUYÊN LIỆU) ---
                 let rowsInv = [
-                    ["BÁO CÁO BIẾN ĐỘNG KHO HÀNG TRONG NGÀY:", formattedDayStr],
+                    ["BÁO CÁO BIẾN ĐỘNG NHẬP XUẤT KHO HÀNG NGÀY", ""],
+                    ["Theo mốc thời gian:", formattedDayStr],
                     [""],
-                    ["Tên nguyên liệu", "Số lượng tồn hiện tại", "Đơn vị tính", "Tổng số lượng NHẬP", "Tổng số lượng XUẤT"]
+                    ["Tên mặt hàng nguyên liệu", "Tồn kho thực tế", "Đơn vị tính", "Tổng khối lượng NHẬP", "Tổng khối lượng XUẤT"]
                 ];
 
                 Object.keys(appState.inventory).forEach(key => {
@@ -1129,7 +1125,6 @@
                     let dailyImport = 0;
                     let dailyExport = 0;
 
-                    // Duyệt logs kho để cộng dồn các hành động xảy ra trong ngày đang xem
                     if(appState.inventoryLogs && appState.inventoryLogs.length > 0) {
                         appState.inventoryLogs.forEach(log => {
                             if(log.date === formattedDayStr && log.material === key) {
@@ -1142,19 +1137,18 @@
                     rowsInv.push([key, item.stock, item.unit, dailyImport, dailyExport]);
                 });
 
-                // TIẾN HÀNH KHỞI TẠO FILE VÀ ĐÓNG GÓI CÁC TỜ BẢNG TÍNH (SHEETS)
+                // ĐÓNG GÓI VÀO CƠ CHẾ EXCEL WORKBOOK MULTI-TAB
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsYear), "Doanh thu Năm");
-                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsInv), "Báo cáo tồn kho");
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsInv), "Biến động Kho");
 
-                // Tiến hành tải file trực tiếp xuống thiết bị máy tính / điện thoại
-                XLSX.writeFile(wb, `Bao_Cao_Chuyen_Sau_PhatLa_${todayStr.replace(/\//g, '-')}.xlsx`);
-                showNotification("Đã kết xuất thành công cấu trúc Excel 4 tab nghiệp vụ tổng hợp!");
+                XLSX.writeFile(wb, `Bao_Cao_Tong_Hop_Kinh_Doanh_${todayStr.replace(/\//g, '-')}.xlsx`);
+                showNotification("Đã xuất Excel tổng hợp thành công! Không bao gồm chi tiết từng đơn.");
             } catch (error) {
                 console.error(error);
-                showNotification("Hệ thống gặp lỗi khi đóng gói dữ liệu Excel!", "error");
+                showNotification("Lỗi hệ thống khi đóng gói dữ liệu Excel!", "error");
             }
         }
 
@@ -1163,15 +1157,15 @@
             const todayStr = getSystemDateString(now);
             const dataToExport = appState.transactions.filter(t => t.date === todayStr);
             
-            if(dataToExport.length === 0) return showNotification("Không có dữ liệu hôm nay để đồng bộ!", "warning");
+            if(dataToExport.length === 0) return showNotification("Không có dữ liệu hôm nay để gửi đi!", "warning");
             
-            showNotification("Đang kết nối API Google Sheets...", "warning");
+            showNotification("Đang truyền tải lên Google Drive...", "warning");
             const sumTotal = dataToExport.reduce((s, t) => s + parseInt(t.total || 0), 0);
             
             const payload = {
                 date: todayStr,
                 time: now.toLocaleTimeString('vi-VN'),
-                table: `TỔNG KẾT OMNICHAIN (${dataToExport.length} đơn)`,
+                table: `TỔNG KẾT NGÀY (${dataToExport.length} đơn)`,
                 total: sumTotal,
                 method: "Hệ thống tự đồng bộ",
                 month: `${now.getMonth()+1}/${now.getFullYear()}`,
@@ -1180,9 +1174,9 @@
 
             try {
                 await fetch(SYSTEM_CONFIG.scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                showNotification("Đã đẩy dữ liệu tổng kết lên Drive!", "success");
+                showNotification("Đã đồng bộ tổng kết doanh thu lên Google Sheets thành công!");
             } catch (err) {
-                showNotification("Lỗi đồng bộ API Sheets!", "error");
+                showNotification("Lỗi kết nối API Google Apps Script!", "error");
             }
         }
 
