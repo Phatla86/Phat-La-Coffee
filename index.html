@@ -77,7 +77,7 @@
 
     <script>
         const SYSTEM_CONFIG = {
-            shopName: "PHÁT LA PREMIUM",
+            shopName: "PHÁT LA PREMIUM COFFEE",
             address: "Mặt Tiền Đường Lớn, TP.HCM",
             bank: "VIETCOMBANK",
             accountNo: "1046778674",
@@ -195,7 +195,7 @@
         <div class="flex items-center gap-3 lg:gap-5">
             <div class="text-right hidden sm:block">
                 <p id="live-clock" class="text-xs font-black font-mono">00:00:00</p>
-                <p class="text-[8px] font-bold text-orange-500 uppercase">V54 OMNICHAIN</p>
+                <p class="text-[8px] font-bold text-orange-500 uppercase">POS COFFEE</p>
             </div>
         </div>
     </header>
@@ -275,6 +275,10 @@
                                 <input type="date" id="filter-day" onchange="renderReportUI()" class="bg-white/10 text-white text-[11px] font-bold px-2 py-1 rounded border border-white/20 focus:outline-none">
                             </div>
                             <h2 id="sum-day-text" class="text-3xl lg:text-4xl font-black text-orange-500">0đ</h2>
+                            <div class="mt-3 pt-2 border-t border-white/10 text-[10px] text-gray-300 font-semibold space-y-1">
+                                <p class="flex justify-between"><span><i class="fa-solid fa-wallet text-green-400 mr-1.5"></i>Tiền mặt:</span> <span id="sum-day-cash" class="font-bold text-white">0đ</span></p>
+                                <p class="flex justify-between"><span><i class="fa-solid fa-building-columns text-blue-400 mr-1.5"></i>Chuyển khoản:</span> <span id="sum-day-transfer" class="font-bold text-white">0đ</span></p>
+                            </div>
                         </div>
                         <p id="count-day-text" class="text-[10px] mt-4 text-gray-400 font-bold">0 đơn hàng</p>
                     </div>
@@ -285,6 +289,10 @@
                                 <input type="month" id="filter-month" onchange="renderReportUI()" class="bg-slate-100 text-gray-800 text-[11px] font-bold px-2 py-1 rounded border border-slate-300 focus:outline-none">
                             </div>
                             <h2 id="sum-month-text" class="text-2xl lg:text-3xl font-black text-gray-900">0đ</h2>
+                            <div class="mt-3 pt-2 border-t border-slate-100 text-[10px] text-slate-500 font-semibold space-y-1">
+                                <p class="flex justify-between"><span><i class="fa-solid fa-wallet text-green-600 mr-1.5"></i>Tiền mặt:</span> <span id="sum-month-cash" class="font-bold text-slate-900">0đ</span></p>
+                                <p class="flex justify-between"><span><i class="fa-solid fa-building-columns text-blue-600 mr-1.5"></i>Chuyển khoản:</span> <span id="sum-month-transfer" class="font-bold text-slate-900">0đ</span></p>
+                            </div>
                         </div>
                         <p id="count-month-text" class="text-[10px] mt-4 text-slate-400 font-bold">0 đơn hàng</p>
                     </div>
@@ -295,6 +303,10 @@
                                 <select id="filter-year" onchange="renderReportUI()" class="bg-white text-gray-800 text-[11px] font-bold px-2 py-1 rounded border border-blue-200 focus:outline-none"></select>
                             </div>
                             <h2 id="sum-year-text" class="text-2xl lg:text-3xl font-black text-blue-700">0đ</h2>
+                            <div class="mt-3 pt-2 border-t border-blue-100 text-[10px] text-blue-600 font-semibold space-y-1">
+                                <p class="flex justify-between"><span><i class="fa-solid fa-wallet text-green-600 mr-1.5"></i>Tiền mặt:</span> <span id="sum-year-cash" class="font-bold text-blue-900">0đ</span></p>
+                                <p class="flex justify-between"><span><i class="fa-solid fa-building-columns text-blue-700 mr-1.5"></i>Chuyển khoản:</span> <span id="sum-year-transfer" class="font-bold text-blue-900">0đ</span></p>
+                            </div>
                         </div>
                         <p id="count-year-text" class="text-[10px] mt-4 text-blue-500 font-bold">0 đơn hàng</p>
                     </div>
@@ -894,7 +906,12 @@
             }
             const dayData = appState.transactions.filter(t => t.date === formattedDayStr);
             const sumDay = dayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumDayCash = dayData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumDayTransfer = dayData.filter(t => t.method !== 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+
             document.getElementById('sum-day-text').innerText = `${sumDay.toLocaleString()}đ`;
+            document.getElementById('sum-day-cash').innerText = `${sumDayCash.toLocaleString()}đ`;
+            document.getElementById('sum-day-transfer').innerText = `${sumDayTransfer.toLocaleString()}đ`;
             document.getElementById('count-day-text').innerText = `${dayData.length} đơn hàng`;
 
             const rawMonthInput = document.getElementById('filter-month').value;
@@ -905,13 +922,23 @@
             }
             const monthData = appState.transactions.filter(t => t.month === formattedMonthStr);
             const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumMonthCash = monthData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumMonthTransfer = monthData.filter(t => t.method !== 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+
             document.getElementById('sum-month-text').innerText = `${sumMonth.toLocaleString()}đ`;
+            document.getElementById('sum-month-cash').innerText = `${sumMonthCash.toLocaleString()}đ`;
+            document.getElementById('sum-month-transfer').innerText = `${sumMonthTransfer.toLocaleString()}đ`;
             document.getElementById('count-month-text').innerText = `${monthData.length} đơn hàng`;
 
             const selectedYear = parseInt(document.getElementById('filter-year').value);
             const yearData = appState.transactions.filter(t => t.year === selectedYear);
             const sumYear = yearData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumYearCash = yearData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+            const sumYearTransfer = yearData.filter(t => t.method !== 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+
             document.getElementById('sum-year-text').innerText = `${sumYear.toLocaleString()}đ`;
+            document.getElementById('sum-year-cash').innerText = `${sumYearCash.toLocaleString()}đ`;
+            document.getElementById('sum-year-transfer').innerText = `${sumYearTransfer.toLocaleString()}đ`;
             document.getElementById('count-year-text').innerText = `${yearData.length} đơn hàng`;
         }
 
@@ -1050,6 +1077,7 @@
                 const now = new Date();
                 const todayStr = getSystemDateString(now);
 
+                // --- DOANH THU NGÀY ---
                 const rawDayInput = document.getElementById('filter-day').value;
                 let formattedDayStr = "";
                 if (rawDayInput) {
@@ -1058,6 +1086,8 @@
                 }
                 const dayData = appState.transactions.filter(t => t.date === formattedDayStr);
                 const sumDay = dayData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+                const sumDayCash = dayData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+                const sumDayTransfer = dayData.filter(t => t.method !== 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
                 const countDay = dayData.length;
 
                 let rowsDay = [
@@ -1067,9 +1097,12 @@
                     [""],
                     ["Chỉ tiêu kinh doanh", "Số liệu tổng kết"],
                     ["Tổng số lượng đơn hàng hoàn tất trong ngày", countDay + " đơn"],
+                    ["Doanh thu Tiền mặt thực tế (VNĐ)", sumDayCash],
+                    ["Doanh thu Chuyển khoản thực tế (VNĐ)", sumDayTransfer],
                     ["Tổng doanh thu thu về thực tế (VNĐ)", sumDay]
                 ];
 
+                // --- DOANH THU THÁNG ---
                 const rawMonthInput = document.getElementById('filter-month').value;
                 let formattedMonthStr = "";
                 if (rawMonthInput) {
@@ -1081,16 +1114,22 @@
                 let groupMonthDays = {};
                 monthData.forEach(t => {
                     if(!groupMonthDays[t.date]) {
-                        groupMonthDays[t.date] = { totalOrders: 0, revenue: 0 };
+                        groupMonthDays[t.date] = { totalOrders: 0, revenue: 0, cash: 0, transfer: 0 };
                     }
                     groupMonthDays[t.date].totalOrders++;
-                    groupMonthDays[t.date].revenue += parseInt(t.total || 0);
+                    const val = parseInt(t.total || 0);
+                    groupMonthDays[t.date].revenue += val;
+                    if(t.method === 'Tiền mặt') {
+                        groupMonthDays[t.date].cash += val;
+                    } else {
+                        groupMonthDays[t.date].transfer += val;
+                    }
                 });
 
                 let rowsMonth = [
                     ["BÁO CÁO CHI TIẾT DOANH THU CÁC NGÀY TRONG THÁNG", formattedMonthStr],
                     [""],
-                    ["Ngày", "Tổng số đơn hàng", "Doanh thu thực tế (VNĐ)"]
+                    ["Ngày", "Tổng số đơn hàng", "Doanh thu Tiền mặt (VNĐ)", "Doanh thu Chuyển khoản (VNĐ)", "Tổng Doanh thu thực tế (VNĐ)"]
                 ];
 
                 let sortedDays = Object.keys(groupMonthDays).sort((a,b) => {
@@ -1098,32 +1137,48 @@
                 });
 
                 sortedDays.forEach(dayKey => {
-                    rowsMonth.push([dayKey, groupMonthDays[dayKey].totalOrders, groupMonthDays[dayKey].revenue]);
+                    rowsMonth.push([
+                        dayKey, 
+                        groupMonthDays[dayKey].totalOrders, 
+                        groupMonthDays[dayKey].cash, 
+                        groupMonthDays[dayKey].transfer, 
+                        groupMonthDays[dayKey].revenue
+                    ]);
                 });
                 
                 const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
-                rowsMonth.push([""], ["TỔNG CỘNG DOANH THU THÁNG:", "", sumMonth]);
+                const sumMonthCash = monthData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+                const sumMonthTransfer = monthData.filter(t => t.method !== 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+                rowsMonth.push([""], ["TỔNG CỘNG DOANH THU THÁNG:", "", sumMonthCash, sumMonthTransfer, sumMonth]);
 
+                // --- DOANH THU NĂM ---
                 const selectedYear = parseInt(document.getElementById('filter-year').value);
                 
                 let rowsYear = [
                     ["BÁO CÁO PHÂN TÍCH DOANH THU THEO 12 THÁNG TRONG NĂM", selectedYear],
                     [""],
-                    ["Giai đoạn thời gian", "Tổng số lượng đơn hàng", "Tổng doanh thu tích lũy (VNĐ)"]
+                    ["Giai đoạn thời gian", "Tổng số lượng đơn hàng", "Doanh thu Tiền mặt (VNĐ)", "Doanh thu Chuyển khoản (VNĐ)", "Tổng doanh thu tích lũy (VNĐ)"]
                 ];
 
                 let totalYearSum = 0;
+                let totalYearCash = 0;
+                let totalYearTransfer = 0;
                 for (let m = 1; m <= 12; m++) {
                     const currentMonthQuery = `${m}/${selectedYear}`;
                     const currentMonthData = appState.transactions.filter(t => t.month === currentMonthQuery);
                     const currentMonthSum = currentMonthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
+                    const currentMonthCash = currentMonthData.filter(t => t.method === 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
+                    const currentMonthTransfer = currentMonthData.filter(t => t.method !== 'Tiền mặt').reduce((s, t) => s + parseInt(t.total || 0), 0);
                     const currentMonthCount = currentMonthData.length;
 
-                    rowsYear.push([`Tháng ${m}/${selectedYear}`, currentMonthCount, currentMonthSum]);
+                    rowsYear.push([`Tháng ${m}/${selectedYear}`, currentMonthCount, currentMonthCash, currentMonthTransfer, currentMonthSum]);
                     totalYearSum += currentMonthSum;
+                    totalYearCash += currentMonthCash;
+                    totalYearTransfer += currentMonthTransfer;
                 }
-                rowsYear.push([""], ["TỔNG CỘNG DOANH THU TOÀN NĂM:", "", totalYearSum]);
+                rowsYear.push([""], ["TỔNG CỘNG DOANH THU TOÀN NĂM:", "", totalYearCash, totalYearTransfer, totalYearSum]);
 
+                // --- BIẾN ĐỘNG KHO ---
                 let rowsInv = [
                     ["BÁO CÁO BIẾN ĐỘNG NHẬP XUẤT KHO HÀNG NGÀY", ""],
                     ["Theo mốc thời gian:", formattedDayStr],
