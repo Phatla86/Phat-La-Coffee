@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - POS</title>
+    <title>PHÁT LA PREMIUM - OMNICHAIN V54</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -321,10 +321,16 @@
                     <p class="text-[10px] lg:text-[11px] font-bold text-slate-400 mt-1">Hóa đơn hệ thống đã xử lý thành công</p>
                 </div>
                 <div class="bg-white rounded-[2rem] p-5 lg:p-8 shadow-sm border border-slate-100">
-                    <div class="flex gap-2 mb-4 lg:mb-6 overflow-x-auto no-scrollbar pb-2">
-                        <button onclick="setHistoryFilter('ALL')" id="hf-ALL" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md">Tất cả</button>
-                        <button onclick="setHistoryFilter('CASH')" id="hf-CASH" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Tiền mặt</button>
-                        <button onclick="setHistoryFilter('TRANSFER')" id="hf-TRANSFER" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Chuyển khoản</button>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 lg:mb-6">
+                        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 w-full sm:w-auto">
+                            <button onclick="setHistoryFilter('ALL')" id="hf-ALL" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md">Tất cả</button>
+                            <button onclick="setHistoryFilter('CASH')" id="hf-CASH" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Tiền mặt</button>
+                            <button onclick="setHistoryFilter('TRANSFER')" id="hf-TRANSFER" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Chuyển khoản</button>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                            <span class="text-[9px] font-black uppercase text-slate-400 ml-2 whitespace-nowrap"><i class="fa-solid fa-calendar-days mr-1"></i>Chọn ngày:</span>
+                            <input type="date" id="history-date-filter" onchange="renderHistoryUI()" class="bg-white text-gray-800 text-[11px] font-bold px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-orange-500 w-full sm:w-auto">
+                        </div>
                     </div>
                     <div id="history-container" class="space-y-2 lg:space-y-3"></div>
                 </div>
@@ -503,8 +509,10 @@
             document.getElementById('print-shop-address').innerText = SYSTEM_CONFIG.address;
 
             const now = new Date();
-            document.getElementById('filter-day').value = now.toISOString().split('T')[0];
+            const todayStr = now.toISOString().split('T')[0];
+            document.getElementById('filter-day').value = todayStr;
             document.getElementById('filter-month').value = now.toISOString().slice(0, 7);
+            document.getElementById('history-date-filter').value = todayStr;
             
             const yearSelect = document.getElementById('filter-year');
             const currentYear = now.getFullYear();
@@ -859,7 +867,7 @@
                 if (printType === 'hoa-don' && appState.lastDiscountValue > 0) {
                     printableFinal = appState.lastFinalAmount;
                     const dsText = appState.lastDiscountType === '%' ? `${appState.lastDiscountValue}%` : `${appState.lastDiscountValue.toLocaleString()}đ`;
-                    discountMarkup = `<div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;"><span>Giảm giá:</span> <span>-{dsText}</span></div>`;
+                    discountMarkup = `<div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;"><span>Giảm giá:</span> <span>-${dsText}</span></div>`;
                 }
 
                 totalSect.innerHTML = `
@@ -1007,8 +1015,15 @@
                 dataToShow = dataToShow.filter(t => t.method !== 'Tiền mặt');
             }
 
+            const rawDateInput = document.getElementById('history-date-filter').value;
+            if (rawDateInput) {
+                const parts = rawDateInput.split('-');
+                const formattedDateStr = `${parseInt(parts[2])}/${parseInt(parts[1])}/${parseInt(parts[0])}`;
+                dataToShow = dataToShow.filter(t => t.date === formattedDateStr);
+            }
+
             if (!dataToShow || dataToShow.length === 0) {
-                container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[10px] tracking-wider">Hệ thống chưa ghi nhận đơn hàng</div>`;
+                container.innerHTML = `<div class="py-12 text-center text-slate-400 font-bold uppercase text-[10px] tracking-wider">Hệ thống chưa ghi nhận đơn hàng nào khớp với bộ lọc</div>`;
                 return;
             }
 
@@ -1035,7 +1050,6 @@
                 const now = new Date();
                 const todayStr = getSystemDateString(now);
 
-                // --- TAB 1: NGÀY (CHỈ GHI TỔNG SỐ ĐƠN & TỔNG DOANH THU - TUYỆT ĐỐI KHÔNG GHI TỪNG ĐƠN) ---
                 const rawDayInput = document.getElementById('filter-day').value;
                 let formattedDayStr = "";
                 if (rawDayInput) {
@@ -1056,7 +1070,6 @@
                     ["Tổng doanh thu thu về thực tế (VNĐ)", sumDay]
                 ];
 
-                // --- TAB 2: THÁNG (GHI DOANH THU TỔNG HỢP CỦA TỪNG NGÀY TRONG THÁNG) ---
                 const rawMonthInput = document.getElementById('filter-month').value;
                 let formattedMonthStr = "";
                 if (rawMonthInput) {
@@ -1091,7 +1104,6 @@
                 const sumMonth = monthData.reduce((s, t) => s + parseInt(t.total || 0), 0);
                 rowsMonth.push([""], ["TỔNG CỘNG DOANH THU THÁNG:", "", sumMonth]);
 
-                // --- TAB 3: NĂM (GHI TỔNG DOANH THU CỦA 12 THÁNG) ---
                 const selectedYear = parseInt(document.getElementById('filter-year').value);
                 
                 let rowsYear = [
@@ -1112,7 +1124,6 @@
                 }
                 rowsYear.push([""], ["TỔNG CỘNG DOANH THU TOÀN NĂM:", "", totalYearSum]);
 
-                // --- TAB 4: KHO (THÊM CỘT NHẬP VÀ XUẤT MỖI NGÀY CỦA TỪNG NGUYÊN LIỆU) ---
                 let rowsInv = [
                     ["BÁO CÁO BIẾN ĐỘNG NHẬP XUẤT KHO HÀNG NGÀY", ""],
                     ["Theo mốc thời gian:", formattedDayStr],
@@ -1137,7 +1148,6 @@
                     rowsInv.push([key, item.stock, item.unit, dailyImport, dailyExport]);
                 });
 
-                // ĐÓNG GÓI VÀO CƠ CHẾ EXCEL WORKBOOK MULTI-TAB
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsDay), "Doanh thu Ngày");
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rowsMonth), "Doanh thu Tháng");
