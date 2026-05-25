@@ -384,8 +384,10 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="selectGatePaymentMethod('Cash')" id="gate-method-cash" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"><i class="fa-solid fa-money-bill-wave text-xl"></i><span class="text-[9px] font-black uppercase">Tiền Mặt Local</span></button>
-                    <button onclick="selectGatePaymentMethod('Transfer')" id="gate-method-transfer" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-qrcode text-xl"></i><span class="text-[9px] font-black uppercase">VietQR Dynamic</span></button>
+                    <button onclick="selectGatePaymentMethod('Cash')" id="gate-method-cash" class="p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"><i class="fa-solid fa-money-bill-wave text-lg"></i><span class="text-[9px] font-black uppercase">Tiền Mặt</span></button>
+                    <button onclick="selectGatePaymentMethod('Transfer')" id="gate-method-transfer" class="p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-qrcode text-lg"></i><span class="text-[9px] font-black uppercase">VietQR VCB</span></button>
+                    <button onclick="selectGatePaymentMethod('Momo')" id="gate-method-momo" class="p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-wallet text-lg"></i><span class="text-[9px] font-black uppercase">Ví MoMo (Dự phòng)</span></button>
+                    <button onclick="selectGatePaymentMethod('OCB')" id="gate-method-ocb" class="p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-building-columns text-lg"></i><span class="text-[9px] font-black uppercase">OCB (Dự phòng)</span></button>
                 </div>
                 <div id="gate-qr-zone" class="hidden flex-col items-center relative p-4 bg-white border-2 border-blue-50 rounded-2xl shadow-inner min-h-[220px]">
                     <img id="gate-qr-img" src="" class="w-56 h-56 border shadow-sm rounded-xl object-contain bg-white transition-opacity duration-300 opacity-0" onload="this.classList.remove('opacity-30'); this.classList.remove('opacity-0'); this.classList.add('opacity-100');">
@@ -457,13 +459,14 @@
             bankCode: "vietcombank",
             accountNumber: "1046778674",
             accountHolder: "LA PHAT",
+            backupMomo: "0899713584",
+            backupOcb: "0899713584",
             revenueEndpoint: "https://script.google.com/macros/s/AKfycbzVEdIbekAuy0m2WBPp8vz4VSQxw1gcIjbkoFKdGx17Poh7wVjyDRtwgtChLl3-9pPm/exec",
             inventoryEndpoint: "https://script.google.com/macros/s/AKfycbz51nvW6bwPPZcEi7DLoJQDk-PVeSQeiUKfMD3MkwPiOr5QPQjZstfsJb0buPzuC636/exec",
             menuEndpoint: "https://script.google.com/macros/s/AKfycbyrM78SCzK9SzYi5n1K5LdqiAyG8bA4mZJFf_LIp8V2E7Cfebf0on5dpmku-I-ra0zu/exec",
             tablesPerBranch: 30
         };
 
-        // ĐỔI THÀNH `let` ĐỂ CÓ THỂ ĐỒNG BỘ GHI ĐÈ LẠI TỪ CLOUD SHEET
         let PRODUCT_MENU = [
             { id: 'c1', cat: "CÀ PHÊ", name: "Espresso Premium", price: 45000, icon: "fa-mug-hot" },
             { id: 'c2', cat: "CÀ PHÊ", name: "Americano Ice", price: 50000, icon: "fa-mug-saucer" },
@@ -959,30 +962,38 @@
             
             lastQrUrl = ""; 
             document.getElementById('portal-checkout-modal').classList.remove('hidden');
-            recalcModalAmount();
+            selectGatePaymentMethod('Cash'); 
         }
 
         function closePaymentGateway() { document.getElementById('portal-checkout-modal').classList.add('hidden'); }
 
         function selectGatePaymentMethod(method) {
             globalChainState.gatePaymentMethod = method;
-            const cashBtn = document.getElementById('gate-method-cash'); const qrBtn = document.getElementById('gate-method-transfer');
-            if(method === 'Cash') { 
-                cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"; 
-                qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; 
-                document.getElementById('gate-qr-zone').classList.add('hidden'); 
-            } 
-            else { 
-                qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-blue-500 bg-blue-50/30 text-blue-600 transition-all"; 
-                cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; 
-                document.getElementById('gate-qr-zone').classList.remove('hidden'); 
-                
-                recalcModalAmount(); 
+            const methods = ['Cash', 'Transfer', 'Momo', 'OCB'];
+            
+            methods.forEach(m => {
+                const btn = document.getElementById(`gate-method-${m.toLowerCase()}`);
+                if (m === method) {
+                    if (m === 'Cash') btn.className = "p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-orange-500 bg-orange-50/30 text-orange-600 transition-all";
+                    else if (m === 'Transfer') btn.className = "p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-blue-500 bg-blue-50/30 text-blue-600 transition-all";
+                    else if (m === 'Momo') btn.className = "p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-pink-500 bg-pink-50/30 text-pink-600 transition-all";
+                    else if (m === 'OCB') btn.className = "p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-emerald-500 bg-emerald-50/30 text-emerald-600 transition-all";
+                } else {
+                    btn.className = "p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-slate-200 text-slate-500 transition-all";
+                }
+            });
+
+            if (method === 'Cash') {
+                document.getElementById('gate-qr-zone').classList.add('hidden');
+            } else {
+                document.getElementById('gate-qr-zone').classList.remove('hidden');
+                recalcModalAmount();
             }
         }
 
         function recalcModalAmount() {
             let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId;
+            if (!bId || !tId) return;
             let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
             let total = tableObj.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
             let discVal = parseInt(document.getElementById('mod-discount-val').value || 0);
@@ -992,28 +1003,34 @@
             if(discType === 'đ') finalAmt = Math.max(0, total - discVal); else finalAmt = Math.max(0, total - (total * (discVal / 100)));
             document.getElementById('modal-final-amount').innerText = finalAmt.toLocaleString('vi-VN') + "đ";
 
-            if(globalChainState.gatePaymentMethod === 'Transfer') {
-                // Sửa cú pháp addInfo viết liền hoàn toàn để tránh lỗi app ngân hàng không phân tích được dữ liệu
-                let safeAddInfo = encodeURIComponent(`PL${bId.toUpperCase()}BAN${tId}`); 
-                let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
-                let newUrl = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
-                
-                if(lastQrUrl !== newUrl) {
-                    clearTimeout(qrDebounceTimer);
-                    let imgEl = document.getElementById('gate-qr-img');
-                    
-                    imgEl.classList.remove('opacity-100');
-                    imgEl.classList.add('opacity-30'); 
+            let newUrl = "";
+            let safeAddInfo = encodeURIComponent(`PL${bId.toUpperCase()}BAN${tId}`); 
+            let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
 
-                    qrDebounceTimer = setTimeout(() => {
-                        imgEl.onload = () => { 
-                            imgEl.classList.remove('opacity-30'); 
-                            imgEl.classList.add('opacity-100'); 
-                        };
-                        imgEl.src = newUrl;
-                        lastQrUrl = newUrl;
-                    }, 400); 
-                }
+            if(globalChainState.gatePaymentMethod === 'Transfer') {
+                newUrl = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
+            } else if(globalChainState.gatePaymentMethod === 'OCB') {
+                newUrl = `https://img.vietqr.io/image/ocb-${MASTER_CONFIG.backupOcb}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
+            } else if(globalChainState.gatePaymentMethod === 'Momo') {
+                let momoLink = `https://nhantien.momo.vn/${MASTER_CONFIG.backupMomo}/${finalAmt}`;
+                newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(momoLink)}`;
+            }
+
+            if(newUrl && lastQrUrl !== newUrl) {
+                clearTimeout(qrDebounceTimer);
+                let imgEl = document.getElementById('gate-qr-img');
+                
+                imgEl.classList.remove('opacity-100');
+                imgEl.classList.add('opacity-30'); 
+
+                qrDebounceTimer = setTimeout(() => {
+                    imgEl.onload = () => { 
+                        imgEl.classList.remove('opacity-30'); 
+                        imgEl.classList.add('opacity-100'); 
+                    };
+                    imgEl.src = newUrl;
+                    lastQrUrl = newUrl;
+                }, 400); 
             }
         }
 
@@ -1036,8 +1053,13 @@
 
             let finalAmt = total; if(discType === 'đ') finalAmt = Math.max(0, total - discVal); else finalAmt = Math.max(0, total - (total * (discVal / 100)));
 
+            let methodText = 'Tiền Mặt';
+            if (globalChainState.gatePaymentMethod === 'Transfer') methodText = 'Chuyển Khoản VCB';
+            else if (globalChainState.gatePaymentMethod === 'Momo') methodText = 'Ví MoMo';
+            else if (globalChainState.gatePaymentMethod === 'OCB') methodText = 'Chuyển Khoản OCB';
+
             let txPayload = {
-                id: "PL-TX-" + Date.now(), branchId: bId, branchName: globalChainState.branches[bId].name, tableId: tId, originalAmount: total, discountValue: discVal, discountType: discType, finalAmount: finalAmt, paymentMethod: globalChainState.gatePaymentMethod === 'Cash' ? 'Tiền Mặt' : 'Chuyển Khoản', timestamp: new Date().toISOString(), items: tableObj.cart
+                id: "PL-TX-" + Date.now(), branchId: bId, branchName: globalChainState.branches[bId].name, tableId: tId, originalAmount: total, discountValue: discVal, discountType: discType, finalAmount: finalAmt, paymentMethod: methodText, timestamp: new Date().toISOString(), items: tableObj.cart
             };
 
             if(window.FIREBASE_DB) window.firebaseRefs.push(window.firebaseRefs.ref(window.FIREBASE_DB, `omnichain/branches/${bId}/transactions`), txPayload);
@@ -1099,7 +1121,6 @@
 
             document.getElementById('rep-total-day').innerText = dayTotal.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-day-cash').innerText = dayCash.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-day-transfer').innerText = dayTransfer.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-count-day').innerText = `${dayCount} đơn`;
             document.getElementById('rep-total-month').innerText = monthTotal.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-month-cash').innerText = monthCash.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-month-transfer').innerText = monthTransfer.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-count-month').innerText = `${monthCount} đơn`;
-            // Đoạn code đã sửa lỗi chuỗi 'vi-VN' hoàn chỉnh chuẩn xác ở dòng dưới
             document.getElementById('rep-total-year').innerText = yearTotal.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-year-cash').innerText = yearCash.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-year-transfer').innerText = yearTransfer.toLocaleString('vi-VN') + "đ"; document.getElementById('rep-count-year').innerText = `${yearCount} đơn`;
         }
 
@@ -1124,10 +1145,16 @@
             if(aggregatedTxs.length === 0) { container.innerHTML = `<div class="p-6 text-center text-xs font-bold text-slate-400 bg-white border rounded-xl shadow-sm uppercase">Trống.</div>`; return; }
 
             aggregatedTxs.forEach(tx => {
-                const isCash = tx.paymentMethod === 'Tiền Mặt'; const row = document.createElement('div');
+                let iconClass = 'fa-money-bill-wave';
+                let bgClass = 'bg-green-50 text-green-500';
+                if (tx.paymentMethod.includes('VCB')) { iconClass = 'fa-qrcode'; bgClass = 'bg-blue-50 text-blue-500'; }
+                else if (tx.paymentMethod.includes('OCB')) { iconClass = 'fa-building-columns'; bgClass = 'bg-emerald-50 text-emerald-500'; }
+                else if (tx.paymentMethod.includes('MoMo')) { iconClass = 'fa-wallet'; bgClass = 'bg-pink-50 text-pink-500'; }
+
+                const row = document.createElement('div');
                 row.className = "bg-white p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 shadow-sm hover:border-orange-300 hover:shadow-md cursor-pointer transition-all";
                 row.onclick = () => openTxDetailModal(tx.id, tx.branchId);
-                row.innerHTML = `<div class="flex items-start gap-3 w-full sm:w-auto"><div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isCash ? 'bg-green-50 text-green-500' : 'bg-blue-50 text-blue-500'}"><i class="fa-solid ${isCash ? 'fa-money-bill-wave' : 'fa-qrcode'} text-lg"></i></div><div class="flex-1"><div class="flex items-center gap-2 mb-1"><span class="branch-badge ${tx.branchId}-badge">${tx.branchId.toUpperCase()}</span><span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Bàn ${String(tx.tableId).padStart(2, '0')}</span></div><span class="font-black text-xs text-slate-800">${tx.id}</span><p class="text-[10px] font-semibold text-slate-400 mt-0.5 truncate max-w-[220px]">${tx.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</p></div></div><div class="text-right shrink-0 w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end mt-2 sm:mt-0 border-t sm:border-0 pt-3 sm:pt-0"><span class="text-sm font-black ${isCash ? 'text-green-600' : 'text-blue-600'}">+${tx.finalAmount.toLocaleString()}đ</span><p class="text-[9px] font-mono font-bold text-slate-400 mt-1">${new Date(tx.timestamp).toLocaleString('vi-VN')}</p></div>`;
+                row.innerHTML = `<div class="flex items-start gap-3 w-full sm:w-auto"><div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${bgClass}"><i class="fa-solid ${iconClass} text-lg"></i></div><div class="flex-1"><div class="flex items-center gap-2 mb-1"><span class="branch-badge ${tx.branchId}-badge">${tx.branchId.toUpperCase()}</span><span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Bàn ${String(tx.tableId).padStart(2, '0')}</span></div><span class="font-black text-xs text-slate-800">${tx.id}</span><p class="text-[10px] font-semibold text-slate-400 mt-0.5 truncate max-w-[220px]">${tx.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</p></div></div><div class="text-right shrink-0 w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end mt-2 sm:mt-0 border-t sm:border-0 pt-3 sm:pt-0"><span class="text-sm font-black ${tx.paymentMethod === 'Tiền Mặt' ? 'text-green-600' : 'text-blue-600'}">+${tx.finalAmount.toLocaleString()}đ</span><p class="text-[9px] font-mono font-bold text-slate-400 mt-1">${new Date(tx.timestamp).toLocaleString('vi-VN')}</p></div>`;
                 container.appendChild(row);
             });
         }
@@ -1135,7 +1162,13 @@
         function openTxDetailModal(txId, bId) {
             let tx = globalChainState.branches[bId].transactions.find(t => t.id === txId); if(!tx) return;
             document.getElementById('dtl-id').innerText = tx.id; document.getElementById('dtl-branch').innerText = globalChainState.branches[bId].name; document.getElementById('dtl-table').innerText = `Bàn ${String(tx.tableId).padStart(2, '0')}`; document.getElementById('dtl-time').innerText = new Date(tx.timestamp).toLocaleString('vi-VN');
-            let isCash = tx.paymentMethod === 'Tiền Mặt'; document.getElementById('dtl-method').innerHTML = `<span class="px-2 py-1 rounded-md text-[10px] font-black uppercase ${isCash ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}"><i class="fa-solid ${isCash ? 'fa-money-bill-wave' : 'fa-qrcode'} mr-1"></i>${tx.paymentMethod}</span>`;
+            
+            let colorMap = { 'Tiền Mặt': 'bg-green-100 text-green-700', 'Chuyển Khoản VCB': 'bg-blue-100 text-blue-700', 'Ví MoMo': 'bg-pink-100 text-pink-700', 'Chuyển Khoản OCB': 'bg-emerald-100 text-emerald-700' };
+            let iconMap = { 'Tiền Mặt': 'fa-money-bill-wave', 'Chuyển Khoản VCB': 'fa-qrcode', 'Ví MoMo': 'fa-wallet', 'Chuyển Khoản OCB': 'fa-building-columns' };
+            let cls = colorMap[tx.paymentMethod] || 'bg-slate-100 text-slate-700';
+            let icn = iconMap[tx.paymentMethod] || 'fa-credit-card';
+
+            document.getElementById('dtl-method').innerHTML = `<span class="px-2 py-1 rounded-md text-[10px] font-black uppercase ${cls}"><i class="fa-solid ${icn} mr-1"></i>${tx.paymentMethod}</span>`;
             document.getElementById('dtl-items').innerHTML = tx.items.map(i => `<div class="flex justify-between items-center py-2 border-b border-dashed border-slate-200 last:border-0"><div><p class="text-xs font-bold text-slate-800">${i.name}</p><p class="text-[10px] text-slate-500">${i.price.toLocaleString()}đ x ${i.quantity}</p></div><span class="text-xs font-black text-slate-900">${(i.price * i.quantity).toLocaleString()}đ</span></div>`).join('');
             document.getElementById('dtl-subtotal').innerText = tx.originalAmount.toLocaleString() + 'đ'; document.getElementById('dtl-discount').innerText = (tx.discountValue > 0 ? `-${tx.discountValue}${tx.discountType}` : '0đ'); document.getElementById('dtl-total').innerText = tx.finalAmount.toLocaleString() + 'đ';
             document.getElementById('modal-tx-detail').classList.remove('hidden');
