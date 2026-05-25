@@ -27,6 +27,24 @@
             const app = initializeApp(firebaseConfig);
             db = getDatabase(app);
             window.FIREBASE_DB = db; 
+
+            // Theo dõi kết nối mạng
+            const connectedRef = ref(db, ".info/connected");
+            onValue(connectedRef, (snap) => {
+                const statusBar = document.getElementById('network-status-bar');
+                const globalDot = document.getElementById('sync-global-dot');
+                const globalStatus = document.getElementById('sync-global-status');
+                
+                if (snap.val() === true) {
+                    if(statusBar) statusBar.classList.add('hidden');
+                    if(globalDot) globalDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                    if(globalStatus) globalStatus.innerText = "Hệ thống Chuỗi Hợp Nhất Đang Liên Thông Realtime";
+                } else {
+                    if(statusBar) statusBar.classList.remove('hidden');
+                    if(globalDot) globalDot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
+                    if(globalStatus) globalStatus.innerText = "MẤT KẾT NỐI SERVER (ĐANG BÁN OFFLINE TẠM THỜI)";
+                }
+            });
         } catch (e) {
             console.warn("Lỗi kết nối Firebase Server. Kích hoạt chế độ Offline Core.");
         }
@@ -85,9 +103,13 @@
 </head>
 <body>
 
+    <div id="network-status-bar" class="hidden w-full bg-red-600 text-white text-center py-2 text-sm font-bold fixed top-0 left-0 z-[9999] shadow-lg animate-pulse">
+        <i class="fa-solid fa-triangle-exclamation mr-2"></i> MẤT KẾT NỐI MẠNG HOẶC SERVER! Dữ liệu đang được lưu tạm tại máy này.
+    </div>
+
     <div id="toast-container"></div>
 
-    <header class="bg-white border-b px-6 py-3 flex justify-between items-center z-50 shrink-0">
+    <header class="bg-white border-b px-6 py-3 flex justify-between items-center z-50 shrink-0 mt-0 lg:mt-0">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg font-black text-xl tracking-tighter">PL</div>
             <div>
@@ -376,7 +398,7 @@
                 <div>
                     <label class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Hạn Mức Giảm Giá (Discount Engine)</label>
                     <div class="flex gap-2 mt-1">
-                        <input type="number" id="mod-discount-val" value="0" min="0" oninput="recalcModalAmount()" class="flex-1 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-black focus:outline-none focus:border-orange-500">
+                        <input type="number" id="mod-discount-val" value="0" min="0" oninput="recalcModalAmount(true)" class="flex-1 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-black focus:outline-none focus:border-orange-500">
                         <select id="mod-discount-type" onchange="recalcModalAmount()" class="bg-white border px-3 py-2 rounded-xl text-xs font-black focus:outline-none">
                             <option value="đ">VNĐ</option>
                             <option value="%">%</option>
@@ -390,7 +412,7 @@
                     <button onclick="selectGatePaymentMethod('OCB')" id="gate-method-ocb" class="p-3 border-2 rounded-2xl flex flex-col items-center gap-1.5 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-building-columns text-lg"></i><span class="text-[9px] font-black uppercase">OCB (Dự phòng)</span></button>
                 </div>
                 <div id="gate-qr-zone" class="hidden flex-col items-center relative p-4 bg-white border-2 border-blue-50 rounded-2xl shadow-inner min-h-[220px]">
-                    <img id="gate-qr-img" src="" class="w-56 h-56 border shadow-sm rounded-xl object-contain bg-white transition-opacity duration-300 opacity-0" onload="this.classList.remove('opacity-30'); this.classList.remove('opacity-0'); this.classList.add('opacity-100');">
+                    <img id="gate-qr-img" src="" class="w-56 h-56 border shadow-sm rounded-xl object-contain bg-white transition-opacity duration-300 opacity-0">
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t">
@@ -454,7 +476,7 @@
     </div>
 
     <script>
-        // CẬP NHẬT CẤU HÌNH API
+        // CẤU HÌNH API
         const MASTER_CONFIG = {
             bankCode: "vietcombank",
             accountNumber: "1046778674",
@@ -482,6 +504,16 @@
             { id: 's2', cat: "ĐẶC BIỆT", name: "Bạc Xỉu Sữa Béo", price: 50000, icon: "fa-glass-water" },
             { id: 's3', cat: "ĐẶC BIỆT", name: "Cà Phê Kem Trứng Nướng", price: 60000, icon: "fa-egg" }
         ];
+
+        // 🌟 LƯU LẠI MENU KHI F5 ĐỂ KHÔNG BAO GIỜ BỊ MẤT
+        const cachedMenu = localStorage.getItem('POS_CACHED_MENU');
+        if (cachedMenu) {
+            try {
+                PRODUCT_MENU = JSON.parse(cachedMenu);
+            } catch (e) {
+                console.error("Lỗi khôi phục menu từ cache:", e);
+            }
+        }
 
         const FORMULA_RECIPES = {
             'c1': { 'Cà Phê Hạt': 15 }, 'c2': { 'Cà Phê Hạt': 15 },
@@ -596,6 +628,7 @@
             }, 3500);
         }
 
+        // HÀM FETCH MENU ĐÃ KÈM CƠ CHẾ LƯU VÀO CACHE TRÌNH DUYỆT
         async function fetchMenuFromCloud() {
             if(!MASTER_CONFIG.menuEndpoint) {
                 showNotification("Bạn chưa thiết lập Endpoint cho Menu trong file JS!", "error");
@@ -607,6 +640,10 @@
                 let data = await response.json();
                 if(data && Array.isArray(data) && data.length > 0) {
                     PRODUCT_MENU = data;
+                    
+                    // 🌟 LƯU MENU VÀO BỘ NHỚ LOCAL ĐỂ F5 KHÔNG BỊ MẤT DỮ LIỆU MỚI TẢI
+                    localStorage.setItem('POS_CACHED_MENU', JSON.stringify(PRODUCT_MENU));
+                    
                     renderPosMenuCategories();
                     if(globalChainState.currentSelectedTab === 'pos') renderPosMenuGrid();
                     showNotification("Cập nhật Menu nội bộ thành công!", "success");
@@ -987,11 +1024,11 @@
                 document.getElementById('gate-qr-zone').classList.add('hidden');
             } else {
                 document.getElementById('gate-qr-zone').classList.remove('hidden');
-                recalcModalAmount();
+                recalcModalAmount(false);
             }
         }
 
-        function recalcModalAmount() {
+        function recalcModalAmount(isTyping = false) {
             let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId;
             if (!bId || !tId) return;
             let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
@@ -1023,14 +1060,20 @@
                 imgEl.classList.remove('opacity-100');
                 imgEl.classList.add('opacity-30'); 
 
-                qrDebounceTimer = setTimeout(() => {
+                const triggerQRLoad = () => {
                     imgEl.onload = () => { 
                         imgEl.classList.remove('opacity-30'); 
                         imgEl.classList.add('opacity-100'); 
                     };
                     imgEl.src = newUrl;
                     lastQrUrl = newUrl;
-                }, 400); 
+                };
+
+                if (isTyping) {
+                    qrDebounceTimer = setTimeout(triggerQRLoad, 250);
+                } else {
+                    triggerQRLoad();
+                }
             }
         }
 
@@ -1202,9 +1245,14 @@
             
             try {
                 for(let payload of allExportData) {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
                     await fetch(MASTER_CONFIG.revenueEndpoint, {
-                        method: 'POST', mode: 'no-cors', body: JSON.stringify(payload)
+                        method: 'POST', mode: 'no-cors', body: JSON.stringify(payload), signal: controller.signal
                     });
+
+                    clearTimeout(timeoutId);
                 }
                 showNotification(`Đã đẩy thành công ${allExportData.length} đơn lên G.Sheets!`, "success");
             } catch (err) {
@@ -1216,7 +1264,14 @@
         setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
 
         window.onload = () => {
-            bootstrapStateStructure(); initGlobalChainSync();
+            bootstrapStateStructure(); 
+            initGlobalChainSync();
+
+            // 🌟 TỰ ĐỘNG TẢI MENU TỪ GOOGLE SHEETS KHI MỞ TRANG LẦN ĐẦU / HOẶC F5 LẠI 
+            if (MASTER_CONFIG.menuEndpoint) {
+                fetchMenuFromCloud();
+            }
+
             setTimeout(() => { switchTab('dashboard'); }, 600);
         };
     </script>
