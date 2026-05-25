@@ -464,7 +464,7 @@
             tablesPerBranch: 30
         };
 
-                // ĐỔI THÀNH `let` ĐỂ CÓ THỂ ĐỒNG BỘ GHI ĐÈ LẠI TỪ CLOUD SHEET
+		// ĐỔI THÀNH `let` ĐỂ CÓ THỂ ĐỒNG BỘ GHI ĐÈ LẠI TỪ CLOUD SHEET
         let PRODUCT_MENU = [
             { id: 'c1', cat: "CÀ PHÊ", name: "Espresso Premium", price: 45000, icon: "fa-mug-hot" },
             { id: 'c2', cat: "CÀ PHÊ", name: "Americano Ice", price: 50000, icon: "fa-mug-saucer" },
@@ -604,7 +604,7 @@
             }, 3500);
         }
 
-                // HÀM FETCH MENU TỪ GOOGLE SHEETS
+			// HÀM FETCH MENU TỪ GOOGLE SHEETS
         async function fetchMenuFromCloud() {
             if(!MASTER_CONFIG.menuEndpoint) {
                 showNotification("Bạn chưa thiết lập Endpoint cho Menu trong file JS!", "error");
