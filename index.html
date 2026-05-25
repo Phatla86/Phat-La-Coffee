@@ -376,7 +376,7 @@
                 <div>
                     <label class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Hạn Mức Giảm Giá (Discount Engine)</label>
                     <div class="flex gap-2 mt-1">
-                        <input type="number" id="mod-discount-val" value="0" min="0" oninput="recalcModalAmount()" class="flex-1 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-black focus:outline-none focus:border-orange-500">
+                        <input type="number" id="mod-discount-val" value="0" min="0" oninput="recalcModalAmount(true)" class="flex-1 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-black focus:outline-none focus:border-orange-500">
                         <select id="mod-discount-type" onchange="recalcModalAmount()" class="bg-white border px-3 py-2 rounded-xl text-xs font-black focus:outline-none">
                             <option value="đ">VNĐ</option>
                             <option value="%">%</option>
@@ -999,11 +999,8 @@
                 document.getElementById('gate-qr-zone').classList.remove('hidden'); 
                 
                 // CẬP NHẬT QR NGAY KHI BẤM CHUYỂN TAB
-                recalcModalAmount(); 
-            }
-        }
-
-        function recalcModalAmount() {
+                // CẬP NHẬT TỐC ĐỘ: Bổ sung cờ isTyping để phân biệt thao tác
+        function recalcModalAmount(isTyping = false) {
             let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId;
             let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
             let total = tableObj.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
@@ -1019,6 +1016,34 @@
                 let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
                 let newUrl = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
                 
+                if(lastQrUrl !== newUrl) {
+                    clearTimeout(qrDebounceTimer);
+                    let imgEl = document.getElementById('gate-qr-img');
+                    
+                    imgEl.classList.remove('opacity-100');
+                    imgEl.classList.add('opacity-30'); 
+
+                    // Đóng gói lệnh gọi API QR
+                    const triggerQRLoad = () => {
+                        imgEl.onload = () => { 
+                            imgEl.classList.remove('opacity-30'); 
+                            imgEl.classList.add('opacity-100'); 
+                        };
+                        imgEl.src = newUrl;
+                        lastQrUrl = newUrl;
+                    };
+
+                    // THUẬT TOÁN THÔNG MINH:
+                    // - Nếu đang gõ phím Giảm giá: Đợi 250ms mới load (chống đơ máy)
+                    // - Nếu mới mở Modal hoặc chuyển qua tab VietQR: LOAD NGAY LẬP TỨC (0ms delay)
+                    if (isTyping) {
+                        qrDebounceTimer = setTimeout(triggerQRLoad, 250);
+                    } else {
+                        triggerQRLoad(); 
+                    }
+                }
+            }
+        }
                 // CƠ CHẾ DEBOUNCE (CHỐNG GIẬT)
                 if(lastQrUrl !== newUrl) {
                     clearTimeout(qrDebounceTimer);
