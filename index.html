@@ -28,7 +28,6 @@
             db = getDatabase(app);
             window.FIREBASE_DB = db; 
 
-            // Theo dõi kết nối mạng
             const connectedRef = ref(db, ".info/connected");
             onValue(connectedRef, (snap) => {
                 const statusBar = document.getElementById('network-status-bar');
@@ -476,7 +475,6 @@
     </div>
 
     <script>
-        // CẤU HÌNH API
         const MASTER_CONFIG = {
             bankCode: "vietcombank",
             accountNumber: "1046778674",
@@ -505,7 +503,7 @@
             { id: 's3', cat: "ĐẶC BIỆT", name: "Cà Phê Kem Trứng Nướng", price: 60000, icon: "fa-egg" }
         ];
 
-        // 🌟 LƯU LẠI MENU KHI F5 ĐỂ KHÔNG BAO GIỜ BỊ MẤT
+        // KHÔI PHỤC MENU TỪ LOCALSTORAGE ĐỂ F5 KHÔNG BỊ MẤT
         const cachedMenu = localStorage.getItem('POS_CACHED_MENU');
         if (cachedMenu) {
             try {
@@ -628,7 +626,6 @@
             }, 3500);
         }
 
-        // HÀM FETCH MENU ĐÃ KÈM CƠ CHẾ LƯU VÀO CACHE TRÌNH DUYỆT
         async function fetchMenuFromCloud() {
             if(!MASTER_CONFIG.menuEndpoint) {
                 showNotification("Bạn chưa thiết lập Endpoint cho Menu trong file JS!", "error");
@@ -641,7 +638,7 @@
                 if(data && Array.isArray(data) && data.length > 0) {
                     PRODUCT_MENU = data;
                     
-                    // 🌟 LƯU MENU VÀO BỘ NHỚ LOCAL ĐỂ F5 KHÔNG BỊ MẤT DỮ LIỆU MỚI TẢI
+                    // LƯU MENU VÀO TRÌNH DUYỆT CHỐNG F5
                     localStorage.setItem('POS_CACHED_MENU', JSON.stringify(PRODUCT_MENU));
                     
                     renderPosMenuCategories();
@@ -659,9 +656,6 @@
             if(!window.FIREBASE_DB) return;
             const { ref, onValue } = window.firebaseRefs;
             const dbRef = window.FIREBASE_DB;
-
-            document.getElementById('sync-global-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-            document.getElementById('sync-global-status').innerText = "Hệ thống Chuỗi Hợp Nhất Đang Liên Thông Realtime";
 
             ['cn1', 'cn2', 'cn3'].forEach(branchKey => {
                 onValue(ref(dbRef, `omnichain/branches/${branchKey}/tables`), (snapshot) => {
@@ -1041,16 +1035,16 @@
             document.getElementById('modal-final-amount').innerText = finalAmt.toLocaleString('vi-VN') + "đ";
 
             let newUrl = "";
-            let safeAddInfo = encodeURIComponent(`PL${bId.toUpperCase()}BAN${tId}`); 
-            let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
+            let safeAddInfo = `PL${bId.toUpperCase()}BAN${tId}`; 
 
             if(globalChainState.gatePaymentMethod === 'Transfer') {
-                newUrl = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
+                newUrl = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-qr_only.png?amount=${finalAmt}&addInfo=${encodeURIComponent(safeAddInfo)}&accountName=${encodeURIComponent(MASTER_CONFIG.accountHolder)}`;
             } else if(globalChainState.gatePaymentMethod === 'OCB') {
-                newUrl = `https://img.vietqr.io/image/ocb-${MASTER_CONFIG.backupOcb}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
+                newUrl = `https://img.vietqr.io/image/ocb-${MASTER_CONFIG.backupOcb}-qr_only.png?amount=${finalAmt}&addInfo=${encodeURIComponent(safeAddInfo)}&accountName=${encodeURIComponent(MASTER_CONFIG.accountHolder)}`;
             } else if(globalChainState.gatePaymentMethod === 'Momo') {
-                let momoLink = `https://nhantien.momo.vn/${MASTER_CONFIG.backupMomo}/${finalAmt}`;
-                newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(momoLink)}`;
+                // 🌟 FIX MOMO: Định dạng chuỗi nội bộ chuẩn của app MoMo (Quét là nhảy thẳng vào màn hình chuyển tiền)
+                let momoRawData = `2|99|${MASTER_CONFIG.backupMomo}|||0|0|${finalAmt}|${safeAddInfo}|transfer_myqr`;
+                newUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(momoRawData)}`;
             }
 
             if(newUrl && lastQrUrl !== newUrl) {
@@ -1267,7 +1261,6 @@
             bootstrapStateStructure(); 
             initGlobalChainSync();
 
-            // 🌟 TỰ ĐỘNG TẢI MENU TỪ GOOGLE SHEETS KHI MỞ TRANG LẦN ĐẦU / HOẶC F5 LẠI 
             if (MASTER_CONFIG.menuEndpoint) {
                 fetchMenuFromCloud();
             }
