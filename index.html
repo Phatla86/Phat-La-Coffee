@@ -28,7 +28,7 @@
             db = getDatabase(app);
             window.FIREBASE_DB = db; 
         } catch (e) {
-            console.warn("Mất kết nối Cloud. Kích hoạt Core dự phòng Offline.");
+            console.warn("Hệ thống đang chạy ở chế độ Offline dự phòng.");
         }
         window.firebaseRefs = { ref, onValue, set, update, push };
     </script>
@@ -97,7 +97,7 @@
                 <h1 class="text-sm font-black uppercase tracking-tight text-gray-900">PHÁT LA PREMIUM COFFEE</h1>
                 <div class="flex items-center gap-2 mt-0.5">
                     <span id="sync-global-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-                    <p id="sync-global-status" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Hệ thống Đa Chi Nhánh Chờ Kết Nối...</p>
+                    <p id="sync-global-status" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Đang kết nối Cloud...</p>
                 </div>
             </div>
         </div>
@@ -165,9 +165,9 @@
                 <div id="dashboard-top-sellers-zone"></div>
 
                 <div class="bg-white rounded-2xl border p-6 shadow-sm">
-                    <h2 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2 text-red-500"></i>Hạn Mức Cảnh Báo Hết Hàng (Tồn Kho Dưới 25%)</h2>
+                    <h2 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2 text-red-500"></i>Hạn Mức Cảnh Báo Hết Hàng (Dưới 25%)</h2>
                     <div class="overflow-x-auto"><table class="w-full text-left font-medium border-collapse text-xs">
-                        <thead><tr class="border-b bg-slate-50 text-slate-400 uppercase font-black text-[9px]"><th class="p-3">Mã Vật Tư</th><th class="p-3">Tên Nguyên Liệu</th><th class="p-3">Chi Nhánh</th><th class="p-3">Tồn Hiện Tại</th><th class="p-3">Trạng Thái Kho</th></tr></thead>
+                        <thead><tr class="border-b bg-slate-50 text-slate-400 uppercase font-black text-[9px]"><th class="p-3">Mã Vật Tư</th><th class="p-3">Tên Nguyên Liệu</th><th class="p-3">Chi Nhánh</th><th class="p-3">Tồn Hiện Tại</th><th class="p-3">Trạng Thái</th></tr></thead>
                         <tbody id="dash-inventory-alerts" class="divide-y"></tbody>
                     </table></div>
                 </div>
@@ -190,7 +190,7 @@
                             <button onclick="triggerTableSwitch()" class="bg-slate-900 text-white px-2.5 py-1 rounded font-black text-[9px] uppercase">Chuyển</button>
                             <button onclick="triggerTableMerge()" class="bg-orange-500 text-white px-2.5 py-1 rounded font-black text-[9px] uppercase">Gộp Đơn</button>
                         </div>
-                        <span id="global-table-stats" class="text-[10px] font-black bg-orange-50 border border-orange-200 text-orange-600 px-3 py-2 rounded-lg shadow-sm">0 Bàn Đang Đóng Đơn</span>
+                        <span id="global-table-stats" class="text-[10px] font-black bg-orange-50 border border-orange-200 text-orange-600 px-3 py-2 rounded-lg shadow-sm">0 Bàn Đang Hoạt Động</span>
                     </div>
                 </div>
                 <div id="grid-branch-tables" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
@@ -208,7 +208,7 @@
                 <div class="w-full lg:w-[420px] h-[45vh] lg:h-full absolute lg:relative bottom-0 flex flex-col bg-white shadow-2xl lg:shadow-none z-30 border-t lg:border-t-0 lg:border-l border-slate-200">
                     <div class="p-4 border-b flex justify-between items-center bg-slate-50/50">
                         <div>
-                            <div class="flex items-center gap-2"><span id="cart-branch-badge" class="branch-badge cn1-badge">CN1</span><h2 id="cart-table-title" class="text-sm font-black uppercase text-gray-900">CHƯA CHỌN BÀN TÁC VỤ</h2></div>
+                            <div class="flex items-center gap-2"><span id="cart-branch-badge" class="branch-badge cn1-badge">CN1</span><h2 id="cart-table-title" class="text-sm font-black uppercase text-gray-900">CHƯA CHỌN BÀN</h2></div>
                             <p id="cart-time-log" class="text-[10px] font-bold text-slate-400 mt-0.5">Thời gian vào: --:--</p>
                         </div>
                         <button onclick="switchTab('tables')" class="text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase">Sơ Đồ Bàn</button>
@@ -218,11 +218,11 @@
                     
                     <div class="p-4 border-t space-y-3 bg-white">
                         <div class="flex justify-between items-end">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tổng tạm tính đơn</span>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Tổng tạm tính</span>
                             <span id="cart-total-amount" class="text-3xl font-black text-orange-600 tracking-tighter">0đ</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button onclick="executePrintJob('kitchen')" class="py-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl font-black text-[10px] uppercase tracking-wide"><i class="fa-solid fa-fire mr-1"></i> Báo Bếp (Realtime)</button>
+                            <button onclick="executePrintJob('kitchen')" class="py-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl font-black text-[10px] uppercase tracking-wide"><i class="fa-solid fa-fire mr-1"></i> Báo Bếp (Cloud)</button>
                             <button onclick="executePrintJob('provisional')" class="py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-wide"><i class="fa-solid fa-receipt mr-1"></i> In Tạm Tính</button>
                         </div>
                         <button onclick="openPaymentGateway()" class="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl">
@@ -238,7 +238,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border shadow-sm">
                     <div>
                         <h2 class="text-base font-black text-gray-900 tracking-tight uppercase">Kho Nguyên Vật Liệu Toàn Chuỗi</h2>
-                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Quản lý định lượng, số lượng tồn kho vật tư của từng cơ sở độc lập.</p>
+                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Quản lý định lượng chi tiết vật tư tiêu hao từng cơ sở.</p>
                     </div>
                     <button onclick="syncGlobalInventoryToCloud()" class="bg-gray-900 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Lưu Cập Nhật Kho Lên Cloud</button>
                 </div>
@@ -251,7 +251,7 @@
         <section id="view-logistics" class="absolute inset-0 p-6 overflow-y-auto thin-scroll hidden fade-in">
             <div class="max-w-4xl mx-auto space-y-6">
                 <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-                    <h2 class="text-sm font-black uppercase text-gray-900 tracking-wider border-b pb-3"><i class="fa-solid fa-truck-ramp-box mr-2 text-orange-500"></i>Lệnh Điều Chuyển Vật Tư Giữa Các Chi Nhánh</h2>
+                    <h2 class="text-sm font-black uppercase text-gray-900 tracking-wider border-b pb-3"><i class="fa-solid fa-truck-ramp-box mr-2 text-orange-500"></i>Lệnh Điều Chuyển Vật Tư Giữa Các Cơ Sở</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div><label class="text-[9px] font-black uppercase text-slate-400 tracking-wide">Kho Nguồn Xuất</label><select id="logistics-from" class="w-full mt-1 bg-slate-50 border p-3 rounded-xl font-bold text-xs focus:outline-none"><option value="cn1">Chi Nhánh 1 - Quận 1</option><option value="cn2">Chi Nhánh 2 - Bình Thạnh</option><option value="cn3">Chi Nhánh 3 - Thủ Đức</option></select></div>
                         <div><label class="text-[9px] font-black uppercase text-slate-400 tracking-wide">Kho Đích Nhận</label><select id="logistics-to" class="w-full mt-1 bg-slate-50 border p-3 rounded-xl font-bold text-xs focus:outline-none"><option value="cn2">Chi Nhánh 2 - Bình Thạnh</option><option value="cn1">Chi Nhánh 1 - Quận 1</option><option value="cn3">Chi Nhánh 3 - Thủ Đức</option></select></div>
@@ -261,12 +261,12 @@
                         <label class="text-[9px] font-black uppercase text-slate-400 tracking-wide">Khối Lượng / Số Lượng Chuyển Kho</label>
                         <div class="flex gap-2 mt-1">
                             <input type="number" id="logistics-qty" value="1000" min="1" class="flex-1 bg-slate-50 border px-4 py-2.5 rounded-xl font-black text-xs focus:outline-none">
-                            <button onclick="processLogisticsTransfer()" class="bg-orange-500 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md hover:bg-orange-600 transition-all">Phát Lệnh Vận Chuyển</button>
+                            <button onclick="processLogisticsTransfer()" class="bg-orange-500 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md">Phát Lệnh</button>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border shadow-sm">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-4">Lịch sử điều phối chuỗi cung ứng</h3>
+                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-4">Lịch sử chuỗi cung ứng</h3>
                     <div id="logistics-log-container" class="space-y-2"></div>
                 </div>
             </div>
@@ -276,8 +276,8 @@
             <div class="max-w-6xl mx-auto space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-xl font-black tracking-tight uppercase text-slate-900">Doanh Thu Tập Trung Báo Cáo</h2>
-                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Dữ liệu tài chính hợp nhất dòng tiền Cash và Chuyển Khoản ngân hàng.</p>
+                        <h2 class="text-xl font-black tracking-tight uppercase text-slate-900">Doanh Ngân Tập Trung Hợp Nhất</h2>
+                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Dữ liệu dòng tiền đã tách biệt hoàn toàn ví MoMo.</p>
                     </div>
                     <div class="flex gap-2 items-center flex-wrap">
                         <button onclick="syncChainToGoogleSheets()" class="bg-blue-50 text-blue-600 border border-blue-200 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-sm whitespace-nowrap"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Đồng Bộ G.Sheets</button>
@@ -287,7 +287,7 @@
                             <option value="cn2">Chi Nhánh 2 (Bình Thạnh)</option>
                             <option value="cn3">Chi Nhánh 3 (Thủ Đức)</option>
                         </select>
-                        <button onclick="exportChainExcel()" class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-sm whitespace-nowrap"><i class="fa-solid fa-file-excel mr-1"></i> Xuất Báo Cáo Excel</button>
+                        <button onclick="exportChainExcel()" class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-sm whitespace-nowrap"><i class="fa-solid fa-file-excel mr-1"></i> Xuất Excel</button>
                     </div>
                 </div>
 
@@ -340,17 +340,17 @@
 
                 <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
                     <div class="flex justify-between items-center border-b pb-3">
-                        <h3 class="text-xs font-black uppercase text-slate-700"><i class="fa-solid fa-user-lock mr-2 text-slate-500"></i>Quản Lý Ca Làm Việc & Tài Chính Két Tiền</h3>
+                        <h3 class="text-xs font-black uppercase text-slate-700"><i class="fa-solid fa-user-lock mr-2 text-slate-500"></i>Quản Lý Ca Làm Việc & Tiền Mặt Két Trực</h3>
                         <span class="text-[10px] bg-slate-100 font-bold px-2 py-1 rounded" id="shift-role-badge">Quyền: STAFF</span>
                     </div>
                     <div class="flex flex-wrap gap-4 items-center justify-between text-xs font-medium">
                         <div class="space-y-1">
-                            <p>Nhân viên trực ca: <b id="shift-cashier-name">Barista_A</b></p>
-                            <p>Số dư tiền mặt bàn giao đầu ca: <b id="shift-opening-balance">500,000đ</b></p>
+                            <p>Nhân viên: <b id="shift-cashier-name">Barista_A</b></p>
+                            <p>Tiền bàn giao đầu ca: <b id="shift-opening-balance">500,000đ</b></p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="switchUserRole()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-black text-[10px] uppercase">Đổi Quyền Tài Khoản</button>
-                            <button onclick="closeActiveShiftReport()" class="px-4 py-2 bg-orange-500 text-white rounded-xl font-black text-[10px] uppercase shadow-md">Kết Ca & Xuất Báo Cáo Két</button>
+                            <button onclick="switchUserRole()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-black text-[10px] uppercase">Đổi Quyền Đăng Nhập</button>
+                            <button onclick="closeActiveShiftReport()" class="px-4 py-2 bg-orange-500 text-white rounded-xl font-black text-[10px] uppercase shadow-md">Chốt Ca Xuất Phiếu Két</button>
                         </div>
                     </div>
                 </div>
@@ -465,7 +465,7 @@
                 </div>
                 
                 <div id="gate-qr-zone" class="hidden flex-col items-center p-4 bg-white border border-slate-100 rounded-2xl shadow-inner min-h-[200px]">
-                    <img id="gate-qr-img" src="" class="w-40 h-40 border shadow-sm rounded-xl object-contain bg-white transition-all opacity-100">
+                    <img id="gate-qr-img" src="" class="w-40 h-40 border shadow-sm rounded-xl object-contain bg-white transition-all">
                     <p class="text-[8px] font-bold text-blue-500 uppercase tracking-widest mt-2">Quét Qua Ứng Dụng Ngân Hàng Điện Tử</p>
                 </div>
             </div>
@@ -514,8 +514,8 @@
             bankAccount: "0347895231",
             bankId: "MB",
             accountName: "NGUYEN HUY POS",
-            menuEndpoint: "", // Đặt API Google Sheets cấu hình menu nếu có
-            revenueEndpoint: "" // Cổng API đẩy báo cáo tự động kế toán
+            menuEndpoint: "", 
+            revenueEndpoint: "" 
         };
 
         let PRODUCT_MENU = [
@@ -531,9 +531,9 @@
 
         const COFFEE_RECIPE_MAP = {
             "Cà Phê Sữa Đá": [
-                { materialId: "MAT_CAFE_HAT", amount: 20 },  // 20g hạt cafe
-                { materialId: "MAT_SUA_THAC", amount: 40 },  // 40ml sữa đặc
-                { materialId: "MAT_LY_NHAU", amount: 1 }      // 1 ly nhựa sử dụng 1 lần
+                { materialId: "MAT_CAFE_HAT", amount: 20 },
+                { materialId: "MAT_SUA_THAC", amount: 40 },
+                { materialId: "MAT_LY_NHAU", amount: 1 }
             ],
             "Cà Phê Đen Đá": [
                 { materialId: "MAT_CAFE_HAT", amount: 20 },
@@ -555,14 +555,14 @@
 
         const INITIAL_INVENTORY_TEMPLATE = {
             "MAT_CAFE_HAT": { name: "Cà Phê Hạt Robusta", stock: 15000, max: 20000, unit: "g" },
-            "MAT_SUA_THAC": { name: "Sữa Đặc Ngôi Sao Phương Nam", stock: 10000, max: 12000, unit: "ml" },
+            "MAT_SUA_THAC": { name: "Sữa Đặc Phương Nam", stock: 10000, max: 12000, unit: "ml" },
             "MAT_SUA_TUOI": { name: "Sữa Tươi Dalat Milk", stock: 8000, max: 10000, unit: "ml" },
             "MAT_DUONG_NUOC": { name: "Nước Đường Đậm Đặc", stock: 5000, max: 6000, unit: "ml" },
             "MAT_LY_NHAU": { name: "Ly Nhựa Pet 500ml", stock: 400, max: 500, unit: "cái" }
         };
 
         // =========================================================================
-        // 2. STATE MANAGER & SYNCHRONIZATION
+        // 2. STATE MANAGER & INITIALIZATION
         // =========================================================================
         let globalChainState = {
             focusBranchId: "all",
@@ -583,7 +583,7 @@
 
         let activeSession = {
             userRole: "STAFF", 
-            cashierName: "Barista_Quầy_Trưởng",
+            cashierName: "Quầy_Trưởng_Phát_La",
             shiftStartTime: Date.now(),
             cashOpeningBalance: 500000 
         };
@@ -610,7 +610,15 @@
             if(localData) {
                 try {
                     let parse = JSON.parse(localData);
-                    if(parse.branches) globalChainState.branches = parse.branches;
+                    if(parse.branches) {
+                        ['cn1', 'cn2', 'cn3'].forEach(bId => {
+                            if(parse.branches[bId]) {
+                                if(parse.branches[bId].tables) globalChainState.branches[bId].tables = parse.branches[bId].tables;
+                                if(parse.branches[bId].inventory) globalChainState.branches[bId].inventory = parse.branches[bId].inventory;
+                                if(parse.branches[bId].transactions) globalChainState.branches[bId].transactions = parse.branches[bId].transactions;
+                            }
+                        });
+                    }
                     if(parse.logisticsLogs) globalChainState.logisticsLogs = parse.logisticsLogs;
                 } catch(e) {}
             }
@@ -627,12 +635,20 @@
             }
             const { ref, onValue } = window.firebaseRefs;
             document.getElementById('sync-global-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-            document.getElementById('sync-global-status').innerText = "Hệ thống Đa Chi Nhánh Trực Tuyến Cloud";
+            document.getElementById('sync-global-status').innerText = "Hệ thống Trực Tuyến Cloud";
 
             onValue(ref(window.FIREBASE_DB, 'coffee_chain_store'), (snapshot) => {
                 const cloudData = snapshot.val();
                 if(cloudData) {
-                    if(cloudData.branches) globalChainState.branches = cloudData.branches;
+                    if(cloudData.branches) {
+                        ['cn1', 'cn2', 'cn3'].forEach(bId => {
+                            if(cloudData.branches[bId]) {
+                                if(cloudData.branches[bId].tables) globalChainState.branches[bId].tables = cloudData.branches[bId].tables;
+                                if(cloudData.branches[bId].inventory) globalChainState.branches[bId].inventory = cloudData.branches[bId].inventory;
+                                if(cloudData.branches[bId].transactions) globalChainState.branches[bId].transactions = cloudData.branches[bId].transactions;
+                            }
+                        });
+                    }
                     if(cloudData.logisticsLogs) globalChainState.logisticsLogs = cloudData.logisticsLogs;
                     saveStateToLocal();
                     renderAllViewsSystem();
@@ -661,7 +677,7 @@
         }
 
         // =========================================================================
-        // 3. CORE NAVIGATION ENGINE & VIEW ROUTERS
+        // 3. CORE NAVIGATION ENGINE & TAB ROUTERS
         // =========================================================================
         function switchTab(tabId) {
             globalChainState.currentSelectedTab = tabId;
@@ -700,10 +716,10 @@
         }
 
         // =========================================================================
-        // 4. MODULE WORKFLOWS INTERFACES
+        // 4. MODULES WORKFLOW INTERFACES
         // =========================================================================
         
-        // --- 4.1 VIEW: DASHBOARD ---
+        // --- 4.1 DASHBOARD ---
         function renderDashboardUI() {
             let totalActiveOccupied = 0;
             ['cn1', 'cn2', 'cn3'].forEach(bId => {
@@ -719,10 +735,8 @@
                 document.getElementById(`dash-tab-${bId}`).innerText = `${bOccupied}/${MASTER_CONFIG.tablesPerBranch}`;
             });
 
-            // Widget phân tích top seller
             document.getElementById('dashboard-top-sellers-zone').innerHTML = renderTopSellingWidget();
 
-            // Lưới quét nguyên liệu chạm vùng nguy hiểm
             let alertHtml = "";
             ['cn1', 'cn2', 'cn3'].forEach(bId => {
                 let inv = globalChainState.branches[bId].inventory;
@@ -734,15 +748,15 @@
                             <td class="p-3">${item.name}</td>
                             <td class="p-3"><span class="branch-badge ${bId}-badge">${bId.toUpperCase()}</span></td>
                             <td class="p-3 font-mono font-black text-red-600">${item.stock.toLocaleString()} ${item.unit}</td>
-                            <td class="p-3"><span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded uppercase animate-pulse">Cần Nhập Khẩn</span></td>
+                            <td class="p-3"><span class="text-[9px] bg-red-600 text-white font-extrabold px-1.5 py-0.5 rounded uppercase animate-pulse">Nhập Kho Gấp</span></td>
                         </tr>`;
                     }
                 }
             });
-            document.getElementById('dash-inventory-alerts').innerHTML = alertHtml || `<tr><td colspan="5" class="p-4 text-center text-slate-400 font-bold">Không có vật tư nào chạm vùng nguy hiểm. Kho chuỗi an toàn!</td></tr>`;
+            document.getElementById('dash-inventory-alerts').innerHTML = alertHtml || `<tr><td colspan="5" class="p-4 text-center text-slate-400 font-bold">Tồn kho chuỗi an toàn! Hoạt động ổn định.</td></tr>`;
         }
 
-        // --- 4.2 VIEW: SƠ ĐỒ BÀN (TABLES ENGINE) ---
+        // --- 4.2 TABLES GRID ---
         function renderTablesUI() {
             let html = "";
             let countOccupied = 0;
@@ -762,7 +776,7 @@
                 });
             }
             document.getElementById('grid-branch-tables').innerHTML = html;
-            document.getElementById('global-table-stats').innerText = `${countOccupied} Bàn Đang Đóng Đơn Hoạt Động`;
+            document.getElementById('global-table-stats').innerText = `${countOccupied} Bàn Đang Có Khách`;
         }
 
         function buildTableCardMarkup(branchId, tableObj) {
@@ -774,7 +788,7 @@
                     <span class="branch-badge ${branchId}-badge">${branchId.toUpperCase()}</span>
                 </div>
                 <div class="text-right">
-                    <p class="text-[10px] font-bold ${isAcc?'text-orange-600':'text-slate-400'}">${isAcc ? `Đã gọi ${itemQty} ly` : 'Bàn trống'}</p>
+                    <p class="text-[10px] font-bold ${isAcc?'text-orange-600':'text-slate-400'}">${isAcc ? `Đã gọi ${itemQty} món` : 'Bàn trống'}</p>
                     <p class="text-[9px] font-mono font-medium text-slate-400 mt-0.5">${tableObj.timeIn ? tableObj.timeIn : '--:--'}</p>
                 </div>
             </div>`;
@@ -787,21 +801,20 @@
             switchTab('pos');
         }
 
-        // --- HÀM NGHIỆP VỤ CAO CẤP: CHUYỂN BÀN / GỘP ĐƠN ---
         function triggerTableSwitch() {
             let from = parseInt(document.getElementById('table-cmd-from').value);
             let to = parseInt(document.getElementById('table-cmd-to').value);
             let bId = globalChainState.focusBranchId;
-            if(bId === 'all') { showNotification("Vui lòng chọn một chi nhánh cụ thể để chuyển bàn!", "warning"); return; }
+            if(bId === 'all') { showNotification("Vui lòng chọn một chi nhánh cụ thể trước!", "warning"); return; }
             if(!from || !to) { showNotification("Vui lòng nhập số bàn hợp lệ!", "warning"); return; }
             
             let tables = globalChainState.branches[bId].tables;
             let source = tables.find(t => t.id === from);
             let target = tables.find(t => t.id === to);
             
-            if(!source || !target) { showNotification("Số bàn không tồn tại!", "error"); return; }
-            if(source.cart.length === 0) { showNotification("Bàn nguồn đang không có món!", "warning"); return; }
-            if(target.cart.length > 0) { showNotification("Bàn đích đang có khách! Sử dụng tính năng Gộp đơn.", "warning"); return; }
+            if(!source || !target) { showNotification("Bàn không tồn tại!", "error"); return; }
+            if(source.cart.length === 0) { showNotification("Bàn nguồn trống!", "warning"); return; }
+            if(target.cart.length > 0) { showNotification("Bàn đích đang có khách!", "warning"); return; }
             
             target.cart = source.cart;
             target.status = "occupied";
@@ -812,21 +825,21 @@
             source.timeIn = null;
             
             pushBranchTablesToCloud(bId);
-            showNotification(`Đã điều chuyển Bàn ${from} sang Bàn ${to} thành công!`);
+            showNotification(`Đã chuyển Bàn ${from} sang Bàn ${to}!`);
         }
 
         function triggerTableMerge() {
             let from = parseInt(document.getElementById('table-cmd-from').value);
             let to = parseInt(document.getElementById('table-cmd-to').value);
             let bId = globalChainState.focusBranchId;
-            if(bId === 'all') { showNotification("Vui lòng chọn một chi nhánh cụ thể để gộp bàn!", "warning"); return; }
-            if(!from || !to) { showNotification("Vui lòng nhập số bàn gộp hợp lệ!", "warning"); return; }
+            if(bId === 'all') { showNotification("Vui lòng chọn một chi nhánh cụ thể!", "warning"); return; }
+            if(!from || !to) { showNotification("Vui lòng nhập số bàn gộp!", "warning"); return; }
             
             let tables = globalChainState.branches[bId].tables;
             let source = tables.find(t => t.id === from);
             let target = tables.find(t => t.id === to);
             
-            if(!source || !target || source.cart.length === 0) { showNotification("Kiểm tra lại dữ liệu bàn gộp!", "error"); return; }
+            if(!source || !target || source.cart.length === 0) { showNotification("Dữ liệu gộp không hợp lệ!", "error"); return; }
             
             if(!target.cart) target.cart = [];
             target.cart = [...target.cart, ...source.cart];
@@ -838,28 +851,27 @@
             source.timeIn = null;
             
             pushBranchTablesToCloud(bId);
-            showNotification(`Đã gộp thành công hóa đơn Bàn ${from} vào Bàn ${to}!`);
+            showNotification(`Đã gộp đơn từ Bàn ${from} vào Bàn ${to}!`);
         }
 
-        // --- 4.3 VIEW: MÀN HÌNH GỌI MÓN (POS ORDER ENGINE) ---
+        // --- 4.3 POS MENU & ORDER SCREEN (FIXED PRODUCT SELECTION BUG) ---
         function renderPosUI() {
             let bId = globalChainState.focusBranchId;
             let tId = globalChainState.focusTableId;
             
             if(bId === 'all' || !tId) {
-                document.getElementById('cart-table-title').innerText = "CHƯA CHỌN BÀN TÁC VỤ";
+                document.getElementById('cart-table-title').innerText = "CHƯA CHỌN BÀN";
                 document.getElementById('cart-time-log').innerText = "Thời gian vào: --:--";
-                document.getElementById('cart-items-container').innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center"><i class="fa-solid fa-hand-pointer text-3xl mb-2"></i><p class="text-xs font-bold uppercase">Vui lòng sang tab Sơ Đồ Bàn chọn bàn làm việc trước khi gọi món!</p></div>`;
+                document.getElementById('cart-items-container').innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center"><i class="fa-solid fa-hand-pointer text-3xl mb-2"></i><p class="text-xs font-bold uppercase">Mời bạn chọn một bàn cụ thể tại tab Sơ Đồ Bàn trước khi gọi món!</p></div>`;
                 document.getElementById('cart-total-amount').innerText = "0đ";
                 return;
             }
 
-            document.getElementById('cart-table-title').innerText = `BÀN ĐANG CHỌN: BÀN ${tId < 10 ? '0'+tId : tId}`;
+            document.getElementById('cart-table-title').innerText = `BÀN HOẠT ĐỘNG: BÀN ${tId < 10 ? '0'+tId : tId}`;
             
-            // Xây dựng thanh Categories danh mục
             let cats = ["TẤT CẢ", "CÀ PHÊ", "TRÀ TRÁI CÂY", "ĐÁ XAY", "BÁNH"];
             let catHtml = "";
-            cats.forEach((c, idx) => {
+            cats.forEach(c => {
                 catHtml += `<button onclick="filterPosCategory('${c}')" class="lg:w-full text-left px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all bg-white border border-slate-200 text-slate-700 hover:border-orange-500">${c}</button>`;
             });
             document.getElementById('pos-categories-bar').innerHTML = catHtml;
@@ -879,10 +891,11 @@
             });
         }
 
+        // Đã sửa đổi cách truyền tham số sang dạng 'String ID' để tránh lỗi cú pháp dấu ngoặc
         function renderPosMenuGrid() {
             let html = "";
             PRODUCT_MENU.forEach(p => {
-                html += `<div onclick="openCoffeeModifierModal(${JSON.stringify(p)})" class="pos-product-card bg-white p-4 rounded-2xl border hover:border-orange-500 transition-all cursor-pointer flex flex-col justify-between h-40" data-cat="${p.cat}">
+                html += `<div onclick="openCoffeeModifierModal('${p.id}')" class="pos-product-card bg-white p-4 rounded-2xl border hover:border-orange-500 transition-all cursor-pointer flex flex-col justify-between h-40" data-cat="${p.cat}">
                     <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-base"><i class="fa-solid ${p.icon}"></i></div>
                     <div>
                         <h4 class="text-xs font-black text-slate-800 leading-tight mt-2">${p.name}</h4>
@@ -893,7 +906,10 @@
             document.getElementById('pos-menu-grid').innerHTML = html;
         }
 
-        function openCoffeeModifierModal(product) {
+        function openCoffeeModifierModal(productId) {
+            let product = PRODUCT_MENU.find(p => p.id === productId);
+            if (!product) return;
+
             currentSelectingProduct = product;
             currentSelectedModifiers = { size: "M", sugar: "100%", ice: "100%" };
             
@@ -901,7 +917,6 @@
             document.getElementById('size-modal-price-m').innerText = product.price.toLocaleString() + "đ";
             document.getElementById('size-modal-price-l-real').innerText = (product.price + 5000).toLocaleString() + "đ";
             
-            // Reset UI nút chọn đường đá
             updateModifierUI('sugar', '100%');
             updateModifierUI('ice', '100%');
             selectItemSize('M');
@@ -959,7 +974,7 @@
 
             pushBranchTablesToCloud(bId);
             closeSizeSelector();
-            showNotification("Đã ghi nhận món kèm định lượng vào giỏ!");
+            showNotification("Đã thêm món vào giỏ thành công!");
         }
 
         function renderCartUI() {
@@ -1016,14 +1031,13 @@
             pushBranchTablesToCloud(bId);
         }
 
-        // --- CƠ CHẾ REALTIME ĐẨY ĐƠN XUỐNG QUẦY BARISTA (KITCHEN DISPATCH) & IN HARDWARE ---
         function executePrintJob(type) {
             let bId = globalChainState.focusBranchId;
             let tId = globalChainState.focusTableId;
             let tObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
 
             if(!tObj || tObj.cart.length === 0) {
-                showNotification("Giỏ hàng rỗng, không có dữ liệu thực thi!", "warning");
+                showNotification("Giỏ hàng rỗng!", "warning");
                 return;
             }
 
@@ -1033,9 +1047,9 @@
                     push(ref(window.FIREBASE_DB, `barista_orders/${bId}`), {
                         tableId: tId, timestamp: Date.now(), items: tObj.cart, status: "CHỜ PHA CHẾ"
                     });
-                    showNotification("Đã gửi đơn xuống màn hình Barista!", "success");
+                    showNotification("Đã lệnh pha chế xuống Barista!", "success");
                 } else {
-                    showNotification("Lỗi đồng bộ Cloud. Đang in phiếu chế biến Local...", "warning");
+                    showNotification("Mất kết nối Cloud. In bill tạm thời...", "warning");
                 }
             } else {
                 let pZone = document.getElementById('print-area');
@@ -1048,7 +1062,7 @@
             }
         }
 
-        // --- 4.4 VIEW: THANH TOÁN (CHECKOUT SYSTEM) ---
+        // --- 4.4 PAYMENT SYSTEM ---
         function openPaymentGateway() {
             let bId = globalChainState.focusBranchId;
             let tId = globalChainState.focusTableId;
@@ -1088,7 +1102,6 @@
             document.getElementById('modal-final-amount').innerText = final.toLocaleString() + "đ";
             document.getElementById('modal-final-amount').setAttribute('data-raw', final);
             
-            // Nếu đang chọn hình thức VietQR thì cập nhật lại mã phản hồi QR động ngân hàng luôn
             if(activeGatewayMethod === "Transfer") generateDynamicVietQR(final);
         }
 
@@ -1120,17 +1133,15 @@
             document.getElementById('gate-qr-img').src = url;
         }
 
-        // --- CƠ CHẾ KẾT THÚC ĐƠN: TRỪ KHO TỰ ĐỘNG THEO RECIPE (AUTO STOCK INVENTORY DEPLOY) ---
         function commitTransaction() {
             let bId = globalChainState.focusBranchId;
             let tId = globalChainState.focusTableId;
             let tObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
             let finalAmt = parseInt(document.getElementById('modal-final-amount').getAttribute('data-raw'));
 
-            // Vận hành trừ kho nguyên liệu tự động theo công thức pha chế
             let currentInv = globalChainState.branches[bId].inventory;
             tObj.cart.forEach(item => {
-                let coreName = item.name.split(" (")[0]; // Bóc tách chuỗi để lấy tên món gốc
+                let coreName = item.name.split(" (")[0]; 
                 let recipe = COFFEE_RECIPE_MAP[coreName];
                 if(recipe) {
                     recipe.forEach(rItem => {
@@ -1142,7 +1153,6 @@
                 }
             });
 
-            // Ghi nhận hóa đơn vào lịch sử giao dịch chi nhánh
             let tx = {
                 id: "TX_" + Date.now(),
                 tableId: tId,
@@ -1155,23 +1165,22 @@
             if(!globalChainState.branches[bId].transactions) globalChainState.branches[bId].transactions = [];
             globalChainState.branches[bId].transactions.push(tx);
 
-            // Reset trạng thái phòng bàn
             tObj.cart = [];
             tObj.status = "empty";
             tObj.timeIn = null;
 
             pushWholeStateToCloud();
             closePaymentGateway();
-            showNotification("Đã in hóa đơn biên lai, khấu trừ kho nguyên liệu thành công!");
+            showNotification("Đã in biên lai và hoàn tất xuất kho!");
         }
 
-        // --- 4.5 VIEW: KHO VÀ ĐIỀU PHỐI (INVENTORY & LOGISTICS SUPPLY CHAIN) ---
+        // --- 4.5 INVENTORY ---
         function renderInventoryUI() {
             let html = "";
             ['cn1', 'cn2', 'cn3'].forEach(bId => {
                 let inv = globalChainState.branches[bId].inventory;
                 html += `<div class="border rounded-2xl p-4 bg-slate-50/50 space-y-3">
-                    <div class="border-b pb-2 flex justify-between items-center"><span class="branch-badge ${bId}-badge">${bId.toUpperCase()}</span><span class="text-[9px] font-bold text-slate-400">Vật tư quầy</span></div>
+                    <div class="border-b pb-2 flex justify-between items-center"><span class="branch-badge ${bId}-badge">${bId.toUpperCase()}</span><span class="text-[9px] font-bold text-slate-400">Nguyên liệu quầy</span></div>
                     <div class="space-y-2 text-xs">`;
                 
                 for(let key in inv) {
@@ -1190,7 +1199,6 @@
             });
             document.getElementById('grid-inventory-master').innerHTML = html;
 
-            // Đồng bộ select bên phân hệ điều phối logistics
             let logSelect = document.getElementById('logistics-item');
             logSelect.innerHTML = "";
             for(let key in INITIAL_INVENTORY_TEMPLATE) {
@@ -1200,7 +1208,7 @@
 
         function syncGlobalInventoryToCloud() {
             pushWholeStateToCloud();
-            showNotification("Đã đẩy dữ liệu đồng bộ kho chuỗi lên Cloud!");
+            showNotification("Đã cập nhật kho dữ liệu lên Cloud!");
         }
 
         function processLogisticsTransfer() {
@@ -1209,13 +1217,13 @@
             let itemKey = document.getElementById('logistics-item').value;
             let qty = parseInt(document.getElementById('logistics-qty').value) || 0;
 
-            if(from === to) { showNotification("Kho nguồn và kho đích trùng nhau!", "warning"); return; }
-            if(qty <= 0) { showNotification("Số lượng điều phối không hợp lệ!", "warning"); return; }
+            if(from === to) { showNotification("Kho nguồn và đích trùng nhau!", "warning"); return; }
+            if(qty <= 0) { showNotification("Số lượng không hợp lệ!", "warning"); return; }
 
             let stockFrom = globalChainState.branches[from].inventory[itemKey];
             let stockTo = globalChainState.branches[to].inventory[itemKey];
 
-            if(stockFrom.stock < qty) { showNotification("Kho nguồn không đủ lượng hàng xuất đi!", "error"); return; }
+            if(stockFrom.stock < qty) { showNotification("Kho nguồn không đủ số lượng tồn!", "error"); return; }
 
             stockFrom.stock -= qty;
             stockTo.stock += qty;
@@ -1228,7 +1236,7 @@
             globalChainState.logisticsLogs.unshift(log);
 
             pushWholeStateToCloud();
-            showNotification("Kích hoạt lệnh vận chuyển kho nội bộ thành công!");
+            showNotification("Điều phối kho hoàn tất!");
         }
 
         function renderLogisticsUI() {
@@ -1241,14 +1249,13 @@
                     <span class="text-[10px] font-mono text-slate-400">${new Date(l.timestamp).toLocaleString('vi-VN')}</span>
                 </div>`;
             });
-            document.getElementById('logistics-log-container').innerHTML = html || `<p class="text-xs text-slate-400 text-center font-bold">Chưa có nhật ký lệnh vận chuyển nào.</p>`;
+            document.getElementById('logistics-log-container').innerHTML = html || `<p class="text-xs text-slate-400 text-center font-bold">Chưa có nhật ký lệnh vận chuyển.</p>`;
         }
 
-        // --- 4.6 VIEW: DOANH THU & CA LÀM VIỆC (SHIFT MANAGEMENT & REPORTS) ---
+        // --- 4.6 FINANCE REPORTS ---
         function calculateFinancialReports() {
             let filterBranch = document.getElementById('rep-branch-filter').value;
             
-            // Thiết lập giá trị mặc định cho bộ lọc nếu chưa có
             if(!document.getElementById('rep-filter-day').value) {
                 let today = new Date();
                 document.getElementById('rep-filter-day').value = today.toISOString().split('T')[0];
@@ -1259,7 +1266,7 @@
             }
 
             let selDay = new Date(document.getElementById('rep-filter-day').value).toLocaleDateString('vi-VN');
-            let selMonth = document.getElementById('rep-filter-month').value; // YYYY-MM
+            let selMonth = document.getElementById('rep-filter-month').value; 
             let selYear = document.getElementById('rep-filter-year').value;
 
             let masterTxs = [];
@@ -1269,16 +1276,14 @@
                 masterTxs = globalChainState.branches[filterBranch].transactions || [];
             }
 
-            // Tính toán Ngày
             let dayList = masterTxs.filter(t => new Date(t.timestamp).toLocaleDateString('vi-VN') === selDay);
             let dayCash = dayList.filter(t => t.paymentMethod === 'Cash').reduce((s,t)=>s+t.finalAmount,0);
             let dayTrans = dayList.filter(t => t.paymentMethod === 'Transfer').reduce((s,t)=>s+t.finalAmount,0);
             document.getElementById('rep-total-day').innerText = (dayCash + dayTrans).toLocaleString() + "đ";
             document.getElementById('rep-day-cash').innerText = dayCash.toLocaleString() + "đ";
             document.getElementById('rep-day-transfer').innerText = dayTrans.toLocaleString() + "đ";
-            document.getElementById('rep-count-day').innerText = `${dayList.length} Đơn hàng hoàn tất`;
+            document.getElementById('rep-count-day').innerText = `${dayList.length} Đơn hàng`;
 
-            // Tính toán Tháng
             let monthList = masterTxs.filter(t => {
                 let d = new Date(t.timestamp);
                 let mStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -1289,37 +1294,26 @@
             document.getElementById('rep-total-month').innerText = (mCash + mTrans).toLocaleString() + "đ";
             document.getElementById('rep-month-cash').innerText = mCash.toLocaleString() + "đ";
             document.getElementById('rep-month-transfer').innerText = mTrans.toLocaleString() + "đ";
-            document.getElementById('rep-count-month').innerText = `${monthList.length} Đơn hàng hoàn tất`;
+            document.getElementById('rep-count-month').innerText = `${monthList.length} Đơn hàng`;
 
-            // Tính toán Năm
             let yearList = masterTxs.filter(t => new Date(t.timestamp).getFullYear().toString() === selYear);
             let yCash = yearList.filter(t => t.paymentMethod === 'Cash').reduce((s,t)=>s+t.finalAmount,0);
             let yTrans = yearList.filter(t => t.paymentMethod === 'Transfer').reduce((s,t)=>s+t.finalAmount,0);
             document.getElementById('rep-total-year').innerText = (yCash + yTrans).toLocaleString() + "đ";
             document.getElementById('rep-year-cash').innerText = yCash.toLocaleString() + "đ";
             document.getElementById('rep-year-transfer').innerText = yTrans.toLocaleString() + "đ";
-            document.getElementById('rep-count-year').innerText = `${yearList.length} Đơn hàng hoàn tất`;
+            document.getElementById('rep-count-year').innerText = `${yearList.length} Đơn hàng`;
         }
 
-        // --- PHÂN QUYỀN VÀ BÁO CÁO KÉT TIỀN CA LÀM VIỆC (SHIFT SYSTEM ENGINE) ---
         function switchUserRole() {
             activeSession.userRole = (activeSession.userRole === "STAFF") ? "MANAGER" : "STAFF";
             document.getElementById('shift-role-badge').innerText = `Quyền: ${activeSession.userRole}`;
-            showNotification(`Đã chuyển sang tài khoản quyền: ${activeSession.userRole}`);
-        }
-
-        function secureAction(callback) {
-            if(activeSession.userRole !== "MANAGER") {
-                showNotification("Từ chối truy cập! Thao tác yêu cầu tài khoản quyền Quản Lý.", "error");
-                return false;
-            }
-            if(callback) callback();
-            return true;
+            showNotification(`Đã chuyển sang tài khoản: ${activeSession.userRole}`);
         }
 
         function closeActiveShiftReport() {
             let bId = globalChainState.focusBranchId;
-            if(bId === 'all') { showNotification("Vui lòng lọc một chi nhánh cụ thể để chốt ca tiền mặt!", "warning"); return; }
+            if(bId === 'all') { showNotification("Hãy chọn một chi nhánh cụ thể!", "warning"); return; }
             
             let cashSales = (globalChainState.branches[bId].transactions || [])
                 .filter(t => t.paymentMethod === 'Cash' && t.timestamp >= activeSession.shiftStartTime)
@@ -1327,16 +1321,15 @@
                 
             let expectedCashInSafe = activeSession.cashOpeningBalance + cashSales;
             
-            alert(`===== BÁO CÁO CHỐT CA HỘP LỆ =====\n` +
-                  `Cơ sở quầy: ${bId.toUpperCase()}\n` +
-                  `Nhân viên kiểm tra: ${activeSession.cashierName}\n` +
-                  `Tiền mặt bàn giao đầu ca: ${activeSession.cashOpeningBalance.toLocaleString()}đ\n` +
-                  `Doanh thu tiền mặt phát sinh trong ca: ${cashSales.toLocaleString()}đ\n` +
+            alert(`===== BÁO CÁO KẾT CA TIỀN MẶT =====\n` +
+                  `Cơ sở: ${bId.toUpperCase()}\n` +
+                  `Nhân viên ca trực: ${activeSession.cashierName}\n` +
+                  `Tiền đầu ca bàn giao: ${activeSession.cashOpeningBalance.toLocaleString()}đ\n` +
+                  `Doanh số mặt phát sinh: ${cashSales.toLocaleString()}đ\n` +
                   `-----------------------------------\n` +
-                  `Tổng quỹ tiền mặt thực tế phải có trong két: ${expectedCashInSafe.toLocaleString()}đ`);
+                  `Tổng tiền mặt thực tế kiểm két: ${expectedCashInSafe.toLocaleString()}đ`);
         }
 
-        // --- XUẤT FILE FILE EXCEL CHUỖI TẬP TRUNG & ĐỒNG BỘ GOOGLE SHEETS ---
         function exportChainExcel() {
             let allExportData = [];
             ['cn1', 'cn2', 'cn3'].forEach(bId => {
@@ -1347,19 +1340,19 @@
                         "Mã Giao Dịch": tx.id,
                         "Bàn Phục Vụ": `BÀN ${tx.tableId}`,
                         "Thời Gian": new Date(tx.timestamp).toLocaleString('vi-VN'),
-                        "Tổng Tiền Biên Lai": tx.finalAmount,
-                        "Hình Thức": tx.paymentMethod === 'Cash' ? 'Tiền Mặt' : 'Chuyển Khoản'
+                        "Tổng Tiền": tx.finalAmount,
+                        "Phương Thức": tx.paymentMethod === 'Cash' ? 'Tiền Mặt' : 'Chuyển Khoản'
                     });
                 });
             });
 
-            if(allExportData.length === 0) { showNotification("Không có dữ liệu hóa đơn để xuất!", "warning"); return; }
+            if(allExportData.length === 0) { showNotification("Không có dữ liệu hóa đơn!", "warning"); return; }
             
             let ws = XLSX.utils.json_to_sheet(allExportData);
             let wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Doanh Thu Chuỗi");
-            XLSX.writeFile(wb, `PHATLA_REVENUE_REPORT_${Date.now()}.xlsx`);
-            showNotification("Đã kết xuất báo cáo Excel thành công!");
+            XLSX.writeFile(wb, `REVENUE_REPORT_${Date.now()}.xlsx`);
+            showNotification("Đã tải xuống báo cáo Excel!");
         }
 
         async function syncChainToGoogleSheets() {
@@ -1377,23 +1370,23 @@
                 });
             });
 
-            if(allExportData.length === 0) { showNotification("Hôm nay chưa có dữ liệu giao dịch!", "warning"); return; }
-            if(!MASTER_CONFIG.revenueEndpoint) { showNotification("Chưa cấu hình Endpoint API Doanh Thu Google Sheets!", "error"); return; }
+            if(allExportData.length === 0) { showNotification("Không có dữ liệu hôm nay!", "warning"); return; }
+            if(!MASTER_CONFIG.revenueEndpoint) { showNotification("Chưa cấu hình Endpoint API!", "error"); return; }
             
-            showNotification("Đang kết nối cổng API đồng bộ...", "warning");
+            showNotification("Đang đồng bộ...", "warning");
             try {
                 for(let payload of allExportData) {
                     await fetch(MASTER_CONFIG.revenueEndpoint, {
                         method: 'POST', mode: 'no-cors', body: JSON.stringify(payload)
                     });
                 }
-                showNotification(`Đã đẩy thành công đơn lên G.Sheets!`, "success");
+                showNotification(`Đã đồng bộ lên Google Sheets!`, "success");
             } catch (err) {
-                showNotification("Lỗi kết nối cổng API Google Sheets!", "error");
+                showNotification("Lỗi kết nối API G.Sheets!", "error");
             }
         }
 
-        // --- 4.7 THỐNG KÊ ĐỒ UỐNG CHẠY NHẤT (TOP SELLERS ANALYTICS WIDGET DATA ENGINE) ---
+        // --- 4.7 TOP SELLERS ANALYTICS ---
         function renderTopSellingWidget() {
             let bId = globalChainState.focusBranchId;
             let counter = {};
@@ -1417,11 +1410,11 @@
             let sorted = Object.entries(counter).sort((a,b) => b[1] - a[1]).slice(0, 5);
             
             let html = `<div class="bg-white p-5 rounded-2xl border shadow-sm">
-                <h4 class="text-xs font-black uppercase text-slate-500 mb-3 tracking-wider"><i class="fa-solid fa-fire text-orange-500 mr-2"></i>Bảng xếp hạng 5 món đồ uống bán chạy nhất</h4>
+                <h4 class="text-xs font-black uppercase text-slate-500 mb-3 tracking-wider"><i class="fa-solid fa-fire text-orange-500 mr-2"></i>5 đồ uống bán chạy nhất hệ thống</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 text-xs">`;
                 
             if(sorted.length === 0) {
-                return `<div class="bg-white p-5 rounded-2xl border shadow-sm text-center text-xs font-bold text-slate-400">Hệ thống chưa ghi nhận đơn hàng phát sinh hôm nay để phân tích số liệu đồ uống.</div>`;
+                return `<div class="bg-white p-5 rounded-2xl border shadow-sm text-center text-xs font-bold text-slate-400">Chưa ghi nhận số liệu giao dịch để phân tích.</div>`;
             }
 
             sorted.forEach(([name, qty], idx) => {
@@ -1438,7 +1431,7 @@
             return html;
         }
 
-        // --- 4.8 VIEW: LỊCH SỬ GIAO DỊCH (HISTORY CONTROLLER) ---
+        // --- 4.8 HISTORY CONTROLLER ---
         function setHistoryMethodFilter(method) {
             globalChainState.currentHistoryMethod = method;
             ['ALL', 'CASH', 'TRANSFER'].forEach(m => {
@@ -1467,12 +1460,10 @@
                 bTxs.forEach(t => { t.ownerBranch = filterBranch; list.push(t); });
             }
 
-            // Sắp xếp thời gian mới nhất lên đầu
             list.sort((a,b) => b.timestamp - a.timestamp);
 
             let html = "";
             list.forEach(t => {
-                // Áp bộ lọc hình thức dòng tiền
                 if(filterMethod === 'CASH' && t.paymentMethod !== 'Cash') return;
                 if(filterMethod === 'TRANSFER' && t.paymentMethod !== 'Transfer') return;
 
@@ -1496,7 +1487,7 @@
                 </div>`;
             });
 
-            document.getElementById('master-history-timeline').innerHTML = html || `<p class="text-xs text-slate-400 text-center font-bold py-6">Hệ thống chưa tìm thấy dữ liệu hóa đơn nào trùng khớp với bộ lọc!</p>`;
+            document.getElementById('master-history-timeline').innerHTML = html || `<p class="text-xs text-slate-400 text-center font-bold py-6">Không tìm thấy dữ liệu hóa đơn phù hợp.</p>`;
         }
 
         function viewReceiptDetailInModal(branchId, transactionId) {
