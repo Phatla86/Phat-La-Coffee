@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - POS</title>
+    <title>PHÁT LA PREMIUM - POS (UPDATE SIZE & CLOUD)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -358,6 +358,7 @@
                 </button>
                 <button onclick="confirmAddItem('L')" class="flex-1 p-4 border-2 border-slate-200 rounded-2xl flex flex-col items-center hover:border-orange-500 hover:bg-orange-50 transition-all group">
                     <span class="text-xl font-black text-slate-800 group-hover:text-orange-600">SIZE L</span>
+                    <span id="size-modal-price-l" class="text-[10px] font-bold text-slate-400 line-through mt-0.5">0đ</span>
                     <span id="size-modal-price-l-real" class="text-xs font-black text-orange-600 mt-0.5">0đ</span>
                 </button>
             </div>
@@ -387,9 +388,9 @@
                     <button onclick="selectGatePaymentMethod('Cash')" id="gate-method-cash" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"><i class="fa-solid fa-money-bill-wave text-xl"></i><span class="text-[9px] font-black uppercase">Tiền Mặt Local</span></button>
                     <button onclick="selectGatePaymentMethod('Transfer')" id="gate-method-transfer" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-qrcode text-xl"></i><span class="text-[9px] font-black uppercase">VietQR Dynamic</span></button>
                 </div>
-                <div id="gate-qr-zone" class="hidden flex-col items-center relative p-4 bg-white border-2 border-blue-50 rounded-2xl shadow-inner min-h-[220px]">
-                    <img id="gate-qr-img" src="" class="w-44 h-44 border shadow-sm rounded-xl object-contain bg-white transition-opacity duration-300 opacity-0" onload="this.classList.remove('opacity-30'); this.classList.remove('opacity-0'); this.classList.add('opacity-100');">
-                    <p class="text-[8px] font-bold text-blue-500 uppercase tracking-widest mt-2 relative z-10">Cổng Chuyển Khoản Tự Động Định Danh</p>
+                <div id="gate-qr-zone" class="hidden flex-col items-center p-4 bg-white border-2 border-blue-50 rounded-2xl shadow-inner">
+                    <img id="gate-qr-img" src="" class="w-44 h-44 border shadow-sm rounded-xl object-contain bg-white">
+                    <p class="text-[8px] font-bold text-blue-500 uppercase tracking-widest mt-2">Cổng Chuyển Khoản Tự Động Định Danh</p>
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t">
@@ -458,8 +459,8 @@
             bankCode: "vietcombank",
             accountNumber: "1046778674",
             accountHolder: "LA PHAT",
-            revenueEndpoint: "https://script.google.com/macros/s/AKfycbzVEdIbekAuy0m2WBPp8vz4VSQxw1gcIjbkoFKdGx17Poh7wVjyDRtwgtChLl3-9pPm/exec",
-            inventoryEndpoint: "https://script.google.com/macros/s/AKfycbz51nvW6bwPPZcEi7DLoJQDk-PVeSQeiUKfMD3MkwPiOr5QPQjZstfsJb0buPzuC636/exec",
+            revenueEndpoint: "https://script.google.com/macros/s/AKfycbwZXJhWuX7KMrQVJhOv_Dyy_MPPYJs4Ou8ZSx0VFdlHHCZRB0VV8R0O2EqfKuhErI8w/exec",
+            inventoryEndpoint: "https://script.google.com/macros/s/AKfycbwbmBB8hGImTTRk9jmAMkGKq2R4EJGbJ1qa3cKyzaFaJWJ54X5MMP5E7MOZ-vNKdaZdRg/exec",
             menuEndpoint: "https://script.google.com/macros/s/AKfycbyrM78SCzK9SzYi5n1K5LdqiAyG8bA4mZJFf_LIp8V2E7Cfebf0on5dpmku-I-ra0zu/exec",
             tablesPerBranch: 30
         };
@@ -768,6 +769,7 @@
             
             document.getElementById('size-modal-name').innerText = item.name;
             document.getElementById('size-modal-price-m').innerText = item.price.toLocaleString('vi-VN') + 'đ';
+            document.getElementById('size-modal-price-l').innerText = item.price.toLocaleString('vi-VN') + 'đ';
             document.getElementById('size-modal-price-l-real').innerText = (item.price + 10000).toLocaleString('vi-VN') + 'đ'; 
             
             document.getElementById('portal-size-modal').classList.remove('hidden');
@@ -948,10 +950,6 @@
             });
         }
 
-        // BIẾN TOÀN CỤC CHỐNG SPAM API QUÉT QR
-        let qrDebounceTimer = null;
-        let lastQrUrl = "";
-
         function openPaymentGateway() {
             let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId;
             if(!bId || !tId) return;
@@ -963,8 +961,6 @@
             document.getElementById('modal-branch-tag').innerText = bId.toUpperCase();
             document.getElementById('modal-table-tag').innerText = `BÀN ${String(tId).padStart(2, '0')}`;
             document.getElementById('mod-discount-val').value = 0;
-            
-            lastQrUrl = ""; // Xóa bộ nhớ ảnh cũ để load lại liền
             document.getElementById('portal-checkout-modal').classList.remove('hidden');
             recalcModalAmount();
         }
@@ -974,19 +970,8 @@
         function selectGatePaymentMethod(method) {
             globalChainState.gatePaymentMethod = method;
             const cashBtn = document.getElementById('gate-method-cash'); const qrBtn = document.getElementById('gate-method-transfer');
-            if(method === 'Cash') { 
-                cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"; 
-                qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; 
-                document.getElementById('gate-qr-zone').classList.add('hidden'); 
-            } 
-            else { 
-                qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-blue-500 bg-blue-50/30 text-blue-600 transition-all"; 
-                cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; 
-                document.getElementById('gate-qr-zone').classList.remove('hidden'); 
-                
-                // CẬP NHẬT QR NGAY KHI BẤM CHUYỂN TAB
-                recalcModalAmount(); 
-            }
+            if(method === 'Cash') { cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"; qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; document.getElementById('gate-qr-zone').classList.add('hidden'); } 
+            else { qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-blue-500 bg-blue-50/30 text-blue-600 transition-all"; cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; document.getElementById('gate-qr-zone').classList.remove('hidden'); }
         }
 
         function recalcModalAmount() {
@@ -1001,28 +986,8 @@
             document.getElementById('modal-final-amount').innerText = finalAmt.toLocaleString('vi-VN') + "đ";
 
             if(globalChainState.gatePaymentMethod === 'Transfer') {
-                let safeAddInfo = encodeURIComponent(`PL ${bId.toUpperCase()} BAN ${tId}`); 
-                let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
-                let newUrl = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
-                
-                // CƠ CHẾ DEBOUNCE (CHỐNG GIẬT)
-                if(lastQrUrl !== newUrl) {
-                    clearTimeout(qrDebounceTimer);
-                    let imgEl = document.getElementById('gate-qr-img');
-                    
-                    // Làm mờ ảnh cũ chờ ảnh mới
-                    imgEl.classList.remove('opacity-100');
-                    imgEl.classList.add('opacity-30'); 
-
-                    qrDebounceTimer = setTimeout(() => {
-                        imgEl.onload = () => { 
-                            imgEl.classList.remove('opacity-30'); 
-                            imgEl.classList.add('opacity-100'); 
-                        };
-                        imgEl.src = newUrl;
-                        lastQrUrl = newUrl;
-                    }, 400); // Tạm dừng 400ms sau khi ngừng gõ mới tải ảnh
-                }
+                let safeAddInfo = encodeURIComponent(`PL ${bId.toUpperCase()} BAN ${tId}`); let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
+                document.getElementById('gate-qr-img').src = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-qr_only.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
             }
         }
 
