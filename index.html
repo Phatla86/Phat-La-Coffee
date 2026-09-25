@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÁT LA PREMIUM - POS (UPDATE SIZE & CLOUD)</title>
+    <title>PHÁT LA PREMIUM - POS HỆ THỐNG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDtGst4U0kFKvZwlsV1RNLf4dreU6MOxcE",
@@ -22,15 +22,13 @@
             appId: "1:308198021503:web:22c61a617e222b3951624a"
         };
 
-        let db;
         try {
             const app = initializeApp(firebaseConfig);
-            db = getDatabase(app);
-            window.FIREBASE_DB = db; 
+            window.FIREBASE_DB = getDatabase(app); 
+            window.firebaseRefs = { ref, onValue, set, push };
         } catch (e) {
             console.warn("Lỗi kết nối Firebase Server. Kích hoạt chế độ Offline Core.");
         }
-        window.firebaseRefs = { ref, onValue, set, update, push };
     </script>
 
     <style>
@@ -39,38 +37,19 @@
             --primary: #f97316;
             --dark: #0f172a;
             --bg: #f1f5f9;
-            --cn1-color: #3b82f6;
-            --cn2-color: #10b981;
-            --cn3-color: #8b5cf6;
         }
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--bg);
-            color: var(--dark);
-            margin: 0;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg); color: var(--dark); margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         .fade-in { animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { background: white; padding: 14px 20px; border-radius: 14px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; border-left: 6px solid; transition: all 0.3s ease; }
         
-        .branch-badge { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        .cn1-badge { background-color: #eff6ff; color: var(--cn1-color); border: 1px solid #bfdbfe; }
-        .cn2-badge { background-color: #ecfdf5; color: var(--cn2-color); border: 1px solid #a7f3d0; }
-        .cn3-badge { background-color: #f5f3ff; color: var(--cn3-color); border: 1px solid #ddd6fe; }
-
-        .table-card { position: relative; border-radius: 1.25rem; background: white; border: 1px solid #e2e8f0; padding: 1.25rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between; height: 130px; }
+        .table-card { position: relative; border-radius: 1.25rem; background: white; border: 1px solid #e2e8f0; padding: 1.25rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between; height: 120px; }
         .table-card.occupied { border-color: #f97316; background: #fff7ed; }
         .table-card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.08); }
 
         .active-tab { border-bottom: 4px solid var(--primary); color: var(--dark) !important; font-weight: 900; }
-        .active-branch-btn { background-color: var(--dark) !important; color: white !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .thin-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
         .thin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -89,99 +68,68 @@
 
     <header class="bg-white border-b px-6 py-3 flex justify-between items-center z-50 shrink-0">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-lg font-black text-xl tracking-tighter">PL</div>
+            <div class="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center text-white shadow-lg font-black text-xl tracking-tighter">PL</div>
             <div>
                 <h1 class="text-sm font-black uppercase tracking-tight text-gray-900">PHÁT LA PREMIUM COFFEE</h1>
                 <div class="flex items-center gap-2 mt-0.5">
-                    <span id="sync-global-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-                    <p id="sync-global-status" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Hệ thống Đa Chi Nhánh Chờ Kết Nối...</p>
+                    <span id="sync-status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                    <p id="sync-status-text" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Đang kết nối Server...</p>
                 </div>
             </div>
         </div>
-
-        <div class="flex bg-slate-100 p-1 rounded-xl border gap-1">
-            <button onclick="switchBranch('all')" id="btn-branch-all" class="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-500 transition-all active-branch-btn">Toàn Hệ Thống</button>
-            <button onclick="switchBranch('cn1')" id="btn-branch-cn1" class="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-500 transition-all">CN1: Quận 1</button>
-            <button onclick="switchBranch('cn2')" id="btn-branch-cn2" class="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-500 transition-all">CN2: Bình Thạnh</button>
-            <button onclick="switchBranch('cn3')" id="btn-branch-cn3" class="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-500 transition-all">CN3: Thủ Đức</button>
-        </div>
-
         <div class="text-right hidden md:block">
             <p id="live-clock" class="text-xs font-black font-mono text-slate-800">00:00:00</p>
-            <span class="text-[9px] font-extrabold text-orange-500 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded border border-orange-200">Premium Pos</span>
+            <span class="text-[9px] font-extrabold text-orange-500 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded border border-orange-200">Point of Sale</span>
         </div>
     </header>
 
     <nav class="bg-white border-b flex px-4 shrink-0 z-40 overflow-x-auto no-scrollbar">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 active-tab transition-all">Bàn Cờ Tổng Quan</button>
-        <button onclick="switchTab('tables')" id="nav-tables" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Sơ Đồ Bàn POS</button>
-        <button onclick="switchTab('pos')" id="nav-pos" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Màn Hình Gọi Món</button>
-        <button onclick="switchTab('inventory')" id="nav-inventory" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Quản Lý Kho Chuỗi</button>
-        <button onclick="switchTab('logistics')" id="nav-logistics" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Điều Phối Nội Bộ</button>
-        <button onclick="switchTab('report')" id="nav-report" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Doanh Thu Tập Trung</button>
-        <button onclick="switchTab('history')" id="nav-history" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Lịch Sử Giao Dịch</button>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 active-tab transition-all">Tổng Quan</button>
+        <button onclick="switchTab('tables')" id="nav-tables" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Sơ Đồ Bàn</button>
+        <button onclick="switchTab('pos')" id="nav-pos" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Gọi Món</button>
+        <button onclick="switchTab('inventory')" id="nav-inventory" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Kho Hàng</button>
+        <button onclick="switchTab('report')" id="nav-report" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Doanh Thu</button>
+        <button onclick="switchTab('history')" id="nav-history" class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 transition-all">Lịch Sử</button>
     </nav>
 
     <main class="flex-1 relative bg-slate-100 overflow-hidden">
         
+        <!-- DASHBOARD -->
         <section id="view-dashboard" class="absolute inset-0 p-6 overflow-y-auto thin-scroll fade-in">
-            <div class="max-w-7xl mx-auto space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white rounded-2xl border p-5 shadow-sm space-y-4">
-                        <div class="flex justify-between items-center border-b pb-3">
-                            <span class="branch-badge cn1-badge">Quận 1 - HQ</span>
-                            <span id="dash-status-cn1" class="text-[9px] font-bold text-green-500 uppercase"><i class="fa-solid fa-circle text-[7px] mr-1"></i> Trực Tuyến</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="bg-slate-50 p-3 rounded-xl"><p class="text-[9px] text-slate-400 font-bold uppercase">Doanh Thu Ngày</p><h3 id="dash-rev-cn1" class="text-base font-black text-slate-800 mt-1">0đ</h3></div>
-                            <div class="bg-slate-50 p-3 rounded-xl"><p class="text-[9px] text-slate-400 font-bold uppercase">Bàn Đang Ngồi</p><h3 id="dash-tab-cn1" class="text-base font-black text-blue-600 mt-1">0/30</h3></div>
-                        </div>
+            <div class="max-w-5xl mx-auto space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-2xl border p-6 shadow-sm flex flex-col justify-center items-center h-32">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Doanh Thu Hôm Nay</p>
+                        <h3 id="dash-rev-today" class="text-3xl font-black text-orange-600">0đ</h3>
                     </div>
-                    <div class="bg-white rounded-2xl border p-5 shadow-sm space-y-4">
-                        <div class="flex justify-between items-center border-b pb-3">
-                            <span class="branch-badge cn2-badge">Bình Thạnh</span>
-                            <span id="dash-status-cn2" class="text-[9px] font-bold text-green-500 uppercase"><i class="fa-solid fa-circle text-[7px] mr-1"></i> Trực Tuyến</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="bg-slate-50 p-3 rounded-xl"><p class="text-[9px] text-slate-400 font-bold uppercase">Doanh Thu Ngày</p><h3 id="dash-rev-cn2" class="text-base font-black text-slate-800 mt-1">0đ</h3></div>
-                            <div class="bg-slate-50 p-3 rounded-xl"><p class="text-[9px] text-slate-400 font-bold uppercase">Bàn Đang Ngồi</p><h3 id="dash-tab-cn2" class="text-base font-black text-emerald-600 mt-1">0/30</h3></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl border p-5 shadow-sm space-y-4">
-                        <div class="flex justify-between items-center border-b pb-3">
-                            <span class="branch-badge cn3-badge">Thủ Đức</span>
-                            <span id="dash-status-cn3" class="text-[9px] font-bold text-green-500 uppercase"><i class="fa-solid fa-circle text-[7px] mr-1"></i> Trực Tuyến</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="bg-slate-50 p-3 rounded-xl"><p class="text-[9px] text-slate-400 font-bold uppercase">Doanh Thu Ngày</p><h3 id="dash-rev-cn3" class="text-base font-black text-slate-800 mt-1">0đ</h3></div>
-                            <div class="bg-slate-50 p-3 rounded-xl"><p class="text-[9px] text-slate-400 font-bold uppercase">Bàn Đang Ngồi</p><h3 id="dash-tab-cn3" class="text-base font-black text-purple-600 mt-1">0/30</h3></div>
-                        </div>
+                    <div class="bg-white rounded-2xl border p-6 shadow-sm flex flex-col justify-center items-center h-32">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Bàn Đang Phục Vụ</p>
+                        <h3 id="dash-tab-active" class="text-3xl font-black text-blue-600">0/30</h3>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-2xl border p-6 shadow-sm">
-                    <h2 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2 text-red-500"></i>Cảnh Báo Hết Hàng Trên Toàn Hệ Thống</h2>
+                    <h2 class="text-xs font-black uppercase text-slate-400 mb-4 tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2 text-red-500"></i>Cảnh Báo Hết Hàng</h2>
                     <div class="overflow-x-auto"><table class="w-full text-left font-medium border-collapse text-xs">
-                        <thead><tr class="border-b bg-slate-50 text-slate-400 uppercase font-black text-[9px]"><th class="p-3">Nguyên Vật Liệu</th><th class="p-3">Chi Nhánh</th><th class="p-3">Tồn Hiện Tại</th><th class="p-3">Hạn Mức An Toàn</th><th class="p-3">Trạng Thái</th></tr></thead>
+                        <thead><tr class="border-b bg-slate-50 text-slate-400 uppercase font-black text-[9px]"><th class="p-3">Nguyên Vật Liệu</th><th class="p-3">Tồn Hiện Tại</th><th class="p-3">Hạn Mức An Toàn</th><th class="p-3">Trạng Thái</th></tr></thead>
                         <tbody id="dash-inventory-alerts" class="divide-y"></tbody>
                     </table></div>
                 </div>
             </div>
         </section>
 
+        <!-- SƠ ĐỒ BÀN -->
         <section id="view-tables" class="absolute inset-0 p-6 overflow-y-auto thin-scroll hidden fade-in">
             <div class="max-w-7xl mx-auto space-y-4">
                 <div class="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
-                    <div>
-                        <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest">Sơ Đồ Phục Vụ Thực Tế</h2>
-                        <p id="current-active-branch-label" class="text-sm font-black text-gray-900 uppercase mt-0.5">Chi Nhánh: Toàn Hệ Thống</p>
-                    </div>
+                    <h2 class="text-sm font-black text-gray-900 uppercase tracking-widest">Sơ Đồ Phục Vụ Thực Tế</h2>
                     <span id="global-table-stats" class="text-[10px] font-black bg-orange-50 border border-orange-200 text-orange-600 px-3 py-1.5 rounded-lg shadow-sm">0 Bàn Đang Đóng Đơn</span>
                 </div>
-                <div id="grid-branch-tables" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                <div id="grid-tables" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4"></div>
             </div>
         </section>
 
+        <!-- POS MÀN HÌNH CHÍNH -->
         <section id="view-pos" class="absolute inset-0 hidden bg-white fade-in">
             <div class="flex flex-col lg:flex-row w-full h-full overflow-hidden">
                 <div class="w-full lg:w-48 bg-slate-50 p-4 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto no-scrollbar border-b lg:border-b-0 lg:border-r shrink-0" id="pos-categories-bar"></div>
@@ -191,7 +139,7 @@
                 <div class="w-full lg:w-[420px] h-[45vh] lg:h-full absolute lg:relative bottom-0 flex flex-col bg-white shadow-2xl lg:shadow-none z-30 border-t lg:border-t-0 lg:border-l border-slate-200">
                     <div class="p-4 border-b flex justify-between items-center bg-slate-50/50">
                         <div>
-                            <div class="flex items-center gap-2"><span id="cart-branch-badge" class="branch-badge cn1-badge">CN1</span><h2 id="cart-table-title" class="text-sm font-black uppercase text-gray-900">CHỌN BÀN TÁC VỤ</h2></div>
+                            <h2 id="cart-table-title" class="text-sm font-black uppercase text-gray-900">CHỌN BÀN TÁC VỤ</h2>
                             <p id="cart-time-log" class="text-[10px] font-bold text-slate-400 mt-0.5">Thời gian vào: --:--</p>
                         </div>
                         <button onclick="switchTab('tables')" class="text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase">Đổi Bàn</button>
@@ -207,76 +155,45 @@
                             <button onclick="executePrintJob('provisional')" class="py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-wide"><i class="fa-solid fa-receipt mr-1"></i> In Tạm Tính</button>
                         </div>
                         <button onclick="openPaymentGateway()" class="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl">
-                            Xác Nhận Thanh Toán Xuất Kho
+                            Thanh Toán & Trừ Kho
                         </button>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- KHO HÀNG -->
         <section id="view-inventory" class="absolute inset-0 p-6 overflow-y-auto thin-scroll hidden fade-in">
-            <div class="max-w-7xl mx-auto space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border shadow-sm">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="flex justify-between items-center bg-white p-5 rounded-2xl border shadow-sm">
                     <div>
-                        <h2 class="text-base font-black text-gray-900 tracking-tight uppercase">Kho Nguyên Liệu Tổng Hợp</h2>
-                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Theo dõi trực tiếp dữ liệu tồn kho thực tế của cả 3 chi nhánh song song.</p>
+                        <h2 class="text-base font-black text-gray-900 tracking-tight uppercase">Kho Nguyên Liệu</h2>
+                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Quản lý và theo dõi số lượng tồn kho tự động.</p>
                     </div>
-                    <button onclick="syncGlobalInventoryToCloud()" class="bg-gray-900 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Đẩy Cập Nhật Kho Lên Cloud</button>
+                    <button onclick="syncInventoryToCloud()" class="bg-gray-900 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Ghi Nhận Excel</button>
                 </div>
                 <div class="bg-white rounded-2xl border p-6 shadow-sm">
-                    <div id="grid-inventory-master" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                    <div class="space-y-3" id="inventory-list"></div>
                 </div>
             </div>
         </section>
 
-        <section id="view-logistics" class="absolute inset-0 p-6 overflow-y-auto thin-scroll hidden fade-in">
-            <div class="max-w-4xl mx-auto space-y-6">
-                <div class="bg-white p-6 rounded-2xl border shadow-sm space-y-4">
-                    <h2 class="text-sm font-black uppercase text-gray-900 tracking-wider border-b pb-3"><i class="fa-solid fa-truck-ramp-box mr-2 text-orange-500"></i>Lập Lệnh Điều Phối Nguyên Liệu Nội Bộ</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div><label class="text-[9px] font-black uppercase text-slate-400 tracking-wide">Kho Nguồn Xuất</label><select id="logistics-from" class="w-full mt-1 bg-slate-50 border p-3 rounded-xl font-bold text-xs focus:outline-none"><option value="cn1">Chi Nhánh 1 - Quận 1</option><option value="cn2">Chi Nhánh 2 - Bình Thạnh</option><option value="cn3">Chi Nhánh 3 - Thủ Đức</option></select></div>
-                        <div><label class="text-[9px] font-black uppercase text-slate-400 tracking-wide">Kho Đích Nhận</label><select id="logistics-to" class="w-full mt-1 bg-slate-50 border p-3 rounded-xl font-bold text-xs focus:outline-none"><option value="cn2">Chi Nhánh 2 - Bình Thạnh</option><option value="cn1">Chi Nhánh 1 - Quận 1</option><option value="cn3">Chi Nhánh 3 - Thủ Đức</option></select></div>
-                        <div><label class="text-[9px] font-black uppercase text-slate-400 tracking-wide">Nguyên Vật Liệu</label><select id="logistics-item" class="w-full mt-1 bg-slate-50 border p-3 rounded-xl font-bold text-xs focus:outline-none"></select></div>
-                    </div>
-                    <div>
-                        <label class="text-[9px] font-black uppercase text-slate-400 tracking-wide">Số Lượng Khối Lượng Điều Chuyển</label>
-                        <div class="flex gap-2 mt-1">
-                            <input type="number" id="logistics-qty" value="1000" min="1" class="flex-1 bg-slate-50 border px-4 py-2.5 rounded-xl font-black text-xs focus:outline-none">
-                            <button onclick="processLogisticsTransfer()" class="bg-orange-500 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md hover:bg-orange-600 transition-all">Kích Hoạt Lệnh</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl border shadow-sm">
-                    <h3 class="text-xs font-black uppercase text-slate-400 tracking-wider mb-4">Nhật Ký Chuyển Kho Chuỗi</h3>
-                    <div id="logistics-log-container" class="space-y-2"></div>
-                </div>
-            </div>
-        </section>
-
+        <!-- BÁO CÁO DOANH THU -->
         <section id="view-report" class="absolute inset-0 p-6 overflow-y-auto thin-scroll hidden fade-in">
-            <div class="max-w-6xl mx-auto space-y-6">
+            <div class="max-w-5xl mx-auto space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-xl font-black tracking-tight uppercase text-slate-900">Báo Cáo Doanh Thu Hệ Thống</h2>
-                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Phân tích dòng tiền Tiền mặt / Chuyển khoản và xuất File Excel gộp chung.</p>
+                        <h2 class="text-xl font-black tracking-tight uppercase text-slate-900">Báo Cáo Doanh Thu</h2>
+                        <p class="text-[11px] font-medium text-slate-400 mt-0.5">Thống kê dòng tiền theo Ngày / Tháng / Năm.</p>
                     </div>
-                    <div class="flex gap-2 items-center">
-                        <button onclick="syncChainToGoogleSheets()" class="bg-blue-50 text-blue-600 border border-blue-200 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-sm whitespace-nowrap"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Đồng Bộ G.Sheets</button>
-                        <select id="rep-branch-filter" onchange="calculateFinancialReports()" class="bg-white border text-slate-800 text-[10px] font-bold p-2.5 rounded-xl focus:outline-none shadow-sm cursor-pointer">
-                            <option value="all">Xem Toàn Hệ Thống</option>
-                            <option value="cn1">Chỉ xem Chi Nhánh 1 (Quận 1)</option>
-                            <option value="cn2">Chỉ xem Chi Nhánh 2 (Bình Thạnh)</option>
-                            <option value="cn3">Chỉ xem Chi Nhánh 3 (Thủ Đức)</option>
-                        </select>
-                        <button onclick="exportChainExcel()" class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-sm whitespace-nowrap"><i class="fa-solid fa-file-excel mr-1"></i> Xuất Excel</button>
-                    </div>
+                    <button onclick="syncRevenueToGoogleSheets()" class="bg-blue-50 text-blue-600 border border-blue-200 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-sm whitespace-nowrap"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Đồng Bộ G.Sheets</button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-gray-900 text-white p-6 rounded-2xl flex flex-col justify-between shadow-xl">
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-[9px] font-black text-slate-400 tracking-wider uppercase">DOANH THU NGÀY</span>
+                                <span class="text-[9px] font-black text-slate-400 tracking-wider uppercase">NGÀY</span>
                                 <input type="date" id="rep-filter-day" onchange="calculateFinancialReports()" class="bg-white/10 border border-white/20 text-white text-[10px] font-bold p-1 rounded focus:outline-none">
                             </div>
                             <h2 id="rep-total-day" class="text-3xl font-black text-orange-500 tracking-tighter">0đ</h2>
@@ -291,7 +208,7 @@
                     <div class="bg-white border p-6 rounded-2xl flex flex-col justify-between shadow-sm">
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-[9px] font-black text-slate-400 tracking-wider uppercase">DOANH THU THÁNG</span>
+                                <span class="text-[9px] font-black text-slate-400 tracking-wider uppercase">THÁNG</span>
                                 <input type="month" id="rep-filter-month" onchange="calculateFinancialReports()" class="bg-slate-50 border text-slate-800 text-[10px] font-bold p-1 rounded focus:outline-none">
                             </div>
                             <h2 id="rep-total-month" class="text-2xl font-black text-slate-900 tracking-tighter">0đ</h2>
@@ -306,7 +223,7 @@
                     <div class="bg-white border p-6 rounded-2xl flex flex-col justify-between shadow-sm">
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-[9px] font-black text-slate-400 tracking-wider uppercase">DOANH THU NĂM</span>
+                                <span class="text-[9px] font-black text-slate-400 tracking-wider uppercase">NĂM</span>
                                 <select id="rep-filter-year" onchange="calculateFinancialReports()" class="bg-slate-50 border text-slate-800 text-[10px] font-bold p-1 rounded focus:outline-none"></select>
                             </div>
                             <h2 id="rep-total-year" class="text-2xl font-black text-blue-700 tracking-tighter">0đ</h2>
@@ -321,30 +238,23 @@
             </div>
         </section>
 
+        <!-- LỊCH SỬ GIAO DỊCH -->
         <section id="view-history" class="absolute inset-0 p-6 overflow-y-auto thin-scroll hidden fade-in">
-            <div class="max-w-5xl mx-auto space-y-4">
+            <div class="max-w-4xl mx-auto space-y-4">
                 <div class="bg-white p-5 rounded-2xl border shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h2 class="text-xs font-black uppercase text-slate-400 tracking-widest">Dòng Thời Gian Giao Dịch Hợp Nhất</h2>
-                        <div class="flex gap-2 mt-3">
-                            <button onclick="setHistoryMethodFilter('ALL')" id="hm-ALL" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md">Tất cả</button>
-                            <button onclick="setHistoryMethodFilter('CASH')" id="hm-CASH" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Tiền mặt</button>
-                            <button onclick="setHistoryMethodFilter('TRANSFER')" id="hm-TRANSFER" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Chuyển khoản</button>
-                        </div>
+                    <h2 class="text-xs font-black uppercase text-slate-400 tracking-widest">Lịch Sử Hóa Đơn</h2>
+                    <div class="flex gap-2">
+                        <button onclick="setHistoryFilter('ALL')" id="hm-ALL" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md">Tất cả</button>
+                        <button onclick="setHistoryFilter('CASH')" id="hm-CASH" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Tiền mặt</button>
+                        <button onclick="setHistoryFilter('TRANSFER')" id="hm-TRANSFER" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200">Chuyển khoản</button>
                     </div>
-                    <select id="history-branch-filter" onchange="renderGlobalHistoryUI()" class="bg-slate-50 border text-xs font-bold p-2.5 rounded-xl focus:outline-none w-full sm:w-auto cursor-pointer">
-                        <option value="all">Xem Tất Cả Các Chi Nhánh</option>
-                        <option value="cn1">Chỉ Chi Nhánh 1 (Quận 1)</option>
-                        <option value="cn2">Chỉ Chi Nhánh 2 (Bình Thạnh)</option>
-                        <option value="cn3">Chỉ Chi Nhánh 3 (Thủ Đức)</option>
-                    </select>
                 </div>
-                <div id="master-history-timeline" class="space-y-2"></div>
+                <div id="history-timeline" class="space-y-2"></div>
             </div>
         </section>
     </main>
 
-    <!-- FIX LỖI BỎ DẤU GẠCH GIÁ TẠI ĐÂY -->
+    <!-- MODAL CHỌN SIZE -->
     <div id="portal-size-modal" class="fixed inset-0 z-[120] bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4 fade-in">
         <div class="bg-white w-full max-w-sm rounded-[2rem] overflow-hidden flex flex-col shadow-2xl">
             <div class="p-6 border-b text-center relative bg-slate-50">
@@ -359,24 +269,24 @@
                 </button>
                 <button onclick="confirmAddItem('L')" class="flex-1 p-4 border-2 border-slate-200 rounded-2xl flex flex-col items-center hover:border-orange-500 hover:bg-orange-50 transition-all group">
                     <span class="text-xl font-black text-slate-800 group-hover:text-orange-600">SIZE L</span>
-                    <!-- Đã bỏ dòng gạch ngang giá cũ -->
-                    <span id="size-modal-price-l-real" class="text-xs font-black text-orange-600 mt-1">0đ</span>
+                    <span id="size-modal-price-l" class="text-xs font-black text-orange-600 mt-1">0đ</span>
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL THANH TOÁN -->
     <div id="portal-checkout-modal" class="fixed inset-0 z-[100] bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[2rem] overflow-hidden flex flex-col shadow-2xl transition-all" id="checkout-modal-card">
+        <div class="bg-white w-full max-w-md rounded-[2rem] overflow-hidden flex flex-col shadow-2xl transition-all">
             <div class="p-6 text-center border-b relative bg-slate-50/50">
                 <button onclick="closePaymentGateway()" class="absolute top-4 right-4 w-9 h-9 bg-white border rounded-full text-slate-500 shadow-sm"><i class="fa-solid fa-xmark"></i></button>
-                <p class="text-[10px] font-black text-slate-400 uppercase">Lệnh Thanh Toán Biên Lai</p>
-                <div class="flex items-center justify-center gap-2 mt-1"><span id="modal-branch-tag" class="branch-badge cn1-badge">CN1</span><h2 id="modal-table-tag" class="text-xl font-black text-gray-900">BÀN 00</h2></div>
+                <p class="text-[10px] font-black text-slate-400 uppercase">Lệnh Thanh Toán</p>
+                <h2 id="modal-table-tag" class="text-xl font-black text-gray-900 mt-1">BÀN 00</h2>
                 <h2 id="modal-final-amount" class="text-4xl font-black text-slate-950 tracking-tighter mt-2">0đ</h2>
             </div>
             <div class="p-5 space-y-4 max-h-[50vh] overflow-y-auto thin-scroll">
                 <div>
-                    <label class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Hạn Mức Giảm Giá (Discount Engine)</label>
+                    <label class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Giảm Giá (Chiết Khấu)</label>
                     <div class="flex gap-2 mt-1">
                         <input type="number" id="mod-discount-val" value="0" min="0" oninput="recalcModalAmount()" class="flex-1 bg-slate-50 border px-3 py-2 rounded-xl text-xs font-black focus:outline-none focus:border-orange-500">
                         <select id="mod-discount-type" onchange="recalcModalAmount()" class="bg-white border px-3 py-2 rounded-xl text-xs font-black focus:outline-none">
@@ -386,57 +296,27 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="selectGatePaymentMethod('Cash')" id="gate-method-cash" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"><i class="fa-solid fa-money-bill-wave text-xl"></i><span class="text-[9px] font-black uppercase">Tiền Mặt Local</span></button>
-                    <button onclick="selectGatePaymentMethod('Transfer')" id="gate-method-transfer" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-qrcode text-xl"></i><span class="text-[9px] font-black uppercase">VietQR Dynamic</span></button>
+                    <button onclick="selectPaymentMethod('Cash')" id="gate-method-cash" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"><i class="fa-solid fa-money-bill-wave text-xl"></i><span class="text-[9px] font-black uppercase">Tiền Mặt</span></button>
+                    <button onclick="selectPaymentMethod('Transfer')" id="gate-method-transfer" class="p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"><i class="fa-solid fa-qrcode text-xl"></i><span class="text-[9px] font-black uppercase">Chuyển Khoản</span></button>
                 </div>
                 <div id="gate-qr-zone" class="hidden flex-col items-center p-4 bg-white border-2 border-blue-50 rounded-2xl shadow-inner">
                     <img id="gate-qr-img" src="" class="w-44 h-44 border shadow-sm rounded-xl object-contain bg-white">
-                    <p class="text-[8px] font-bold text-blue-500 uppercase tracking-widest mt-2">Cổng Chuyển Khoản Tự Động Định Danh</p>
+                    <p class="text-[8px] font-bold text-blue-500 uppercase tracking-widest mt-2">Quét Mã VietQR Chuyển Khoản</p>
                 </div>
             </div>
             <div class="p-4 bg-slate-50 border-t">
                 <button onclick="commitTransaction()" class="w-full py-4 bg-orange-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-orange-600 transition-all">
-                    In Hóa Đơn & Trừ Kho Chi Nhánh
+                    In Hóa Đơn & Xác Nhận
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="modal-tx-detail" class="fixed inset-0 z-[110] bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4 fade-in">
-        <div class="bg-white w-full max-w-md rounded-[2rem] overflow-hidden flex flex-col shadow-2xl">
-            <div class="p-6 border-b relative bg-slate-50">
-                <button onclick="closeTxDetailModal()" class="absolute top-4 right-4 w-8 h-8 bg-white border rounded-full text-slate-500 hover:bg-slate-100 transition-colors"><i class="fa-solid fa-xmark"></i></button>
-                <h3 class="text-sm font-black text-gray-900 uppercase">CHI TIẾT GIAO DỊCH</h3>
-                <p id="dtl-id" class="text-[10px] font-mono font-bold text-slate-400 mt-1">#ID</p>
-            </div>
-            <div class="p-6 max-h-[60vh] overflow-y-auto thin-scroll space-y-4">
-                <div class="grid grid-cols-2 gap-4 text-xs">
-                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Chi nhánh</p><p id="dtl-branch" class="font-black text-slate-800 mt-0.5">--</p></div>
-                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Bàn phục vụ</p><p id="dtl-table" class="font-black text-slate-800 mt-0.5">--</p></div>
-                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Thời gian</p><p id="dtl-time" class="font-black text-slate-800 mt-0.5">--</p></div>
-                    <div><p class="text-[9px] font-bold text-slate-400 uppercase">Thanh toán</p><div id="dtl-method" class="mt-0.5">--</div></div>
-                </div>
-                <div class="border-t border-slate-100 pt-4">
-                    <p class="text-[10px] font-black uppercase text-slate-400 mb-2">Danh sách món ăn đã gọi</p>
-                    <div id="dtl-items" class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1"></div>
-                </div>
-            </div>
-            <div class="p-6 bg-slate-50 border-t space-y-2">
-                <div class="flex justify-between text-xs font-bold text-slate-500"><p>Tổng gốc:</p><p id="dtl-subtotal">0đ</p></div>
-                <div class="flex justify-between text-xs font-bold text-slate-500"><p>Chiết khấu:</p><p id="dtl-discount" class="text-orange-500">0đ</p></div>
-                <div class="border-t border-dashed border-slate-300 pt-2 flex justify-between items-center">
-                    <p class="text-xs font-black uppercase text-slate-800">Thu thực tế:</p>
-                    <p id="dtl-total" class="text-2xl font-black text-slate-900 tracking-tighter">0đ</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- KHU VỰC IN -->
     <div id="print-area">
         <div style="text-align: center;">
-            <h2 id="pr-shop" style="margin: 0; font-size: 18px; font-weight: 900;">PHÁT LA PREMIUM COFFEE</h2>
-            <p id="pr-branch-desc" style="font-size: 10px; margin: 2px 0; font-weight: bold; text-transform: uppercase;"></p>
-            <p style="font-size: 9px; margin: 0;">ĐC: Mặt Tiền Đường Lớn, TP.HCM</p>
+            <h2 style="margin: 0; font-size: 18px; font-weight: 900;">PHÁT LA PREMIUM COFFEE</h2>
+            <p style="font-size: 9px; margin: 4px 0;">ĐC: Mặt Tiền Đường Lớn, TP.HCM</p>
             <p style="border-top: 1px dashed black; margin: 6px 0;"></p>
             <h3 id="pr-title" style="margin: 4px 0; font-size: 13px;">BIÊN LAI THANH TOÁN</h3>
             <p id="pr-meta" style="font-size: 9px; margin: 2px 0; text-align: left;"></p>
@@ -449,802 +329,429 @@
         <p style="border-top: 1px dashed black; margin: 6px 0;"></p>
         <div id="pr-finance" style="font-size: 10px; space-y: 2px;"></div>
         <div style="text-align: center; margin-top: 12px; font-size: 9px; font-weight: bold;">
-            <p style="margin: 0;">HỆ THỐNG QUẢN TRỊ OMNICHAIN CHUỖI TẬP TRUNG</p>
-            <p style="margin: 2px 0 0 0;">CẢM ƠN QUÝ KHÁCH VÀ HẸN GẶP LẠI!</p>
+            <p style="margin: 0;">CẢM ƠN QUÝ KHÁCH VÀ HẸN GẶP LẠI!</p>
         </div>
     </div>
 
     <script>
-        // CẬP NHẬT CẤU HÌNH API
-        const MASTER_CONFIG = {
+        // CẤU HÌNH HỆ THỐNG
+        const CONFIG = {
             bankCode: "vietcombank",
             accountNumber: "1046778674",
             accountHolder: "LA PHAT",
-            revenueEndpoint: "https://script.google.com/macros/s/AKfycbwZXJhWuX7KMrQVJhOv_Dyy_MPPYJs4Ou8ZSx0VFdlHHCZRB0VV8R0O2EqfKuhErI8w/exec",
-            inventoryEndpoint: "https://script.google.com/macros/s/AKfycbbmBB8hGImTTRk9jmAMkGKq2R4EJGbJ1qa3cKyzaFaJWJ54X5MMP5E7MOZ-vNKdaZdRg/exec",
-            menuEndpoint: "https://script.google.com/macros/s/AKfycbyrM78SCzK9SzYi5n1K5LdqiAyG8bA4mZJFf_LIp8V2E7Cfebf0on5dpmku-I-ra0zu/exec",
-            tablesPerBranch: 30
+            revenueAPI: "https://script.google.com/macros/s/AKfycbwZXJhWuX7KMrQVJhOv_Dyy_MPPYJs4Ou8ZSx0VFdlHHCZRB0VV8R0O2EqfKuhErI8w/exec",
+            inventoryAPI: "https://script.google.com/macros/s/AKfycbbmBB8hGImTTRk9jmAMkGKq2R4EJGbJ1qa3cKyzaFaJWJ54X5MMP5E7MOZ-vNKdaZdRg/exec",
+            menuAPI: "https://script.google.com/macros/s/AKfycbyrM78SCzK9SzYi5n1K5LdqiAyG8bA4mZJFf_LIp8V2E7Cfebf0on5dpmku-I-ra0zu/exec",
+            totalTables: 30
         };
 
-        // Hàm hỗ trợ format Date ISO YYYY-MM-DD chuẩn cho hệ thống
-        function formatISODate(dateVal) {
-            if (!dateVal) return '';
-            const d = new Date(dateVal);
-            if (isNaN(d.getTime())) return '';
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
+        // TIỆN ÍCH
+        const formatISO = (d) => { let dt = new Date(d); return isNaN(dt) ? '' : dt.toISOString().split('T')[0]; };
+        const formatMoney = (n) => (n || 0).toLocaleString('vi-VN') + 'đ';
 
-        let PRODUCT_MENU = [
+        // MENU & KHO MẶC ĐỊNH
+        const DEFAULT_MENU = [
             { id: 'c1', cat: "CÀ PHÊ", name: "Espresso Premium", price: 45000, icon: "fa-mug-hot" },
             { id: 'c2', cat: "CÀ PHÊ", name: "Americano Ice", price: 50000, icon: "fa-mug-saucer" },
-            { id: 'c3', cat: "CÀ PHÊ", name: "Latte Macchiato", price: 55000, icon: "fa-glass-water" },
-            { id: 'c4', cat: "CÀ PHÊ", name: "Cappuccino Art", price: 55000, icon: "fa-mug-hot" },
             { id: 'd1', cat: "ĐÁ XAY", name: "Caramel Frappe", price: 70000, icon: "fa-ice-cream" },
-            { id: 'd2', cat: "ĐÁ XAY", name: "Chocolate Frappe", price: 70000, icon: "fa-cookie" },
-            { id: 'd3', cat: "ĐÁ XAY", name: "Matcha Blend Frappe", price: 75000, icon: "fa-leaf" },
-            { id: 't1', cat: "TRÀ TRÁI CÂY", name: "Trà Đào Cam Sả", price: 50000, icon: "fa-peach" },
-            { id: 't2', cat: "TRÀ TRÁI CÂY", name: "Trà Vải Hoàng Kim", price: 50000, icon: "fa-seedling" },
-            { id: 't3', cat: "TRÀ TRÁI CÂY", name: "Trà Chanh Nhiệt Đới", price: 45000, icon: "fa-lemon" },
-            { id: 's1', cat: "ĐẶC BIỆT", name: "Cà Phê Sữa Đá Sài Gòn", price: 45000, icon: "fa-mug-hot" },
-            { id: 's2', cat: "ĐẶC BIỆT", name: "Bạc Xỉu Sữa Béo", price: 50000, icon: "fa-glass-water" },
-            { id: 's3', cat: "ĐẶC BIỆT", name: "Cà Phê Kem Trứng Nướng", price: 60000, icon: "fa-egg" }
+            { id: 't1', cat: "TRÀ TRÁI CÂY", name: "Trà Đào Cam Sả", price: 50000, icon: "fa-peach" }
         ];
 
-        const FORMULA_RECIPES = {
+        const RECIPES = {
             'c1': { 'Cà Phê Hạt': 15 }, 'c2': { 'Cà Phê Hạt': 15 },
-            'c3': { 'Cà Phê Hạt': 15, 'Sữa Tươi': 120 }, 'c4': { 'Cà Phê Hạt': 15, 'Sữa Tươi': 120 },
-            'd1': { 'Sữa Tươi': 150, 'Sốt Caramel': 20 }, 'd2': { 'Sữa Tươi': 150, 'Sốt Sô-cô-la': 20 },
-            'd3': { 'Sữa Tươi': 150, 'Bột Matcha': 8 },
-            't1': { 'Trà Đen': 5, 'Đường Nước': 20 }, 't2': { 'Trà Đen': 5, 'Đường Nước': 20 },
-            't3': { 'Trà Xanh': 5, 'Đường Nước': 25, 'Chanh Tươi': 0.5 },
-            's1': { 'Cà Phê Hạt': 20, 'Sữa Đặc': 25 }, 's2': { 'Cà Phê Hạt': 15, 'Sữa Đặc': 35, 'Sữa Tươi': 40 },
-            's3': { 'Cà Phê Hạt': 15, 'Kem Trứng': 50 }
+            'd1': { 'Sữa Tươi': 150, 'Sốt Caramel': 20 },
+            't1': { 'Trà Đen': 5, 'Đường Nước': 20 }
         };
 
-        const INITIAL_INVENTORY_TEMPLATE = {
+        const INIT_INVENTORY = {
             'Cà Phê Hạt': { stock: 15000, unit: 'g', max: 15000 },
-            'Sữa Đặc': { stock: 10000, unit: 'g', max: 10000 },
             'Sữa Tươi': { stock: 20000, unit: 'ml', max: 20000 },
             'Trà Đen': { stock: 5000, unit: 'g', max: 5000 },
-            'Trà Xanh': { stock: 5000, unit: 'g', max: 5000 },
             'Đường Nước': { stock: 12000, unit: 'ml', max: 12000 },
-            'Sốt Sô-cô-la': { stock: 4000, unit: 'ml', max: 4000 },
-            'Sốt Caramel': { stock: 4000, unit: 'ml', max: 4000 },
-            'Bột Matcha': { stock: 2000, unit: 'g', max: 2000 },
-            'Chanh Tươi': { stock: 100, unit: 'trái', max: 100 },
-            'Kem Trứng': { stock: 5000, unit: 'ml', max: 5000 }
+            'Sốt Caramel': { stock: 4000, unit: 'ml', max: 4000 }
         };
 
-        let globalChainState = {
-            currentActiveBranch: 'all', 
-            currentSelectedTab: 'dashboard',
-            focusBranchId: null,
-            focusTableId: null,
-            filterPosCategory: 'TẤT CẢ',
-            gatePaymentMethod: 'Cash',
-            historyMethodFilter: 'ALL',
-            logisticsHistory: [],
-            branches: {
-                cn1: { name: "Chi Nhánh 1 - Quận 1", tables: [], inventory: {}, transactions: [] },
-                cn2: { name: "Chi Nhánh 2 - Bình Thạnh", tables: [], inventory: {}, transactions: [] },
-                cn3: { name: "Chi Nhánh 3 - Thủ Đức", tables: [], inventory: {}, transactions: [] }
-            }
+        // BIẾN TRẠNG THÁI CỤC BỘ
+        let STATE = {
+            tab: 'dashboard',
+            focusTable: null,
+            menuCat: 'TẤT CẢ',
+            payMethod: 'Cash',
+            histFilter: 'ALL',
+            menu: [],
+            tables: Array.from({length: CONFIG.totalTables}, (_, i) => ({ id: i + 1, status: 'available', cart: [], startTime: null })),
+            inventory: JSON.parse(JSON.stringify(INIT_INVENTORY)),
+            transactions: []
         };
 
-        let pendingMenuItem = null;
+        let pendingItem = null;
 
-        function bootstrapStateStructure() {
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                globalChainState.branches[bId].inventory = JSON.parse(JSON.stringify(INITIAL_INVENTORY_TEMPLATE));
-                globalChainState.branches[bId].tables = Array.from({length: MASTER_CONFIG.tablesPerBranch}, (_, idx) => ({
-                    id: idx + 1,
-                    status: 'available',
-                    cart: [],
-                    startTime: null
-                }));
+        // KIỂM TRA LOCAL STORAGE (Giải quyết lỗi mất menu khi F5)
+        function loadCachedMenu() {
+            let cached = localStorage.getItem('POS_MENU_V1');
+            STATE.menu = cached ? JSON.parse(cached) : DEFAULT_MENU;
+        }
+
+        // ĐỒNG BỘ REALTIME FIREBASE (Giải quyết lỗi ghi đè dữ liệu)
+        function initRealtimeSync() {
+            if(!window.FIREBASE_DB) return;
+            const { ref, onValue } = window.firebaseRefs;
+            const db = window.FIREBASE_DB;
+
+            document.getElementById('sync-status-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+            document.getElementById('sync-status-text').innerText = "Máy Trạm Đang Đồng Bộ Realtime";
+
+            // Lắng nghe bàn
+            onValue(ref(db, `pos_data/tables`), snap => {
+                let data = snap.val();
+                if (data) STATE.tables = Array.isArray(data) ? data : Object.values(data);
+                if (STATE.tab === 'tables') renderTables();
+                if (STATE.tab === 'pos') renderCart();
+                renderDashboard();
             });
-            
-            const yearSelect = document.getElementById('rep-filter-year');
-            const currentYear = new Date().getFullYear();
-            yearSelect.innerHTML = '';
-            for (let i = currentYear - 3; i <= currentYear + 2; i++) {
-                yearSelect.innerHTML += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>Năm ${i}</option>`;
+
+            // Lắng nghe kho
+            onValue(ref(db, `pos_data/inventory`), snap => {
+                if(snap.val()) STATE.inventory = snap.val();
+                if(STATE.tab === 'inventory') renderInventory();
+                renderDashboard();
+            });
+
+            // Lắng nghe giao dịch
+            onValue(ref(db, `pos_data/transactions`), snap => {
+                let data = snap.val();
+                STATE.transactions = data ? Object.values(data) : [];
+                if(STATE.tab === 'report') calculateFinancialReports();
+                if(STATE.tab === 'history') renderHistory();
+                renderDashboard();
+            });
+        }
+
+        // Cập nhật Cục Bộ 1 Bàn (Chống lỗi xung đột thiết bị)
+        function updateSingleTableToCloud(tableObj) {
+            if(window.FIREBASE_DB) {
+                // Lưu ý: Firebase array index = table.id - 1
+                let tableIndex = tableObj.id - 1;
+                window.firebaseRefs.set(window.firebaseRefs.ref(window.FIREBASE_DB, `pos_data/tables/${tableIndex}`), tableObj);
+            } else {
+                renderTables(); renderCart(); renderDashboard();
             }
-
-            // Gán giá trị mặc định cho ngày lọc
-            const todayISO = formatISODate(new Date());
-            document.getElementById('rep-filter-day').value = todayISO;
-            document.getElementById('rep-filter-month').value = todayISO.substring(0, 7);
         }
 
-        function switchBranch(branchKey) {
-            globalChainState.currentActiveBranch = branchKey;
-            ['all', 'cn1', 'cn2', 'cn3'].forEach(k => {
-                document.getElementById(`btn-branch-${k}`).className = `px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-500 transition-all ${k === branchKey ? 'active-branch-btn' : ''}`;
-            });
-            
-            const labelMap = { 'all': 'Toàn Hệ Thống', 'cn1': 'Chi Nhánh 1 - Quận 1', 'cn2': 'Chi Nhánh 2 - Bình Thạnh', 'cn3': 'Chi Nhánh 3 - Thủ Đức' };
-            document.getElementById('current-active-branch-label').innerText = `Chi Nhánh: ${labelMap[branchKey]}`;
-            
-            renderTableGrid();
-            if(branchKey !== 'all') {
-                globalChainState.focusBranchId = branchKey;
-                document.getElementById('cart-branch-badge').className = `branch-badge ${branchKey}-badge`;
-                document.getElementById('cart-branch-badge').innerText = branchKey.toUpperCase();
-            }
-            renderCartUI();
+        function pushInventoryToCloud() {
+            if(window.FIREBASE_DB) window.firebaseRefs.set(window.firebaseRefs.ref(window.FIREBASE_DB, `pos_data/inventory`), STATE.inventory);
         }
 
-        function switchTab(tabId) {
-            globalChainState.currentSelectedTab = tabId;
-            ['dashboard', 'tables', 'pos', 'inventory', 'logistics', 'report', 'history'].forEach(t => {
-                const viewEl = document.getElementById(`view-${t}`);
-                const navEl = document.getElementById(`nav-${t}`);
-                if(viewEl) { if(t === tabId) viewEl.classList.remove('hidden'); else viewEl.classList.add('hidden'); }
-                if(navEl) { if(t === tabId) navEl.classList.add('active-tab'); else navEl.classList.remove('active-tab'); }
+        // GIAO DIỆN CHUNG
+        function switchTab(tId) {
+            STATE.tab = tId;
+            ['dashboard', 'tables', 'pos', 'inventory', 'report', 'history'].forEach(t => {
+                let view = document.getElementById(`view-${t}`);
+                let nav = document.getElementById(`nav-${t}`);
+                if(view) t === tId ? view.classList.remove('hidden') : view.classList.add('hidden');
+                if(nav) t === tId ? nav.classList.add('active-tab') : nav.classList.remove('active-tab');
             });
 
-            if(tabId === 'dashboard') renderExecutiveDashboard();
-            if(tabId === 'tables') renderTableGrid();
-            if(tabId === 'pos') { renderPosMenuCategories(); renderPosMenuGrid(); renderCartUI(); }
-            if(tabId === 'inventory') renderGlobalInventoryUI();
-            if(tabId === 'report') calculateFinancialReports();
-            if(tabId === 'history') renderGlobalHistoryUI();
+            if(tId === 'dashboard') renderDashboard();
+            if(tId === 'tables') renderTables();
+            if(tId === 'pos') { renderCategories(); renderMenu(); renderCart(); }
+            if(tId === 'inventory') renderInventory();
+            if(tId === 'report') calculateFinancialReports();
+            if(tId === 'history') renderHistory();
         }
 
-        function showNotification(msg, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'error'}`;
-            
-            const iconMap = { 'success': 'fa-circle-check text-green-500', 'warning': 'fa-triangle-exclamation text-amber-500', 'error': 'fa-circle-xmark text-red-500' };
-            toast.innerHTML = `<i class="fa-solid ${iconMap[type]} text-lg"></i><span class="text-xs font-black text-slate-800">${msg}</span>`;
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.style.transform = 'translateX(0)', 50);
-            setTimeout(() => {
-                toast.style.transform = 'translateX(120%)';
-                setTimeout(() => toast.remove(), 400);
-            }, 3500);
+        function showToast(msg, type = 'success') {
+            const box = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast ${type === 'error' ? 'border-red-500' : 'border-green-500'}`;
+            el.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-xmark text-red-500' : 'fa-check text-green-500'}"></i><span class="text-xs font-bold">${msg}</span>`;
+            box.appendChild(el);
+            setTimeout(() => el.style.transform = 'translateX(0)', 10);
+            setTimeout(() => { el.style.transform = 'translateX(120%)'; setTimeout(()=>el.remove(), 300); }, 3000);
         }
 
+        // TẢI MENU TỪ API
         async function fetchMenuFromCloud() {
-            if(!MASTER_CONFIG.menuEndpoint) {
-                showNotification("Bạn chưa thiết lập Endpoint cho Menu trong file JS!", "error");
-                return;
-            }
             try {
-                showNotification("Đang tải Menu từ Google Sheets...", "warning");
-                let response = await fetch(MASTER_CONFIG.menuEndpoint);
-                let data = await response.json();
-                if(data && Array.isArray(data) && data.length > 0) {
-                    PRODUCT_MENU = data;
-                    renderPosMenuCategories();
-                    if(globalChainState.currentSelectedTab === 'pos') renderPosMenuGrid();
-                    showNotification("Cập nhật Menu nội bộ thành công!", "success");
+                showToast("Đang tải Menu mới...");
+                let res = await fetch(CONFIG.menuAPI);
+                let data = await res.json();
+                if(data && data.length) {
+                    STATE.menu = data;
+                    localStorage.setItem('POS_MENU_V1', JSON.stringify(data)); // Lưu lại
+                    renderCategories(); if(STATE.tab === 'pos') renderMenu();
+                    showToast("Đã cập nhật Menu thành công!");
                 }
-            } catch (e) {
-                console.error("Lỗi đồng bộ Menu:", e);
-                showNotification("Không thể tải Menu từ Server! Đang dùng Menu bộ nhớ tạm.", "error");
-            }
+            } catch (e) { showToast("Lỗi tải Menu! Dùng bản cũ.", "error"); }
         }
         window.fetchMenuFromCloud = fetchMenuFromCloud;
 
-        // FIX LỖI 1: KHẮC PHỤC REALTIME KHÔNG ĐỒNG BỘ THIẾT BỊ
-        function initGlobalChainSync() {
-            if(!window.FIREBASE_DB) return;
-            const { ref, onValue } = window.firebaseRefs;
-            const dbRef = window.FIREBASE_DB;
+        // TỔNG QUAN (DASHBOARD)
+        function renderDashboard() {
+            let todayStr = formatISO(new Date());
+            let revToday = STATE.transactions.filter(t => formatISO(t.timestamp) === todayStr).reduce((s, t) => s + (t.finalAmount||0), 0);
+            let activeTabs = STATE.tables.filter(t => t.status === 'occupied').length;
 
-            document.getElementById('sync-global-dot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-            document.getElementById('sync-global-status').innerText = "Hệ thống Chuỗi Hợp Nhất Đang Liên Thông Realtime";
-
-            ['cn1', 'cn2', 'cn3'].forEach(branchKey => {
-                onValue(ref(dbRef, `omnichain/branches/${branchKey}/tables`), (snapshot) => {
-                    const data = snapshot.val();
-                    if(data !== null && data !== undefined) {
-                        globalChainState.branches[branchKey].tables = Array.isArray(data) ? data : Object.values(data);
-                    }
-                    if(globalChainState.currentSelectedTab === 'tables') renderTableGrid();
-                    if(globalChainState.currentSelectedTab === 'pos') renderCartUI();
-                    renderExecutiveDashboard();
-                });
-
-                onValue(ref(dbRef, `omnichain/branches/${branchKey}/inventory`), (snapshot) => {
-                    const data = snapshot.val();
-                    if(data) {
-                        globalChainState.branches[branchKey].inventory = data;
-                        if(globalChainState.currentSelectedTab === 'inventory') renderGlobalInventoryUI();
-                        renderExecutiveDashboard();
-                    }
-                });
-
-                onValue(ref(dbRef, `omnichain/branches/${branchKey}/transactions`), (snapshot) => {
-                    const data = snapshot.val();
-                    globalChainState.branches[branchKey].transactions = data ? Object.values(data) : [];
-                    if(globalChainState.currentSelectedTab === 'report') calculateFinancialReports();
-                    if(globalChainState.currentSelectedTab === 'history') renderGlobalHistoryUI();
-                    renderExecutiveDashboard();
-                });
-            });
-
-            onValue(ref(dbRef, `omnichain/logistics`), (snapshot) => {
-                const data = snapshot.val();
-                globalChainState.logisticsHistory = data ? Object.values(data) : [];
-                if(globalChainState.currentSelectedTab === 'logistics') renderLogisticsUI();
-            });
-        }
-
-        function pushBranchTablesToCloud(bId) {
-            if(window.FIREBASE_DB) window.firebaseRefs.set(window.firebaseRefs.ref(window.FIREBASE_DB, `omnichain/branches/${bId}/tables`), globalChainState.branches[bId].tables);
-            else { renderTableGrid(); renderCartUI(); }
-        }
-
-        function pushBranchInventoryToCloud(bId) {
-            if(window.FIREBASE_DB) window.firebaseRefs.set(window.firebaseRefs.ref(window.FIREBASE_DB, `omnichain/branches/${bId}/inventory`), globalChainState.branches[bId].inventory);
-            else if(globalChainState.currentSelectedTab === 'inventory') renderGlobalInventoryUI();
-        }
-
-        function renderExecutiveDashboard() {
-            let todayISO = formatISODate(new Date());
-            let occupiedCount = 0;
-
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                let txs = globalChainState.branches[bId].transactions || [];
-                let revToday = txs
-                    .filter(t => formatISODate(t.timestamp) === todayISO)
-                    .reduce((sum, t) => sum + parseInt(t.finalAmount || 0), 0);
-                
-                let bOccupied = (globalChainState.branches[bId].tables || []).filter(t => t.status === 'occupied').length;
-                occupiedCount += bOccupied;
-
-                document.getElementById(`dash-rev-${bId}`).innerText = revToday.toLocaleString('vi-VN') + "đ";
-                document.getElementById(`dash-tab-${bId}`).innerText = `${bOccupied}/${MASTER_CONFIG.tablesPerBranch}`;
-            });
+            document.getElementById('dash-rev-today').innerText = formatMoney(revToday);
+            document.getElementById('dash-tab-active').innerText = `${activeTabs}/${CONFIG.totalTables}`;
 
             let alertHtml = "";
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                let inv = globalChainState.branches[bId].inventory;
-                for(let key in inv) {
-                    let item = inv[key];
-                    if(item.stock <= (item.max * 0.25)) {
-                        alertHtml += `<tr class="border-b bg-red-50/50 text-red-900"><td class="p-3 font-black">${key}</td><td class="p-3"><span class="branch-badge ${bId}-badge">${bId.toUpperCase()}</span></td><td class="p-3 font-mono font-bold">${item.stock.toLocaleString()} ${item.unit}</td><td class="p-3 font-mono text-slate-400">${(item.max * 0.25).toLocaleString()} ${item.unit}</td><td class="p-3 font-extrabold uppercase text-[10px] text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Thiếu Hụt Nghiêm Trọng</td></tr>`;
-                    }
+            for(let k in STATE.inventory) {
+                let item = STATE.inventory[k];
+                if(item.stock <= (item.max * 0.25)) {
+                    alertHtml += `<tr class="border-b bg-red-50 text-red-900"><td class="p-3 font-bold">${k}</td><td class="p-3 font-mono">${item.stock} ${item.unit}</td><td class="p-3 font-mono opacity-50">${item.max*0.25} ${item.unit}</td><td class="p-3 text-[10px] font-black text-red-600">Thiếu Hụt</td></tr>`;
                 }
+            }
+            document.getElementById('dash-inventory-alerts').innerHTML = alertHtml || `<tr><td colspan="4" class="p-4 text-center font-bold text-slate-400">Kho hàng an toàn.</td></tr>`;
+        }
+
+        // BÀN & POS
+        function renderTables() {
+            const grid = document.getElementById('grid-tables'); grid.innerHTML = "";
+            let occupied = 0;
+            STATE.tables.forEach(t => {
+                if(t.status === 'occupied') occupied++;
+                let itemsCount = (t.cart || []).reduce((s, i) => s + i.quantity, 0);
+                const card = document.createElement('div');
+                card.className = `table-card ${t.status === 'occupied' ? 'occupied' : ''}`;
+                card.onclick = () => { STATE.focusTable = t.id; switchTab('pos'); showToast(`Đã chọn BÀN ${t.id}`); };
+                card.innerHTML = `<h3 class="text-sm font-black text-slate-500">BÀN ${t.id}</h3><div><p class="text-[10px] font-bold ${t.status==='occupied'?'text-orange-600':'text-slate-400'}">${t.status==='occupied'?`${itemsCount} món`:'Trống'}</p><p class="text-[9px] font-mono mt-1 text-slate-400">${t.startTime||'--:--'}</p></div>`;
+                grid.appendChild(card);
             });
-            document.getElementById('dash-inventory-alerts').innerHTML = alertHtml || `<tr><td colspan="5" class="p-4 text-center font-bold text-slate-400 uppercase">Hệ thống kho toàn bộ chuỗi an toàn tuyệt đối.</td></tr>`;
+            document.getElementById('global-table-stats').innerText = `${occupied} Bàn Đang Phục Vụ`;
         }
 
-        function renderTableGrid() {
-            const grid = document.getElementById('grid-branch-tables');
-            grid.innerHTML = "";
-            let totalOccupied = 0;
-
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                if (globalChainState.currentActiveBranch !== 'all' && globalChainState.currentActiveBranch !== bId) return;
-
-                (globalChainState.branches[bId].tables || []).forEach(table => {
-                    if(table.status === 'occupied') totalOccupied++;
-                    
-                    const card = document.createElement('div');
-                    card.className = `table-card ${table.status === 'occupied' ? 'occupied' : ''}`;
-                    card.onclick = () => selectTableAction(bId, table.id);
-
-                    let cartCount = table.cart ? table.cart.reduce((s, i) => s + i.quantity, 0) : 0;
-
-                    card.innerHTML = `<div class="flex justify-between items-start"><span class="text-xs font-black tracking-tight text-slate-500 uppercase">BÀN ${String(table.id).padStart(2, '0')}</span><span class="branch-badge ${bId}-badge">${bId.toUpperCase()}</span></div><div class="mt-2"><p class="text-[10px] font-black uppercase ${table.status === 'occupied' ? 'text-orange-600' : 'text-slate-400'}">${table.status === 'occupied' ? `<i class="fa-solid fa-mug-hot mr-1"></i> Đang Ngồi (${cartCount} món)` : 'Trống'}</p><p class="text-[9px] font-mono font-semibold text-slate-400 mt-1">${table.startTime ? table.startTime : '--:--'}</p></div>`;
-                    grid.appendChild(card);
-                });
-            });
-            document.getElementById('global-table-stats').innerText = `${totalOccupied} Bàn Đang Đóng Đơn Toàn Chuỗi`;
-        }
-
-        function selectTableAction(bId, tableId) {
-            globalChainState.focusBranchId = bId;
-            globalChainState.focusTableId = tableId;
-            
-            document.getElementById('cart-branch-badge').className = `branch-badge ${bId}-badge`;
-            document.getElementById('cart-branch-badge').innerText = bId.toUpperCase();
-            document.getElementById('cart-table-title').innerText = `BÀN ${String(tableId).padStart(2, '0')}`;
-            
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tableId);
-            document.getElementById('cart-time-log').innerText = tableObj.startTime ? `Thời gian vào: ${tableObj.startTime}` : `Thời gian vào: --:--`;
-            
-            showNotification(`Đã chuyển luồng điều hành sang: ${bId.toUpperCase()} - BÀN ${tableId}`, 'success');
-            switchTab('pos');
-        }
-
-        function renderPosMenuCategories() {
-            const bar = document.getElementById('pos-categories-bar');
-            bar.innerHTML = "";
-            
-            let categories = ['TẤT CẢ', ...new Set(PRODUCT_MENU.map(p => p.cat))];
-            categories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.className = `px-3 py-2.5 lg:py-3 text-left rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all ${globalChainState.filterPosCategory === cat ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-500 hover:bg-slate-200'}`;
-                btn.innerText = cat;
-                btn.onclick = () => { globalChainState.filterPosCategory = cat; renderPosMenuCategories(); renderPosMenuGrid(); };
+        function renderCategories() {
+            const bar = document.getElementById('pos-categories-bar'); bar.innerHTML = "";
+            let cats = ['TẤT CẢ', ...new Set(STATE.menu.map(p => p.cat))];
+            cats.forEach(c => {
+                let btn = document.createElement('button');
+                btn.className = `px-3 py-3 text-left rounded-xl text-[10px] font-black uppercase shrink-0 transition-all ${STATE.menuCat === c ? 'bg-orange-500 text-white' : 'bg-white text-slate-500'}`;
+                btn.innerText = c;
+                btn.onclick = () => { STATE.menuCat = c; renderCategories(); renderMenu(); };
                 bar.appendChild(btn);
             });
-
-            const syncBtn = document.createElement('button');
-            syncBtn.className = "px-3 py-2.5 lg:py-3 text-left rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 transition-all bg-emerald-50 border border-emerald-200 text-emerald-600 shadow-sm mt-auto lg:mt-4";
-            syncBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-down mr-1"></i> Tải Menu Mới';
-            syncBtn.onclick = fetchMenuFromCloud;
-            bar.appendChild(syncBtn);
+            let syncBtn = document.createElement('button');
+            syncBtn.className = "px-3 py-3 rounded-xl text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 mt-auto";
+            syncBtn.innerText = "Tải Menu Mới"; syncBtn.onclick = fetchMenuFromCloud; bar.appendChild(syncBtn);
         }
 
-        function renderPosMenuGrid() {
-            const grid = document.getElementById('pos-menu-grid');
-            grid.innerHTML = "";
-
-            PRODUCT_MENU.forEach(item => {
-                if(globalChainState.filterPosCategory !== 'TẤT CẢ' && item.cat !== globalChainState.filterPosCategory) return;
-
-                const card = document.createElement('div');
-                card.className = "bg-white border rounded-2xl p-4 flex flex-col justify-between h-36 cursor-pointer hover:border-orange-500 hover:-translate-y-1 transition-all shadow-sm";
+        function renderMenu() {
+            const grid = document.getElementById('pos-menu-grid'); grid.innerHTML = "";
+            STATE.menu.forEach(item => {
+                if(STATE.menuCat !== 'TẤT CẢ' && item.cat !== STATE.menuCat) return;
+                let card = document.createElement('div');
+                card.className = "bg-white border rounded-2xl p-4 flex flex-col justify-between h-32 cursor-pointer hover:border-orange-500 transition-all";
                 card.onclick = () => openSizeSelector(item.id);
-
-                card.innerHTML = `<div class="flex justify-between items-start"><div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700"><i class="fa-solid ${item.icon || 'fa-mug-hot'}"></i></div><span class="text-[8px] font-black tracking-wider text-slate-400 uppercase bg-slate-50 px-1.5 py-0.5 rounded border">${item.cat}</span></div><div class="mt-2"><h4 class="text-xs font-black text-slate-800 leading-tight">${item.name}</h4><p class="text-[12px] font-black text-orange-600 tracking-tighter mt-1">${item.price.toLocaleString('vi-VN')}đ</p></div>`;
+                card.innerHTML = `<span class="text-[8px] font-black text-slate-400 bg-slate-50 px-2 py-1 rounded w-fit">${item.cat}</span><div class="mt-2"><h4 class="text-xs font-black">${item.name}</h4><p class="text-[12px] font-black text-orange-600 mt-1">${formatMoney(item.price)}</p></div>`;
                 grid.appendChild(card);
             });
         }
 
-        // FIX LỖI 3: BỎ DẤU GẠCH GIÁ Ở PHẦN SIZE
-        function openSizeSelector(itemId) {
-            let item = PRODUCT_MENU.find(i => i.id === itemId);
-            if(!item) return;
-            pendingMenuItem = item;
-            
+        function openSizeSelector(id) {
+            let item = STATE.menu.find(i => i.id === id); if(!item) return;
+            pendingItem = item;
             document.getElementById('size-modal-name').innerText = item.name;
-            document.getElementById('size-modal-price-m').innerText = item.price.toLocaleString('vi-VN') + 'đ';
-            document.getElementById('size-modal-price-l-real').innerText = (item.price + 10000).toLocaleString('vi-VN') + 'đ'; 
-            
+            document.getElementById('size-modal-price-m').innerText = formatMoney(item.price);
+            document.getElementById('size-modal-price-l').innerText = formatMoney(item.price + 10000); 
             document.getElementById('portal-size-modal').classList.remove('hidden');
         }
-
-        function closeSizeSelector() {
-            document.getElementById('portal-size-modal').classList.add('hidden');
-            pendingMenuItem = null;
-        }
+        function closeSizeSelector() { document.getElementById('portal-size-modal').classList.add('hidden'); pendingItem = null; }
 
         function confirmAddItem(size) {
-            if(!pendingMenuItem) return;
+            if(!pendingItem || !STATE.focusTable) { showToast("Vui lòng chọn Bàn trước!", "error"); closeSizeSelector(); return; }
+            let t = STATE.tables.find(x => x.id === STATE.focusTable);
+            if(!t.cart) t.cart = [];
             
-            let bId = globalChainState.focusBranchId;
-            let tId = globalChainState.focusTableId;
-
-            if(!bId || !tId) { 
-                showNotification("Vui lòng lựa chọn bàn phục vụ trước!", "warning"); 
-                closeSizeSelector(); return; 
-            }
-
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
-            if(!tableObj.cart) tableObj.cart = [];
-
-            let finalPrice = size === 'L' ? pendingMenuItem.price + 10000 : pendingMenuItem.price;
-            let compositeId = pendingMenuItem.id + '_' + size;
-            let displayFullName = pendingMenuItem.name + ` (Size ${size})`;
-
-            let existing = tableObj.cart.find(i => i.id === compositeId);
-            if(existing) {
-                existing.quantity++;
-            } else {
-                tableObj.cart.push({ 
-                    id: compositeId, 
-                    baseId: pendingMenuItem.id, 
-                    name: displayFullName, 
-                    price: finalPrice, 
-                    size: size,
-                    quantity: 1 
-                });
-            }
-
-            if(tableObj.status !== 'occupied') {
-                tableObj.status = 'occupied';
-                tableObj.startTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            }
-
-            pushBranchTablesToCloud(bId);
-            renderCartUI();
+            let price = size === 'L' ? pendingItem.price + 10000 : pendingItem.price;
+            let cId = pendingItem.id + '_' + size;
+            
+            let exist = t.cart.find(i => i.id === cId);
+            if(exist) exist.quantity++;
+            else t.cart.push({ id: cId, baseId: pendingItem.id, name: `${pendingItem.name} (Sz ${size})`, price: price, quantity: 1 });
+            
+            if(t.status !== 'occupied') { t.status = 'occupied'; t.startTime = new Date().toLocaleTimeString('vi-VN'); }
+            
+            updateSingleTableToCloud(t); // Đẩy lên Firebase
             closeSizeSelector();
         }
 
-        function updateCartItemQty(itemId, offset) {
-            let bId = globalChainState.focusBranchId;
-            let tId = globalChainState.focusTableId;
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
-
-            let idx = tableObj.cart.findIndex(i => i.id === itemId);
-            if(idx !== -1) { tableObj.cart[idx].quantity += offset; if(tableObj.cart[idx].quantity <= 0) tableObj.cart.splice(idx, 1); }
-            if(tableObj.cart.length === 0) { tableObj.status = 'available'; tableObj.startTime = null; }
-
-            pushBranchTablesToCloud(bId);
-            renderCartUI();
+        function updateCartQty(id, offset) {
+            let t = STATE.tables.find(x => x.id === STATE.focusTable);
+            let idx = t.cart.findIndex(i => i.id === id);
+            if(idx !== -1) {
+                t.cart[idx].quantity += offset;
+                if(t.cart[idx].quantity <= 0) t.cart.splice(idx, 1);
+            }
+            if(t.cart.length === 0) { t.status = 'available'; t.startTime = null; }
+            updateSingleTableToCloud(t);
         }
 
-        function renderCartUI() {
-            const container = document.getElementById('cart-items-container');
-            container.innerHTML = "";
-            let bId = globalChainState.focusBranchId;
-            let tId = globalChainState.focusTableId;
+        function renderCart() {
+            let ctn = document.getElementById('cart-items-container'); ctn.innerHTML = "";
+            if(!STATE.focusTable) { ctn.innerHTML = `<div class="text-center text-slate-400 font-bold text-xs mt-10">Vui lòng chọn bàn</div>`; return; }
             
-            if(!bId || !tId) { container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-400 font-bold uppercase text-[10px]"><i class="fa-solid fa-rectangle-list text-3xl mb-2 text-slate-300"></i>Vui lòng chọn bàn phục vụ</div>`; document.getElementById('cart-total-amount').innerText = "0đ"; return; }
-
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
-            if(!tableObj || !tableObj.cart || tableObj.cart.length === 0) { container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-slate-400 font-bold uppercase text-[10px]"><i class="fa-solid fa-basket-shopping text-3xl mb-2 text-slate-300"></i>Giỏ hàng đang trống</div>`; document.getElementById('cart-total-amount').innerText = "0đ"; return; }
+            document.getElementById('cart-table-title').innerText = `BÀN ${STATE.focusTable}`;
+            let t = STATE.tables.find(x => x.id === STATE.focusTable);
+            document.getElementById('cart-time-log').innerText = `Vào: ${t.startTime || '--:--'}`;
 
             let total = 0;
-            tableObj.cart.forEach(item => {
-                let sub = item.price * item.quantity;
-                total += sub;
-
-                const row = document.createElement('div');
-                row.className = "flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100 shadow-sm";
-                row.innerHTML = `<div class="flex-1 pr-2"><h5 class="text-xs font-black text-slate-800 leading-tight">${item.name}</h5><p class="text-[10px] font-bold text-slate-400 mt-0.5">${item.price.toLocaleString('vi-VN')}đ</p></div><div class="flex items-center gap-2"><button onclick="updateCartItemQty('${item.id}', -1)" class="w-6 h-6 bg-slate-100 rounded-lg text-slate-600 font-black text-xs hover:bg-slate-200">-</button><span class="text-xs font-black w-5 text-center font-mono">${item.quantity}</span><button onclick="updateCartItemQty('${item.id}', 1)" class="w-6 h-6 bg-slate-100 rounded-lg text-slate-600 font-black text-xs hover:bg-slate-200">+</button></div><div class="w-20 text-right font-black text-xs text-slate-900 tracking-tight pl-2">${sub.toLocaleString('vi-VN')}đ</div>`;
-                container.appendChild(row);
+            (t.cart || []).forEach(item => {
+                let sub = item.price * item.quantity; total += sub;
+                let row = document.createElement('div');
+                row.className = "flex justify-between items-center bg-white p-3 rounded-xl border";
+                row.innerHTML = `<div class="flex-1"><p class="text-xs font-black">${item.name}</p><p class="text-[10px] text-slate-400">${formatMoney(item.price)}</p></div><div class="flex gap-2"><button onclick="updateCartQty('${item.id}', -1)" class="w-6 h-6 bg-slate-100 rounded font-black">-</button><span class="w-4 text-center font-mono text-xs mt-1">${item.quantity}</span><button onclick="updateCartQty('${item.id}', 1)" class="w-6 h-6 bg-slate-100 rounded font-black">+</button></div>`;
+                ctn.appendChild(row);
             });
-            document.getElementById('cart-total-amount').innerText = total.toLocaleString('vi-VN') + "đ";
+            document.getElementById('cart-total-amount').innerText = formatMoney(total);
         }
 
-        function renderGlobalInventoryUI() {
-            const masterGrid = document.getElementById('grid-inventory-master');
-            masterGrid.innerHTML = "";
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                const branchObj = globalChainState.branches[bId];
-                const block = document.createElement('div');
-                block.className = "space-y-4 border p-4 rounded-xl bg-slate-50/50";
-                block.innerHTML = `<div class="flex justify-between items-center border-b pb-2"><h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">${branchObj.name}</h4><span class="branch-badge ${bId}-badge">${bId.toUpperCase()}</span></div><div class="space-y-2 max-h-[50vh] overflow-y-auto thin-scroll" id="inv-list-${bId}"></div>`;
-                masterGrid.appendChild(block);
-
-                const listContainer = document.getElementById(`inv-list-${bId}`);
-                for(let key in branchObj.inventory) {
-                    let item = branchObj.inventory[key];
-                    let pct = Math.min(100, (item.stock / item.max) * 100);
-                    let colorClass = pct < 25 ? 'bg-red-500' : pct < 50 ? 'bg-amber-500' : 'bg-emerald-500';
-
-                    const row = document.createElement('div');
-                    row.className = "bg-white p-3 rounded-xl border space-y-1 shadow-sm";
-                    row.innerHTML = `<div class="flex justify-between items-center text-xs"><span class="font-bold text-slate-700">${key}</span><span class="font-black font-mono text-slate-900">${item.stock.toLocaleString()} / ${item.max.toLocaleString()} ${item.unit}</span></div><div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div class="${colorClass} h-full" style="width: ${pct}%"></div></div>`;
-                    listContainer.appendChild(row);
-                }
-            });
-
-            const itemSelect = document.getElementById('logistics-item');
-            itemSelect.innerHTML = "";
-            Object.keys(INITIAL_INVENTORY_TEMPLATE).forEach(k => { itemSelect.innerHTML += `<option value="${k}">${k}</option>`; });
-        }
-
-        async function syncGlobalInventoryToCloud() {
-            showNotification("Đang kết nối cổng API cập nhật Kho...", "warning");
-            try {
-                let inventoryPayload = {
-                    timestamp: new Date().toISOString(),
-                    cn1: globalChainState.branches.cn1.inventory,
-                    cn2: globalChainState.branches.cn2.inventory,
-                    cn3: globalChainState.branches.cn3.inventory
-                };
-                
-                await fetch(MASTER_CONFIG.inventoryEndpoint, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify(inventoryPayload)
-                });
-                showNotification("Đã đồng bộ kiểm kê kho lên Google Sheets!", "success");
-            } catch (err) {
-                console.error(err);
-                showNotification("Lỗi kết nối API lưu Kho!", "error");
-            }
-        }
-        window.syncGlobalInventoryToCloud = syncGlobalInventoryToCloud;
-
-        function processLogisticsTransfer() {
-            let fromB = document.getElementById('logistics-from').value;
-            let toB = document.getElementById('logistics-to').value;
-            let targetItem = document.getElementById('logistics-item').value;
-            let transferQty = parseInt(document.getElementById('logistics-qty').value || 0);
-
-            if(fromB === toB) { showNotification("Kho nguồn và đích không được trùng!", "error"); return; }
-            if(transferQty <= 0) { showNotification("Số lượng không hợp lệ!", "error"); return; }
-
-            let srcInventory = globalChainState.branches[fromB].inventory[targetItem];
-            let destInventory = globalChainState.branches[toB].inventory[targetItem];
-
-            if(srcInventory.stock < transferQty) { showNotification(`Kho xuất không đủ trữ lượng!`, "error"); return; }
-
-            srcInventory.stock -= transferQty;
-            destInventory.stock += transferQty;
-
-            let logPayload = { id: "LOG-" + Date.now(), fromBranch: fromB.toUpperCase(), toBranch: toB.toUpperCase(), item: targetItem, quantity: transferQty, unit: srcInventory.unit, timestamp: new Date().toISOString() };
-            if(window.FIREBASE_DB) window.firebaseRefs.push(window.firebaseRefs.ref(window.FIREBASE_DB, `omnichain/logistics`), logPayload);
-            
-            pushBranchInventoryToCloud(fromB); pushBranchInventoryToCloud(toB);
-            showNotification(`Đã điều phối thành công ${transferQty} ${srcInventory.unit}`, "success");
-            renderGlobalInventoryUI();
-        }
-
-        function renderLogisticsUI() {
-            const container = document.getElementById('logistics-log-container');
-            container.innerHTML = "";
-            if(globalChainState.logisticsHistory.length === 0) { container.innerHTML = `<p class="text-xs font-bold text-slate-400 text-center py-4">Chưa có lệnh điều phối nội bộ nào được kích hoạt.</p>`; return; }
-
-            globalChainState.logisticsHistory.slice().reverse().forEach(log => {
-                const row = document.createElement('div');
-                row.className = "bg-white p-3 rounded-xl border border-l-4 border-l-orange-500 flex justify-between items-center text-xs shadow-sm";
-                row.innerHTML = `<div><span class="font-black text-slate-900">[${log.fromBranch}] &rarr; [${log.toBranch}]</span><p class="text-slate-500 font-semibold mt-0.5">Chuyển: <span class="font-bold text-orange-600">${log.item}</span> - SL: <span class="font-black text-slate-800">${log.quantity.toLocaleString()} ${log.unit}</span></p></div><span class="font-mono text-slate-400 text-[10px]">${new Date(log.timestamp).toLocaleTimeString('vi-VN')}</span>`;
-                container.appendChild(row);
-            });
-        }
-
+        // THANH TOÁN & IN HÓA ĐƠN
         function openPaymentGateway() {
-            let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId;
-            if(!bId || !tId) return;
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
-            let total = tableObj.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            if(total === 0) return;
-
-            document.getElementById('modal-branch-tag').className = `branch-badge ${bId}-badge`;
-            document.getElementById('modal-branch-tag').innerText = bId.toUpperCase();
-            document.getElementById('modal-table-tag').innerText = `BÀN ${String(tId).padStart(2, '0')}`;
+            if(!STATE.focusTable) return;
+            let t = STATE.tables.find(x => x.id === STATE.focusTable);
+            if(!t.cart || t.cart.length === 0) return;
+            document.getElementById('modal-table-tag').innerText = `BÀN ${t.id}`;
             document.getElementById('mod-discount-val').value = 0;
             document.getElementById('portal-checkout-modal').classList.remove('hidden');
             recalcModalAmount();
         }
-
         function closePaymentGateway() { document.getElementById('portal-checkout-modal').classList.add('hidden'); }
 
-        // FIX LỖI 2: CẬP NHẬT QR THANH TOÁN VÀ SỰ KIỆN TỰ TÍNH TIỀN
-        function selectGatePaymentMethod(method) {
-            globalChainState.gatePaymentMethod = method;
-            const cashBtn = document.getElementById('gate-method-cash'); const qrBtn = document.getElementById('gate-method-transfer');
-            if(method === 'Cash') { 
-                cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600 transition-all"; 
-                qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; 
-                document.getElementById('gate-qr-zone').classList.add('hidden'); 
-            } else { 
-                qrBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-blue-500 bg-blue-50/30 text-blue-600 transition-all"; 
-                cashBtn.className = "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500 transition-all"; 
-                document.getElementById('gate-qr-zone').classList.remove('hidden'); 
-                document.getElementById('gate-qr-zone').classList.add('flex');
-            }
+        function selectPaymentMethod(m) {
+            STATE.payMethod = m;
+            document.getElementById('gate-method-cash').className = m === 'Cash' ? "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-orange-500 bg-orange-50/30 text-orange-600" : "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500";
+            document.getElementById('gate-method-transfer').className = m === 'Transfer' ? "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-blue-500 bg-blue-50/30 text-blue-600" : "p-4 border-2 rounded-2xl flex flex-col items-center gap-2 border-slate-200 text-slate-500";
+            let qrZone = document.getElementById('gate-qr-zone');
+            m === 'Transfer' ? qrZone.classList.remove('hidden') : qrZone.classList.add('hidden');
+            m === 'Transfer' ? qrZone.classList.add('flex') : '';
             recalcModalAmount();
         }
 
         function recalcModalAmount() {
-            let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId;
-            if(!bId || !tId) return;
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
-            if(!tableObj) return;
+            let t = STATE.tables.find(x => x.id === STATE.focusTable); if(!t) return;
+            let total = t.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            let dVal = parseInt(document.getElementById('mod-discount-val').value || 0);
+            let dType = document.getElementById('mod-discount-type').value;
 
-            let total = tableObj.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            let discVal = parseInt(document.getElementById('mod-discount-val').value || 0);
-            let discType = document.getElementById('mod-discount-type').value;
+            let final = dType === 'đ' ? Math.max(0, total - dVal) : Math.max(0, total - (total * (dVal/100)));
+            document.getElementById('modal-final-amount').innerText = formatMoney(final);
 
-            let finalAmt = total;
-            if(discType === 'đ') finalAmt = Math.max(0, total - discVal); 
-            else finalAmt = Math.max(0, total - (total * (discVal / 100)));
-            finalAmt = Math.round(finalAmt);
-
-            document.getElementById('modal-final-amount').innerText = finalAmt.toLocaleString('vi-VN') + "đ";
-
-            if(globalChainState.gatePaymentMethod === 'Transfer') {
-                let safeAddInfo = encodeURIComponent(`PL ${bId.toUpperCase()} BAN ${tId}`); 
-                let safeAccountName = encodeURIComponent(MASTER_CONFIG.accountHolder);
-                // Endpoint VietQR tối ưu với dạng compact2
-                document.getElementById('gate-qr-img').src = `https://img.vietqr.io/image/${MASTER_CONFIG.bankCode}-${MASTER_CONFIG.accountNumber}-compact2.png?amount=${finalAmt}&addInfo=${safeAddInfo}&accountName=${safeAccountName}`;
+            if(STATE.payMethod === 'Transfer') {
+                let info = encodeURIComponent(`PL BAN ${t.id}`);
+                document.getElementById('gate-qr-img').src = `https://img.vietqr.io/image/${CONFIG.bankCode}-${CONFIG.accountNumber}-compact2.png?amount=${final}&addInfo=${info}&accountName=${encodeURIComponent(CONFIG.accountHolder)}`;
             }
-        }
-
-        function deductInventoryOnSale(bId, cart) {
-            let branchInv = globalChainState.branches[bId].inventory;
-            cart.forEach(cartItem => {
-                let recipe = FORMULA_RECIPES[cartItem.baseId || cartItem.id];
-                if(recipe) {
-                    for(let ing in recipe) { if(branchInv[ing]) branchInv[ing].stock = Math.max(0, branchInv[ing].stock - (recipe[ing] * cartItem.quantity)); }
-                }
-            });
-            pushBranchInventoryToCloud(bId);
         }
 
         function commitTransaction() {
-            let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId;
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
-            let total = tableObj.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-            let discVal = parseInt(document.getElementById('mod-discount-val').value || 0); let discType = document.getElementById('mod-discount-type').value;
+            let t = STATE.tables.find(x => x.id === STATE.focusTable);
+            let total = t.cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            let dVal = parseInt(document.getElementById('mod-discount-val').value || 0);
+            let dType = document.getElementById('mod-discount-type').value;
+            let final = dType === 'đ' ? Math.max(0, total - dVal) : Math.max(0, total - (total * (dVal/100)));
 
-            let finalAmt = total; if(discType === 'đ') finalAmt = Math.max(0, total - discVal); else finalAmt = Math.max(0, total - (total * (discVal / 100)));
-            finalAmt = Math.round(finalAmt);
+            let tx = { id: "PL-" + Date.now(), tableId: t.id, originalAmount: total, discountValue: dVal, discountType: dType, finalAmount: final, paymentMethod: STATE.payMethod === 'Cash' ? 'Tiền Mặt' : 'Chuyển Khoản', timestamp: new Date().toISOString(), items: t.cart };
 
-            let txPayload = {
-                id: "PL-TX-" + Date.now(), branchId: bId, branchName: globalChainState.branches[bId].name, tableId: tId, originalAmount: total, discountValue: discVal, discountType: discType, finalAmount: finalAmt, paymentMethod: globalChainState.gatePaymentMethod === 'Cash' ? 'Tiền Mặt' : 'Chuyển Khoản', timestamp: new Date().toISOString(), items: tableObj.cart
-            };
+            // Trừ kho
+            t.cart.forEach(item => {
+                let r = RECIPES[item.baseId];
+                if(r) { for(let k in r) { if(STATE.inventory[k]) STATE.inventory[k].stock = Math.max(0, STATE.inventory[k].stock - (r[k] * item.quantity)); } }
+            });
 
-            if(window.FIREBASE_DB) window.firebaseRefs.push(window.firebaseRefs.ref(window.FIREBASE_DB, `omnichain/branches/${bId}/transactions`), txPayload);
-            else globalChainState.branches[bId].transactions.push(txPayload);
+            if(window.FIREBASE_DB) {
+                window.firebaseRefs.push(window.firebaseRefs.ref(window.FIREBASE_DB, `pos_data/transactions`), tx);
+            }
+            pushInventoryToCloud();
+            executePrint(tx, 'bill');
 
-            deductInventoryOnSale(bId, tableObj.cart);
-            executeHardwarePrint(txPayload);
-
-            tableObj.cart = []; tableObj.status = 'available'; tableObj.startTime = null;
-            pushBranchTablesToCloud(bId); closePaymentGateway();
-            showNotification(`Thanh toán hoàn tất: #${txPayload.id}`, "success");
-            
-            globalChainState.focusBranchId = null; globalChainState.focusTableId = null; switchTab('tables');
-        }
-
-        function executeHardwarePrint(tx) {
-            document.getElementById('pr-branch-desc').innerText = tx.branchName;
-            document.getElementById('pr-meta').innerHTML = `Mã Đơn: ${tx.id}<br>Thời Gian: ${new Date(tx.timestamp).toLocaleString('vi-VN')}<br>Vị Trí: BÀN ${String(tx.tableId).padStart(2, '0')}<br>Hình Thức: ${tx.paymentMethod}`;
-            let bodyHtml = ""; tx.items.forEach(i => { bodyHtml += `<tr><td style="padding: 4px 0;">${i.name}</td><td style="text-align: center;">${i.quantity}</td><td style="text-align: right;">${(i.price * i.quantity).toLocaleString()}đ</td></tr>`; });
-            document.getElementById('pr-body').innerHTML = bodyHtml;
-            document.getElementById('pr-finance').innerHTML = `<table style="width: 100%;"><tr><td>Tổng Tiền:</td><td style="text-align: right;">${tx.originalAmount.toLocaleString()}đ</td></tr><tr><td>Giảm Giá:</td><td style="text-align: right;">-${tx.discountValue}${tx.discountType}</td></tr><tr style="font-size: 12px; font-weight: bold;"><td>Thanh Toán:</td><td style="text-align: right; color: red;">${tx.finalAmount.toLocaleString()}đ</td></tr></table>`;
-            window.print();
+            t.cart = []; t.status = 'available'; t.startTime = null;
+            updateSingleTableToCloud(t);
+            closePaymentGateway(); STATE.focusTable = null; switchTab('tables');
+            showToast("Thanh toán hoàn tất!");
         }
 
         function executePrintJob(type) {
-            let bId = globalChainState.focusBranchId; let tId = globalChainState.focusTableId; if(!bId || !tId) return;
-            let tableObj = globalChainState.branches[bId].tables.find(t => t.id === tId);
-            document.getElementById('pr-branch-desc').innerText = globalChainState.branches[bId].name; document.getElementById('pr-title').innerText = type === 'kitchen' ? "PHIẾU BÁO BẾP" : "HÓA ĐƠN TẠM TÍNH";
-            document.getElementById('pr-meta').innerHTML = `Thời Gian: ${new Date().toLocaleString('vi-VN')}<br>Vị Trí: BÀN ${String(tId).padStart(2, '0')}`;
-            let bodyHtml = ""; tableObj.cart.forEach(i => { bodyHtml += `<tr><td style="padding: 4px 0;">${i.name}</td><td style="text-align: center;">${i.quantity}</td><td style="text-align: right;">${type === 'kitchen' ? '--' : (i.price * i.quantity).toLocaleString() + 'đ'}</td></tr>`; });
-            document.getElementById('pr-body').innerHTML = bodyHtml; document.getElementById('pr-finance').innerHTML = type === 'kitchen' ? "" : `<div style="text-align: right; font-weight: bold;">Tạm Tính: ${tableObj.cart.reduce((s,i)=>s+(i.price*i.quantity),0).toLocaleString()}đ</div>`;
-            window.print();
-            showNotification(`Đã xuất lệnh in máy in.`, "success");
+            if(!STATE.focusTable) return;
+            let t = STATE.tables.find(x => x.id === STATE.focusTable);
+            executePrint({ tableId: t.id, items: t.cart, originalAmount: t.cart.reduce((s,i)=>s+(i.price*i.quantity),0) }, type);
         }
 
-        // FIX LỖI 4: TÍNH DOANH THU TIỀN MẶT - CHUYỂN KHOẢN THEO NGÀY
-        function calculateFinancialReports() {
-            let branchFilter = document.getElementById('rep-branch-filter').value;
-            let targetDay = document.getElementById('rep-filter-day').value; // Định dạng YYYY-MM-DD
-            let targetMonth = document.getElementById('rep-filter-month').value; // Định dạng YYYY-MM
-            let targetYear = parseInt(document.getElementById('rep-filter-year').value);
-
-            const todayISO = formatISODate(new Date());
-            if(!targetDay) { targetDay = todayISO; document.getElementById('rep-filter-day').value = targetDay; }
-            if(!targetMonth) { targetMonth = todayISO.substring(0, 7); document.getElementById('rep-filter-month').value = targetMonth; }
-            if(!targetYear) { targetYear = new Date().getFullYear(); document.getElementById('rep-filter-year').value = targetYear; }
-
-            let dayTotal = 0, dayCash = 0, dayTransfer = 0, dayCount = 0; 
-            let monthTotal = 0, monthCash = 0, monthTransfer = 0, monthCount = 0; 
-            let yearTotal = 0, yearCash = 0, yearTransfer = 0, yearCount = 0;
-
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                if(branchFilter !== 'all' && bId !== branchFilter) return;
-                let txs = globalChainState.branches[bId].transactions || [];
-                
-                txs.forEach(t => {
-                    let tDate = new Date(t.timestamp);
-                    let tISO = formatISODate(tDate);
-                    let tMonth = tISO.substring(0, 7);
-                    let tYear = tDate.getFullYear();
-
-                    let amt = parseInt(t.finalAmount || 0);
-                    let isCash = t.paymentMethod === 'Tiền Mặt';
-
-                    // Theo ngày
-                    if (tISO === targetDay) {
-                        dayCount++;
-                        dayTotal += amt;
-                        if (isCash) dayCash += amt; else dayTransfer += amt;
-                    }
-
-                    // Theo tháng
-                    if (tMonth === targetMonth) {
-                        monthCount++;
-                        monthTotal += amt;
-                        if (isCash) monthCash += amt; else monthTransfer += amt;
-                    }
-
-                    // Theo năm
-                    if (tYear === targetYear) {
-                        yearCount++;
-                        yearTotal += amt;
-                        if (isCash) yearCash += amt; else yearTransfer += amt;
-                    }
-                });
-            });
-
-            document.getElementById('rep-total-day').innerText = dayTotal.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-day-cash').innerText = dayCash.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-day-transfer').innerText = dayTransfer.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-count-day').innerText = `${dayCount} hóa đơn`;
-
-            document.getElementById('rep-total-month').innerText = monthTotal.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-month-cash').innerText = monthCash.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-month-transfer').innerText = monthTransfer.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-count-month').innerText = `${monthCount} hóa đơn`;
-
-            document.getElementById('rep-total-year').innerText = yearTotal.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-year-cash').innerText = yearCash.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-year-transfer').innerText = yearTransfer.toLocaleString('vi-VN') + "đ"; 
-            document.getElementById('rep-count-year').innerText = `${yearCount} hóa đơn`;
-        }
-
-        function setHistoryMethodFilter(type) {
-            globalChainState.historyMethodFilter = type;
-            ['ALL', 'CASH', 'TRANSFER'].forEach(t => { const btn = document.getElementById(`hm-${t}`); if(btn) { btn.className = t === type ? "px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-gray-900 text-white shadow-md" : "px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-slate-100 text-slate-500 hover:bg-slate-200"; } });
-            renderGlobalHistoryUI();
-        }
-
-        function renderGlobalHistoryUI() {
-            const container = document.getElementById('master-history-timeline'); container.innerHTML = "";
-            let bFilter = document.getElementById('history-branch-filter').value; let mFilter = globalChainState.historyMethodFilter; let aggregatedTxs = [];
-
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                if(bFilter !== 'all' && bFilter !== bId) return;
-                let txs = globalChainState.branches[bId].transactions || [];
-                if (mFilter === 'CASH') txs = txs.filter(t => t.paymentMethod === 'Tiền Mặt'); else if (mFilter === 'TRANSFER') txs = txs.filter(t => t.paymentMethod !== 'Tiền Mặt');
-                aggregatedTxs = aggregatedTxs.concat(txs);
-            });
-
-            aggregatedTxs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            if(aggregatedTxs.length === 0) { container.innerHTML = `<div class="p-6 text-center text-xs font-bold text-slate-400 bg-white border rounded-xl shadow-sm uppercase">Trống.</div>`; return; }
-
-            aggregatedTxs.forEach(tx => {
-                const isCash = tx.paymentMethod === 'Tiền Mặt'; const row = document.createElement('div');
-                row.className = "bg-white p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 shadow-sm hover:border-orange-300 hover:shadow-md cursor-pointer transition-all";
-                row.onclick = () => openTxDetailModal(tx.id, tx.branchId);
-                row.innerHTML = `<div class="flex items-start gap-3 w-full sm:w-auto"><div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isCash ? 'bg-green-50 text-green-500' : 'bg-blue-50 text-blue-500'}"><i class="fa-solid ${isCash ? 'fa-money-bill-wave' : 'fa-qrcode'} text-lg"></i></div><div class="flex-1"><div class="flex items-center gap-2 mb-1"><span class="branch-badge ${tx.branchId}-badge">${tx.branchId.toUpperCase()}</span><span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Bàn ${String(tx.tableId).padStart(2, '0')}</span></div><span class="font-black text-xs text-slate-800">${tx.id}</span><p class="text-[10px] font-semibold text-slate-400 mt-0.5 truncate max-w-[220px]">${tx.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</p></div></div><div class="text-right shrink-0 w-full sm:w-auto flex flex-row sm:flex-col justify-between sm:justify-end items-center sm:items-end mt-2 sm:mt-0 border-t sm:border-0 pt-3 sm:pt-0"><span class="text-sm font-black ${isCash ? 'text-green-600' : 'text-blue-600'}">+${tx.finalAmount.toLocaleString()}đ</span><p class="text-[9px] font-mono font-bold text-slate-400 mt-1">${new Date(tx.timestamp).toLocaleString('vi-VN')}</p></div>`;
-                container.appendChild(row);
-            });
-        }
-
-        function openTxDetailModal(txId, bId) {
-            let tx = globalChainState.branches[bId].transactions.find(t => t.id === txId); if(!tx) return;
-            document.getElementById('dtl-id').innerText = tx.id; document.getElementById('dtl-branch').innerText = globalChainState.branches[bId].name; document.getElementById('dtl-table').innerText = `Bàn ${String(tx.tableId).padStart(2, '0')}`; document.getElementById('dtl-time').innerText = new Date(tx.timestamp).toLocaleString('vi-VN');
-            let isCash = tx.paymentMethod === 'Tiền Mặt'; document.getElementById('dtl-method').innerHTML = `<span class="px-2 py-1 rounded-md text-[10px] font-black uppercase ${isCash ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}"><i class="fa-solid ${isCash ? 'fa-money-bill-wave' : 'fa-qrcode'} mr-1"></i>${tx.paymentMethod}</span>`;
-            document.getElementById('dtl-items').innerHTML = tx.items.map(i => `<div class="flex justify-between items-center py-2 border-b border-dashed border-slate-200 last:border-0"><div><p class="text-xs font-bold text-slate-800">${i.name}</p><p class="text-[10px] text-slate-500">${i.price.toLocaleString()}đ x ${i.quantity}</p></div><span class="text-xs font-black text-slate-900">${(i.price * i.quantity).toLocaleString()}đ</span></div>`).join('');
-            document.getElementById('dtl-subtotal').innerText = tx.originalAmount.toLocaleString() + 'đ'; document.getElementById('dtl-discount').innerText = (tx.discountValue > 0 ? `-${tx.discountValue}${tx.discountType}` : '0đ'); document.getElementById('dtl-total').innerText = tx.finalAmount.toLocaleString() + 'đ';
-            document.getElementById('modal-tx-detail').classList.remove('hidden');
-        }
-
-        function closeTxDetailModal() { document.getElementById('modal-tx-detail').classList.add('hidden'); }
-        
-        function exportChainExcel() {
-            try { if(typeof XLSX === 'undefined') return showNotification("Thư viện đang tải, thử lại sau!", "error"); let workbook = XLSX.utils.book_new(); showNotification("Đang xuất tập tin Excel...", "success"); } catch(e){}
-        }
-
-        async function syncChainToGoogleSheets() {
-            let todayISO = formatISODate(new Date());
-            let now = new Date();
-            let allExportData = [];
-
-            ['cn1', 'cn2', 'cn3'].forEach(bId => {
-                let currentBranchTxs = globalChainState.branches[bId].transactions || [];
-                let dayTxs = currentBranchTxs.filter(t => formatISODate(t.timestamp) === todayISO);
-                
-                dayTxs.forEach(tx => {
-                    allExportData.push({
-                        date: todayISO, time: new Date(tx.timestamp).toLocaleTimeString('vi-VN'),
-                        table: `MẠNG LƯỚI ${bId.toUpperCase()} - BÀN ${tx.tableId}`, total: tx.finalAmount, method: tx.paymentMethod, month: `${now.getMonth() + 1}/${now.getFullYear()}`, year: now.getFullYear()
-                    });
-                });
-            });
-
-            if(allExportData.length === 0) { showNotification("Hôm nay chưa có dữ liệu giao dịch!", "warning"); return; }
-            showNotification("Đang kết nối API ghi nhận Doanh Thu...", "warning");
+        function executePrint(tx, type) {
+            document.getElementById('pr-title').innerText = type === 'kitchen' ? "PHIẾU BÁO BẾP" : "HÓA ĐƠN TẠM TÍNH";
+            document.getElementById('pr-meta').innerHTML = `BÀN: ${tx.tableId}<br>T/G: ${new Date().toLocaleTimeString('vi-VN')}`;
+            let html = ""; tx.items.forEach(i => html += `<tr><td style="padding: 4px 0;">${i.name}</td><td style="text-align:center;">${i.quantity}</td><td style="text-align:right;">${type === 'kitchen' ? '--' : formatMoney(i.price * i.quantity)}</td></tr>`);
+            document.getElementById('pr-body').innerHTML = html;
             
-            try {
-                for(let payload of allExportData) {
-                    await fetch(MASTER_CONFIG.revenueEndpoint, {
-                        method: 'POST', mode: 'no-cors', body: JSON.stringify(payload)
-                    });
-                }
-                showNotification(`Đã đẩy thành công ${allExportData.length} đơn lên G.Sheets!`, "success");
-            } catch (err) {
-                showNotification("Lỗi kết nối cổng API Doanh Thu!", "error");
+            if(type === 'bill') {
+                document.getElementById('pr-finance').innerHTML = `<table style="width: 100%;"><tr><td>Tổng Tiền:</td><td style="text-align: right;">${formatMoney(tx.originalAmount)}</td></tr><tr><td>Giảm Giá:</td><td style="text-align: right;">-${tx.discountValue||0}${tx.discountType||''}</td></tr><tr style="font-size: 12px; font-weight: bold;"><td>Thanh Toán:</td><td style="text-align: right;">${formatMoney(tx.finalAmount)}</td></tr></table>`;
+            } else if (type === 'provisional') {
+                document.getElementById('pr-finance').innerHTML = `<div style="text-align:right; font-weight:bold;">Tạm Tính: ${formatMoney(tx.originalAmount)}</div>`;
+            } else { document.getElementById('pr-finance').innerHTML = ""; }
+            
+            window.print();
+        }
+
+        // KHO & BÁO CÁO
+        function renderInventory() {
+            let box = document.getElementById('inventory-list'); box.innerHTML = "";
+            for(let k in STATE.inventory) {
+                let i = STATE.inventory[k]; let pct = Math.min(100, (i.stock / i.max) * 100);
+                let color = pct < 25 ? 'bg-red-500' : 'bg-emerald-500';
+                box.innerHTML += `<div class="bg-white p-4 rounded-xl border"><div class="flex justify-between text-xs mb-2"><span class="font-bold">${k}</span><span class="font-mono">${i.stock} / ${i.max} ${i.unit}</span></div><div class="w-full bg-slate-100 h-2 rounded-full"><div class="${color} h-full" style="width: ${pct}%"></div></div></div>`;
             }
         }
-        window.syncChainToGoogleSheets = syncChainToGoogleSheets;
 
-        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN'); }, 1000);
+        function calculateFinancialReports() {
+            let tDay = document.getElementById('rep-filter-day').value || formatISO(new Date()); document.getElementById('rep-filter-day').value = tDay;
+            let tMonth = document.getElementById('rep-filter-month').value || tDay.substring(0, 7); document.getElementById('rep-filter-month').value = tMonth;
+            
+            let ySel = document.getElementById('rep-filter-year');
+            if(!ySel.options.length) {
+                let cy = new Date().getFullYear();
+                for(let i=cy-2; i<=cy+1; i++) ySel.innerHTML += `<option value="${i}" ${i===cy?'selected':''}>Năm ${i}</option>`;
+            }
+            let tYear = document.getElementById('rep-filter-year').value;
 
+            let data = { d:{t:0,c:0,tr:0,cnt:0}, m:{t:0,c:0,tr:0,cnt:0}, y:{t:0,c:0,tr:0,cnt:0} };
+
+            STATE.transactions.forEach(tx => {
+                let iso = formatISO(tx.timestamp); let mth = iso.substring(0, 7); let yr = iso.substring(0, 4);
+                let amt = tx.finalAmount || 0; let isC = tx.paymentMethod === 'Tiền Mặt';
+
+                if(iso === tDay) { data.d.cnt++; data.d.t += amt; isC ? data.d.c += amt : data.d.tr += amt; }
+                if(mth === tMonth) { data.m.cnt++; data.m.t += amt; isC ? data.m.c += amt : data.m.tr += amt; }
+                if(yr === tYear) { data.y.cnt++; data.y.t += amt; isC ? data.y.c += amt : data.y.tr += amt; }
+            });
+
+            document.getElementById('rep-total-day').innerText = formatMoney(data.d.t); document.getElementById('rep-day-cash').innerText = formatMoney(data.d.c); document.getElementById('rep-day-transfer').innerText = formatMoney(data.d.tr); document.getElementById('rep-count-day').innerText = `${data.d.cnt} đơn`;
+            document.getElementById('rep-total-month').innerText = formatMoney(data.m.t); document.getElementById('rep-month-cash').innerText = formatMoney(data.m.c); document.getElementById('rep-month-transfer').innerText = formatMoney(data.m.tr); document.getElementById('rep-count-month').innerText = `${data.m.cnt} đơn`;
+            document.getElementById('rep-total-year').innerText = formatMoney(data.y.t); document.getElementById('rep-year-cash').innerText = formatMoney(data.y.c); document.getElementById('rep-year-transfer').innerText = formatMoney(data.y.tr); document.getElementById('rep-count-year').innerText = `${data.y.cnt} đơn`;
+        }
+
+        function setHistoryFilter(f) {
+            STATE.histFilter = f;
+            ['ALL', 'CASH', 'TRANSFER'].forEach(t => { document.getElementById(`hm-${t}`).className = t === f ? "px-4 py-2 rounded-xl text-[10px] font-black uppercase bg-gray-900 text-white" : "px-4 py-2 rounded-xl text-[10px] font-black uppercase bg-slate-100 text-slate-500"; });
+            renderHistory();
+        }
+
+        function renderHistory() {
+            let box = document.getElementById('history-timeline'); box.innerHTML = "";
+            let txs = STATE.transactions.filter(t => STATE.histFilter === 'ALL' || (STATE.histFilter === 'CASH' && t.paymentMethod === 'Tiền Mặt') || (STATE.histFilter === 'TRANSFER' && t.paymentMethod !== 'Tiền Mặt')).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            if(!txs.length) { box.innerHTML = `<p class="text-center text-xs text-slate-400 mt-5">Chưa có giao dịch.</p>`; return; }
+            
+            txs.forEach(tx => {
+                let isC = tx.paymentMethod === 'Tiền Mặt';
+                box.innerHTML += `<div class="bg-white p-4 rounded-xl border flex justify-between items-center"><div class="flex gap-3"><div class="w-10 h-10 rounded-full flex items-center justify-center ${isC?'bg-green-50 text-green-500':'bg-blue-50 text-blue-500'}"><i class="fa-solid ${isC?'fa-money-bill-wave':'fa-qrcode'}"></i></div><div><p class="font-bold text-xs">BÀN ${tx.tableId} <span class="font-normal text-[10px] text-slate-400 ml-2">${new Date(tx.timestamp).toLocaleString('vi-VN')}</span></p><p class="text-[10px] text-slate-500 mt-1">${tx.items.map(i=>i.name).join(', ')}</p></div></div><span class="font-black ${isC?'text-green-600':'text-blue-600'}">+${formatMoney(tx.finalAmount)}</span></div>`;
+            });
+        }
+
+        // INIT CƠ BẢN
         window.onload = () => {
-            bootstrapStateStructure(); initGlobalChainSync();
-            setTimeout(() => { switchTab('dashboard'); }, 600);
+            loadCachedMenu();
+            initRealtimeSync();
+            setInterval(() => document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN'), 1000);
+            setTimeout(() => switchTab('dashboard'), 300);
         };
     </script>
 </body>
