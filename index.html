@@ -26,6 +26,11 @@
             const app = initializeApp(firebaseConfig);
             window.FIREBASE_DB = getDatabase(app); 
             window.firebaseRefs = { ref, onValue, set, push };
+            
+            // Kích hoạt đồng bộ ngay khi Firebase sẵn sàng
+            if (typeof window.initRealtimeSync === 'function') {
+                window.initRealtimeSync();
+            }
         } catch (e) {
             console.warn("Lỗi kết nối Firebase Server. Kích hoạt chế độ Offline Core.");
         }
@@ -345,8 +350,15 @@
             totalTables: 30
         };
 
-        // TIỆN ÍCH
-        const formatISO = (d) => { let dt = new Date(d); return isNaN(dt) ? '' : dt.toISOString().split('T')[0]; };
+        // TIỆN ÍCH (Đã sửa đổi định dạng ngày lấy theo giờ địa phương)
+        const formatISO = (d) => {
+            let dt = new Date(d);
+            if (isNaN(dt)) return '';
+            let year = dt.getFullYear();
+            let month = String(dt.getMonth() + 1).padStart(2, '0');
+            let day = String(dt.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
         const formatMoney = (n) => (n || 0).toLocaleString('vi-VN') + 'đ';
 
         // MENU & KHO MẶC ĐỊNH
@@ -386,15 +398,26 @@
 
         let pendingItem = null;
 
-        // KIỂM TRA LOCAL STORAGE (Giải quyết lỗi mất menu khi F5)
+        // KIỂM TRA LOCAL STORAGE
         function loadCachedMenu() {
             let cached = localStorage.getItem('POS_MENU_V1');
             STATE.menu = cached ? JSON.parse(cached) : DEFAULT_MENU;
         }
 
-        // ĐỒNG BỘ REALTIME FIREBASE (Giải quyết lỗi ghi đè dữ liệu)
+        // ĐỒNG BỘ REALTIME FIREBASE (Đã sửa lỗi bất đồng bộ bằng retry logic)
+        window.isSyncInitialized = false;
+
         function initRealtimeSync() {
-            if(!window.FIREBASE_DB) return;
+            if (window.isSyncInitialized) return; // Chống gọi lặp listener
+            
+            // Nếu Firebase chưa khởi tạo xong, chờ 300ms rồi thử lại
+            if (!window.FIREBASE_DB) {
+                setTimeout(initRealtimeSync, 300);
+                return;
+            }
+
+            window.isSyncInitialized = true;
+            
             const { ref, onValue } = window.firebaseRefs;
             const db = window.FIREBASE_DB;
 
@@ -426,11 +449,11 @@
                 renderDashboard();
             });
         }
+        window.initRealtimeSync = initRealtimeSync;
 
         // Cập nhật Cục Bộ 1 Bàn (Chống lỗi xung đột thiết bị)
         function updateSingleTableToCloud(tableObj) {
             if(window.FIREBASE_DB) {
-                // Lưu ý: Firebase array index = table.id - 1
                 let tableIndex = tableObj.id - 1;
                 window.firebaseRefs.set(window.firebaseRefs.ref(window.FIREBASE_DB, `pos_data/tables/${tableIndex}`), tableObj);
             } else {
@@ -749,7 +772,7 @@
         // INIT CƠ BẢN
         window.onload = () => {
             loadCachedMenu();
-            initRealtimeSync();
+            initRealtimeSync(); // Sẽ được xử lý an toàn nhờ cơ chế chặn lặp (isSyncInitialized) và retry.
             setInterval(() => document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('vi-VN'), 1000);
             setTimeout(() => switchTab('dashboard'), 300);
         };
